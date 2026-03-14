@@ -9,8 +9,13 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Routes
+const authRoutes = require('./routes/authRoutes');
+app.use('/api/auth', authRoutes);
+
+// Base route
 app.get('/', (req, res) => {
-  res.json({ message: 'Smart Question Maker API is running smoothly' });
+  res.json({ message: 'Smart Question Maker API is running' });
 });
 
 const PORT = process.env.PORT || 5000;
