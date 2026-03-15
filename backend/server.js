@@ -13,9 +13,11 @@ app.use(express.urlencoded({ extended: true }));
 // Routes
 const authRoutes = require('./routes/authRoutes');
 const centerRoutes = require('./routes/centerRoutes');
+const academicRoutes = require('./routes/academicRoutes');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/center', centerRoutes);
+app.use('/api/academic', academicRoutes);
 
 // Base route
 app.get('/', (req, res) => {
