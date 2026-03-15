@@ -16,12 +16,14 @@ const centerRoutes = require('./routes/centerRoutes');
 const academicRoutes = require('./routes/academicRoutes');
 const questionRoutes = require('./routes/questionRoutes');
 const examRoutes = require('./routes/examRoutes'); 
+const notificationRoutes = require('./routes/notificationRoutes');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/center', centerRoutes);
 app.use('/api/academic', academicRoutes);
 app.use('/api/questions', questionRoutes);
 app.use('/api/exams', examRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Base route
 app.get('/', (req, res) => {
