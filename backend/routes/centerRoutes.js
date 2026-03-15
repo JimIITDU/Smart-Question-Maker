@@ -1,0 +1,78 @@
+const express = require('express');
+const router = express.Router();
+const centerController = require('../controllers/centerController');
+const authMiddleware = require('../middleware/authMiddleware');
+const roleMiddleware = require('../middleware/roleMiddleware');
+
+// Role IDs from database:
+// 1 = super_admin
+// 2 = coaching_admin
+// 3 = teacher
+// 4 = staff
+// 5 = student
+// 6 = parent
+
+// Coaching admin applies for center
+router.post(
+  '/apply',
+  authMiddleware,
+  roleMiddleware(2),
+  centerController.applyForCenter
+);
+
+// Super admin gets all centers
+router.get(
+  '/all',
+  authMiddleware,
+  roleMiddleware(1),
+  centerController.getAllCenters
+);
+
+// Get my center (coaching admin)
+router.get(
+  '/my-center',
+  authMiddleware,
+  roleMiddleware(2),
+  centerController.getMyCenter
+);
+
+// Get center by ID
+router.get(
+  '/:id',
+  authMiddleware,
+  centerController.getCenterById
+);
+
+// Super admin approves center
+router.put(
+  '/approve/:id',
+  authMiddleware,
+  roleMiddleware(1),
+  centerController.approveCenter
+);
+
+// Super admin rejects center
+router.put(
+  '/reject/:id',
+  authMiddleware,
+  roleMiddleware(1),
+  centerController.rejectCenter
+);
+
+// Super admin suspends center
+router.put(
+  '/suspend/:id',
+  authMiddleware,
+  roleMiddleware(1),
+  centerController.suspendCenter
+);
+
+// Coaching admin updates center
+router.put(
+  '/update/:id',
+  authMiddleware,
+  roleMiddleware(2),
+  centerController.updateCenter
+);
+
+module.exports = router;

@@ -8,10 +8,14 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Routes
 const authRoutes = require('./routes/authRoutes');
+const centerRoutes = require('./routes/centerRoutes');
+
 app.use('/api/auth', authRoutes);
+app.use('/api/center', centerRoutes);
 
 // Base route
 app.get('/', (req, res) => {
