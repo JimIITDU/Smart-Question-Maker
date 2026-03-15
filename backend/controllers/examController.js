@@ -212,27 +212,27 @@ const examController = {
   submitExam: async (req, res) => {
     try {
         // Check if already submitted
-const alreadySubmitted = await examModel.checkAlreadySubmitted(
-  exam_id,
-  req.user.user_id
-);
-
-if (alreadySubmitted) {
-  return res.status(400).json({
-    success: false,
-    message: 'You have already submitted this exam',
-  });
-}
-      const { answers } = req.body;
-      const exam_id = req.params.id;
-
-      const exam = await examModel.getExamById(exam_id);
-      if (!exam) {
-        return res.status(404).json({
-          success: false,
-          message: 'Exam not found',
-        });
-      }
+        const { answers } = req.body;
+        const exam_id = req.params.id;
+        
+        const exam = await examModel.getExamById(exam_id);
+        if (!exam) {
+            return res.status(404).json({
+                success: false,
+                message: 'Exam not found',
+            });
+        }
+        const alreadySubmitted = await examModel.checkAlreadySubmitted(
+          exam_id,
+          req.user.user_id
+        );
+        
+        if (alreadySubmitted) {
+          return res.status(400).json({
+            success: false,
+            message: 'You have already submitted this exam',
+          });
+        }
 
       let totalMarks = 0;
       let obtainedMarks = 0;
