@@ -228,3 +228,13 @@ CREATE TABLE notification (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
+
+--many to many relationship between exam questions and question bank
+CREATE TABLE exam_questions (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  exam_id INT NOT NULL,
+  question_id INT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (exam_id) REFERENCES quiz_exam(exam_id),
+  FOREIGN KEY (question_id) REFERENCES question_bank(question_id)
+);
