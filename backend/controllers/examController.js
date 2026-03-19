@@ -73,6 +73,19 @@ const examController = {
     }
   },
 
+  getAllExamsForStudent: async () => {
+    const [rows] = await db.query(
+      `SELECT quiz_exam.*, 
+       subjects.subject_name,
+       batch.batch_name
+       FROM quiz_exam
+       JOIN subjects ON quiz_exam.subject_id = subjects.subject_id
+       JOIN batch ON quiz_exam.batch_id = batch.batch_id
+       WHERE quiz_exam.status IN ('scheduled', 'ongoing')`
+    );
+    return rows;
+  },
+
   // Get exam by ID
   getExamById: async (req, res) => {
     try {

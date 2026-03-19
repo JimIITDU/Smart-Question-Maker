@@ -16,7 +16,7 @@ router.post(
 router.get(
   '/',
   authMiddleware,
-  roleMiddleware(2, 3),
+  roleMiddleware(2, 3, 5),
   examController.getAllExams
 );
 

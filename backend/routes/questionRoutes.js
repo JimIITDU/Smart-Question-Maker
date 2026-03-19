@@ -15,7 +15,7 @@ const roleMiddleware = require('../middleware/roleMiddleware');
 router.post(
   '/',
   authMiddleware,
-  roleMiddleware(2, 3),
+  roleMiddleware(2, 3, 5),
   questionController.createQuestion
 );
 
@@ -23,7 +23,7 @@ router.post(
 router.post(
   '/bulk',
   authMiddleware,
-  roleMiddleware(2, 3),
+  roleMiddleware(2, 3, 5),
   questionController.bulkCreateQuestions
 );
 
@@ -31,7 +31,7 @@ router.post(
 router.get(
   '/random',
   authMiddleware,
-  roleMiddleware(2, 3),
+  roleMiddleware(2, 3, 5),
   questionController.getRandomQuestions
 );
 
@@ -39,7 +39,7 @@ router.get(
 router.get(
   '/',
   authMiddleware,
-  roleMiddleware(2, 3),
+  roleMiddleware(2, 3, 5),
   questionController.getAllQuestions
 );
 
@@ -54,7 +54,7 @@ router.get(
 router.put(
   '/:id',
   authMiddleware,
-  roleMiddleware(2, 3),
+  roleMiddleware(2, 3, 5),
   questionController.updateQuestion
 );
 
@@ -62,7 +62,7 @@ router.put(
 router.delete(
   '/:id',
   authMiddleware,
-  roleMiddleware(2, 3),
+  roleMiddleware(2, 3, 5),
   questionController.deleteQuestion
 );
 
