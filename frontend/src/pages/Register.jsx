@@ -26,8 +26,8 @@ const Register = () => {
 
     try {
       const res = await register(formData)
-      // Save email for OTP verification
       localStorage.setItem('verify_email', formData.email)
+      alert(`Your OTP is: ${res.data.data.otp}`) // For testing purposes, show OTP in alert. In production, this should be sent via email.
       navigate('/verify-otp')
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed')
