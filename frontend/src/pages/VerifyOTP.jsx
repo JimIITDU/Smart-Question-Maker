@@ -5,6 +5,12 @@ import { verifyOTP } from '../services/api'
 const VerifyOTP = () => {
   const navigate = useNavigate()
   const email = localStorage.getItem('verify_email')
+  useEffect(() => {
+  // If no email in localStorage redirect to register
+  if (!email) {
+    navigate('/register')
+  }
+}, [])
 
   const [otp, setOtp] = useState('')
   const [error, setError] = useState('')

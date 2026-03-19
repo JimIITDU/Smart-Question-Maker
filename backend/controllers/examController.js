@@ -54,37 +54,27 @@ const examController = {
   },
 
   // Get all exams
-  getAllExams: async (req, res) => {
-    try {
-      const exams = await examModel.getAllExams(
-        req.user.user_id
-      );
-      res.status(200).json({
-        success: true,
-        count: exams.length,
-        data: exams,
-      });
-    } catch (error) {
-      res.status(500).json({
-        success: false,
-        message: 'Server error',
-        error: error.message,
-      });
+getAllExams: async (req, res) => {
+  try {
+    let exams;
+    if (req.user.role_id === 5) {
+      exams = await examModel.getAllExamsForStudent();
+    } else {
+      exams = await examModel.getAllExams(req.user.user_id);
     }
-  },
-
-  getAllExamsForStudent: async () => {
-    const [rows] = await db.query(
-      `SELECT quiz_exam.*, 
-       subjects.subject_name,
-       batch.batch_name
-       FROM quiz_exam
-       JOIN subjects ON quiz_exam.subject_id = subjects.subject_id
-       JOIN batch ON quiz_exam.batch_id = batch.batch_id
-       WHERE quiz_exam.status IN ('scheduled', 'ongoing')`
-    );
-    return rows;
-  },
+    res.status(200).json({
+      success: true,
+      count: exams.length,
+      data: exams,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: error.message,
+    });
+  }
+},
 
   // Get exam by ID
   getExamById: async (req, res) => {

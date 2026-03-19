@@ -119,7 +119,14 @@ const Notifications = () => {
                   </div>
                   <p className="text-gray-800">{n.message}</p>
                   <p className="text-xs text-gray-400 mt-1">
-                    {new Date(n.created_at).toLocaleString()}
+                   {new Date(n.created_at).toLocaleString('en-BD', {
+  timeZone: 'Asia/Dhaka',
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+})}
                   </p>
                 </div>
                 {n.status === 'unread' && (
