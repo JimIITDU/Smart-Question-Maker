@@ -3,6 +3,12 @@ import { Link, useNavigate } from 'react-router-dom'
 import { getAllExams, createExam, startExam, getAllQuestions } from '../services/api'
 import { useAuth } from '../context/AuthContext.jsx'
 
+// --- Icons ---
+const PlusIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+const PlayIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+const ClipboardIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+const ChartIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" x2="12" y1="20" y2="10"/><line x1="18" x2="18" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/></svg>
+
 const Exams = () => {
   const { user } = useAuth()
   const navigate = useNavigate()
@@ -87,182 +93,204 @@ const Exams = () => {
     }
   }
 
-  const getStatusColor = (status) => {
+  const getStatusInfo = (status) => {
     switch (status) {
-      case 'scheduled': return 'bg-yellow-100 text-yellow-600'
-      case 'ongoing': return 'bg-green-100 text-green-600'
-      case 'completed': return 'bg-gray-100 text-gray-600'
-      default: return 'bg-gray-100 text-gray-600'
+      case 'scheduled': return { color: 'bg-amber-500', text: 'text-amber-400', border: 'border-amber-500/20', label: 'Scheduled' }
+      case 'ongoing': return { color: 'bg-emerald-500', text: 'text-emerald-400', border: 'border-emerald-500/20', label: 'Ongoing' }
+      case 'completed': return { color: 'bg-gray-500', text: 'text-gray-400', border: 'border-gray-500/20', label: 'Completed' }
+      default: return { color: 'bg-gray-500', text: 'text-gray-400', border: 'border-gray-500/20', label: 'Unknown' }
     }
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-[#0B0C15] pb-20">
+      
+      {/* --- Ambient Background --- */}
+      <div className="fixed top-[-10%] left-[-10%] w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none"></div>
+      <div className="fixed bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-cyan-600/10 rounded-full blur-[120px] pointer-events-none"></div>
 
-      {/* Navbar */}
-      <nav className="bg-indigo-600 text-white px-6 py-4 flex justify-between items-center shadow-md">
-        <div className="flex items-center gap-3">
-          <div className="bg-white text-indigo-600 rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm">
-            SQ
+      {/* --- Navbar --- */}
+      <nav className="sticky top-0 z-50 border-b border-white/5 bg-[#0B0C15]/70 backdrop-blur-xl">
+        <div className="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
+          <Link
+            to="/dashboard"
+            className="flex items-center gap-3 text-gray-400 hover:text-white transition-colors"
+          >
+            <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-sm font-medium">Dashboard</span>
+              <span className="text-xs text-gray-600">Back</span>
+            </div>
+          </Link>
+
+          <div className="flex items-center gap-3">
+             <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center font-bold text-xs text-white">
+              SQ
+             </div>
           </div>
-          <span className="font-bold text-lg">Smart Question Maker</span>
         </div>
-        <Link
-          to="/dashboard"
-          className="bg-white text-indigo-600 px-4 py-1.5 rounded-lg text-sm font-semibold hover:bg-indigo-50 transition"
-        >
-          ← Dashboard
-        </Link>
       </nav>
 
-      <div className="max-w-6xl mx-auto p-6">
+      <main className="relative z-10 max-w-7xl mx-auto px-6 pt-8">
 
         {/* Header */}
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">Exams</h1>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
+          <div>
+            <h1 className="text-3xl font-bold text-white mb-2">
+              Exams <span className="text-indigo-400">Hub</span>
+            </h1>
+            <p className="text-gray-400 text-sm">Manage, schedule, and view exam results.</p>
+          </div>
           {(user?.role_id === 2 || user?.role_id === 3) && (
             <button
               onClick={() => setShowForm(!showForm)}
-              className="bg-indigo-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-indigo-700 transition"
+              className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${
+                showForm
+                  ? 'bg-white text-[#0B0C15] hover:bg-gray-200'
+                  : 'bg-gradient-to-r from-indigo-600 to-cyan-600 text-white shadow-lg shadow-indigo-900/40 hover:shadow-indigo-900/60 hover:scale-[1.02]'
+              }`}
             >
-              {showForm ? 'Cancel' : '+ Create Exam'}
+              <PlusIcon />
+              {showForm ? 'Cancel' : 'Create Exam'}
             </button>
           )}
         </div>
 
         {/* Messages */}
         {error && (
-          <div className="bg-red-50 text-red-600 px-4 py-3 rounded-lg mb-4">
+          <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 flex items-center gap-3 animate-in slide-in-from-top-4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
             {error}
           </div>
         )}
         {success && (
-          <div className="bg-green-50 text-green-600 px-4 py-3 rounded-lg mb-4">
+          <div className="mb-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center gap-3 animate-in slide-in-from-top-4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
             {success}
           </div>
         )}
 
-        {/* Create Exam Form */}
+        {/* Create Exam Form Drawer */}
         {showForm && (
-          <div className="bg-white rounded-2xl shadow p-6 mb-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">
-              Create New Exam
-            </h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Subject ID
-                  </label>
+          <div className="bg-[#13151f] border border-white/10 rounded-2xl p-8 mb-12 shadow-2xl animate-in fade-in slide-in-from-top-8 duration-500">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-bold text-white">Create New Exam</h2>
+              <div className="h-px flex-1 bg-white/10 mx-4"></div>
+            </div>
+            
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Subject ID</label>
                   <input
                     type="number"
                     name="subject_id"
                     value={formData.subject_id}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    placeholder="e.g. 101"
+                    className="w-full bg-[#0B0C15] border border-white/10 text-white text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Batch ID
-                  </label>
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Batch ID</label>
                   <input
                     type="number"
                     name="batch_id"
                     value={formData.batch_id}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    placeholder="e.g. 2023"
+                    className="w-full bg-[#0B0C15] border border-white/10 text-white text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Exam Type
-                  </label>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Type</label>
                   <select
                     name="exam_type"
                     value={formData.exam_type}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full bg-[#0B0C15] border border-white/10 text-white text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 appearance-none"
                   >
-                    <option value="regular">Regular</option>
-                    <option value="live_quiz">Live Quiz</option>
+                    <option value="regular" className="bg-[#0B0C15]">Regular</option>
+                    <option value="live_quiz" className="bg-[#0B0C15]">Live Quiz</option>
                   </select>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Start Time
-                  </label>
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Start Time</label>
                   <input
                     type="datetime-local"
                     name="start_time"
                     value={formData.start_time}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full bg-[#0B0C15] border border-white/10 text-white text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 [color-scheme:dark]"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    End Time
-                  </label>
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">End Time</label>
                   <input
                     type="datetime-local"
                     name="end_time"
                     value={formData.end_time}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full bg-[#0B0C15] border border-white/10 text-white text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 [color-scheme:dark]"
                   />
                 </div>
               </div>
 
-              {/* Select Questions */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Select Questions ({formData.question_ids.length} selected)
-                </label>
-                <div className="border border-gray-300 rounded-lg p-3 max-h-48 overflow-y-auto space-y-2">
-                  {questions.map((q) => (
-                    <div
-                      key={q.question_id}
-                      className={`p-2 rounded-lg cursor-pointer flex items-center gap-2 ${
-                        formData.question_ids.includes(q.question_id)
-                          ? 'bg-indigo-50 border border-indigo-300'
-                          : 'hover:bg-gray-50'
-                      }`}
-                      onClick={() => handleQuestionSelect(q.question_id)}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={formData.question_ids.includes(q.question_id)}
-                        onChange={() => {}}
-                        className="accent-indigo-600"
-                      />
-                      <span className="text-sm text-gray-700">
-                        {q.question_text.substring(0, 60)}...
-                      </span>
-                      <span className={`ml-auto px-2 py-0.5 rounded-full text-xs ${
-                        q.difficulty === 'easy'
-                          ? 'bg-green-100 text-green-600'
-                          : q.difficulty === 'medium'
-                          ? 'bg-yellow-100 text-yellow-600'
-                          : 'bg-red-100 text-red-600'
-                      }`}>
-                        {q.difficulty}
-                      </span>
-                    </div>
-                  ))}
+              {/* Questions Selector */}
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Select Questions</label>
+                  <span className="text-xs font-bold text-indigo-400 bg-indigo-500/10 px-2 py-1 rounded">
+                    {formData.question_ids.length} selected
+                  </span>
+                </div>
+                <div className="bg-[#0B0C15] border border-white/10 rounded-xl p-4 max-h-60 overflow-y-auto space-y-2 custom-scrollbar">
+                  {questions.length > 0 ? questions.map((q) => {
+                    const isSelected = formData.question_ids.includes(q.question_id)
+                    return (
+                      <div
+                        key={q.question_id}
+                        onClick={() => handleQuestionSelect(q.question_id)}
+                        className={`group p-3 rounded-lg cursor-pointer border transition-all duration-200 flex items-center justify-between ${
+                          isSelected 
+                            ? 'bg-indigo-500/10 border-indigo-500/50' 
+                            : 'hover:bg-white/5 border-white/5'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3 overflow-hidden">
+                          <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${isSelected ? 'bg-indigo-500 border-indigo-500' : 'border-gray-600'}`}>
+                            {isSelected && <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>}
+                          </div>
+                          <span className="text-sm text-gray-300 truncate w-full">
+                            {q.question_text.substring(0, 60)}...
+                          </span>
+                        </div>
+                        <span className={`ml-4 px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                            q.difficulty === 'easy' ? 'bg-emerald-500/10 text-emerald-400' :
+                            q.difficulty === 'medium' ? 'bg-amber-500/10 text-amber-400' : 'bg-rose-500/10 text-rose-400'
+                          }`}>
+                          {q.difficulty}
+                        </span>
+                      </div>
+                    )
+                  }) : (
+                    <p className="text-center text-gray-500 text-sm py-4">No questions found in bank.</p>
+                  )}
                 </div>
               </div>
 
               <button
                 type="submit"
-                className="w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 transition"
+                className="w-full bg-gradient-to-r from-indigo-600 to-cyan-600 text-white py-4 rounded-xl font-bold hover:shadow-lg hover:shadow-indigo-900/40 transition-all"
               >
                 Create Exam
               </button>
@@ -270,79 +298,92 @@ const Exams = () => {
           </div>
         )}
 
-        {/* Exams List */}
+        {/* Exams Grid */}
         {loading ? (
-          <div className="text-center py-10 text-gray-500">
-            Loading exams...
+          <div className="flex items-center justify-center py-20">
+            <div className="w-12 h-12 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin"></div>
           </div>
         ) : exams.length === 0 ? (
-          <div className="text-center py-10 text-gray-500">
-            No exams found.
+          <div className="text-center py-20 border border-dashed border-white/10 rounded-2xl bg-[#13151f]/50">
+            <p className="text-gray-500 text-lg">No exams scheduled at the moment.</p>
           </div>
         ) : (
-          <div className="space-y-4">
-            {exams.map((exam) => (
-              <div
-                key={exam.exam_id}
-                className="bg-white rounded-2xl shadow p-6"
-              >
-                <div className="flex justify-between items-start">
-                  <div>
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getStatusColor(exam.status)}`}>
-                        {exam.status}
-                      </span>
-                      <span className="px-2 py-1 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-600">
-                        {exam.exam_type}
-                      </span>
-                    </div>
-                    <h3 className="font-bold text-gray-800">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            {exams.map((exam) => {
+              const status = getStatusInfo(exam.status)
+              return (
+                <div
+                  key={exam.exam_id}
+                  className="group relative bg-[#13151f] border border-white/5 rounded-2xl p-6 hover:border-white/10 hover:shadow-[0_0_30px_-15px_rgba(99,102,241,0.15)] transition-all duration-300 flex flex-col h-full"
+                >
+                  {/* Status Dot Indicator */}
+                  <div className={`absolute top-0 right-0 mt-4 mr-4 w-2.5 h-2.5 rounded-full shadow-[0_0_10px_currentColor] ${status.color} ${status.text}`}></div>
+
+                  {/* Header */}
+                  <div className="flex items-start justify-between mb-4">
+                    <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${status.border} ${status.text}`}>
+                      {status.label}
+                    </span>
+                    <span className="px-3 py-1 rounded-full text-xs font-semibold bg-white/5 text-gray-300 border border-white/10">
+                      {exam.exam_type}
+                    </span>
+                  </div>
+
+                  {/* Content */}
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold text-white mb-2 group-hover:text-indigo-400 transition-colors">
                       {exam.subject_name}
                     </h3>
-                    <p className="text-sm text-gray-500 mt-1">
-                      Batch: {exam.batch_name}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      Start: {new Date(exam.start_time).toLocaleString()}
-                    </p>
-                    {exam.access_code && (
-                      <p className="text-sm font-semibold text-indigo-600 mt-1">
-                        Access Code: {exam.access_code}
-                      </p>
-                    )}
+                    
+                    <div className="space-y-2 mb-6">
+                      <div className="flex items-center gap-2 text-sm text-gray-400">
+                        <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" x2="20" y1="8" y2="14"/><line x1="23" x2="17" y1="11" y2="11"/></svg>
+                        {exam.batch_name}
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-gray-400">
+                        <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        {new Date(exam.start_time).toLocaleDateString()} at {new Date(exam.start_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                      </div>
+                      {exam.access_code && (
+                        <div className="mt-2 p-2 bg-white/5 rounded border border-white/5 text-center">
+                          <span className="text-xs text-gray-500 block uppercase tracking-wide">Access Code</span>
+                          <span className="text-lg font-mono text-indigo-400">{exam.access_code}</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex flex-col gap-2">
-                    {(user?.role_id === 2 || user?.role_id === 3) &&
-                      exam.status === 'scheduled' && (
-                        <button
-                          onClick={() => handleStartExam(exam.exam_id)}
-                          className="bg-green-500 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-green-600 transition"
-                        >
-                          Start Exam
-                        </button>
-                      )}
-                    {user?.role_id === 5 &&
-                      exam.status === 'ongoing' && (
-                        <button
-                          onClick={() => navigate(`/exams/${exam.exam_id}/take`)}
-                          className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-indigo-700 transition"
-                        >
-                          Take Exam
-                        </button>
-                      )}
+
+                  {/* Actions */}
+                  <div className="space-y-2 mt-auto pt-4 border-t border-white/5">
+                    {(user?.role_id === 2 || user?.role_id === 3) && exam.status === 'scheduled' && (
+                      <button
+                        onClick={() => handleStartExam(exam.exam_id)}
+                        className="w-full flex items-center justify-center gap-2 bg-emerald-600/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-600/20 py-2.5 rounded-xl font-semibold text-sm transition-all"
+                      >
+                        <PlayIcon /> Start Exam
+                      </button>
+                    )}
+                    {user?.role_id === 5 && exam.status === 'ongoing' && (
+                      <button
+                        onClick={() => navigate(`/exams/${exam.exam_id}/take`)}
+                        className="w-full flex items-center justify-center gap-2 bg-indigo-600 text-white hover:bg-indigo-500 py-2.5 rounded-xl font-semibold text-sm transition-all shadow-lg shadow-indigo-900/20"
+                      >
+                        <ClipboardIcon /> Take Exam
+                      </button>
+                    )}
                     <Link
                       to={`/results/${exam.exam_id}`}
-                      className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-200 transition text-center"
+                      className="w-full flex items-center justify-center gap-2 bg-white/5 text-gray-300 hover:text-white hover:bg-white/10 border border-white/5 py-2.5 rounded-xl font-semibold text-sm transition-all"
                     >
-                      View Results
+                      <ChartIcon /> View Results
                     </Link>
                   </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
-      </div>
+      </main>
     </div>
   )
 }

@@ -84,7 +84,7 @@ const authController = {
       }
 
       // Check if OTP is expired
-      if (new Date() > new Date(user.otp_expires_at)) {
+      if (Date.now() > new Date(user.otp_expires_at).getTime()) {
         return res.status(400).json({
           success: false,
           message: 'OTP has expired. Please register again.',
@@ -268,7 +268,7 @@ const authController = {
       }
 
       // Check expiry
-      if (new Date() > new Date(user.otp_expires_at)) {
+      if (Date.now() > new Date(user.otp_expires_at).getTime()) {
         return res.status(400).json({
           success: false,
           message: 'OTP has expired',
