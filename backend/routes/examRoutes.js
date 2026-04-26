@@ -65,13 +65,6 @@ router.get(
   examController.getResults
 );
 
-router.get(
-  '/:id/analytics',
-  authMiddleware,
-  roleMiddleware(2, 3),
-  examController.getAnalytics
-);
-
 // End exam (teacher)
 router.put(
   '/:id/end',

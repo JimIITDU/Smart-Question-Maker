@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { getAllQuestions, createQuestion, deleteQuestion } from '../services/api'
 import { useAuth } from '../context/AuthContext.jsx'
 
@@ -8,10 +8,8 @@ const PlusIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height
 const TrashIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
 const CheckCircle = () => <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
 
-
 const QuestionBank = () => {
   const { user } = useAuth()
-  const navigate = useNavigate()
   const [questions, setQuestions] = useState([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
@@ -142,18 +140,9 @@ const QuestionBank = () => {
             </h1>
             <p className="text-gray-400 text-sm">Create, manage, and review your question database.</p>
           </div>
-          <div className="flex items-center gap-3">
-            {(user?.role_id === 2 || user?.role_id === 3) && (
-              <button
-                onClick={() => navigate('/ai-generate')}
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-all"
-              >
-                ✨ Generate with AI
-              </button>
-            )}
-            {(user?.role_id === 2 || user?.role_id === 3) && (
-              <button
-                onClick={() => setShowForm(!showForm)}
+          {(user?.role_id === 2 || user?.role_id === 3) && (
+            <button
+              onClick={() => setShowForm(!showForm)}
               className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${
                 showForm
                   ? 'bg-white text-[#0B0C15] hover:bg-gray-200'
@@ -164,7 +153,6 @@ const QuestionBank = () => {
               {showForm ? 'Cancel' : 'Add Question'}
             </button>
           )}
-          </div>
         </div>
 
         {/* Messages */}

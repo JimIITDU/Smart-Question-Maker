@@ -53,7 +53,6 @@ export const getResults = (id) => API.get(`/exams/${id}/results`);
 export const joinExam = (data) => API.post('/exams/join', data);
 export const updateProfile = (data) => API.put('/auth/profile', data);
 export const changePassword = (data) => API.put('/auth/change-password', data);
-export const getExamAnalytics = (id) => API.get(`/exams/${id}/analytics`)
 
 
 // Notifications
@@ -61,6 +60,5 @@ export const getNotifications = () => API.get('/notifications');
 export const getUnreadNotifications = () => API.get('/notifications/unread');
 export const markAsRead = (id) => API.put(`/notifications/${id}/read`);
 export const markAllAsRead = () => API.put('/notifications/read-all');
-
 
 export default API;
