@@ -51,6 +51,39 @@ const examModel = {
   return rows;
 },
 
+getExamAnalytics: async (exam_id) => {
+  const [rows] = await db.query(
+    `SELECT 
+     COUNT(DISTINCT student_id) as total_students,
+     SUM(CASE WHEN result_status = 'pass' THEN 1 ELSE 0 END) as passed,
+     SUM(CASE WHEN result_status = 'fail' THEN 1 ELSE 0 END) as failed,
+     AVG(percentage) as avg_percentage,
+     MAX(percentage) as highest,
+     MIN(percentage) as lowest
+     FROM result_summary
+     WHERE exam_id = ?`,
+    [exam_id]
+  );
+  return rows[0];
+},
+
+getStudentResultsForExam: async (exam_id) => {
+  const [rows] = await db.query(
+    `SELECT 
+     users.name as student_name,
+     users.email,
+     SUM(result_summary.marks_obtained) as total_obtained,
+     COUNT(DISTINCT result_summary.question_id) as questions_attempted,
+     AVG(result_summary.marks_obtained) as avg_marks
+     FROM result_summary
+     JOIN users ON result_summary.student_id = users.user_id
+     WHERE result_summary.exam_id = ?
+     GROUP BY result_summary.student_id`,
+    [exam_id]
+  );
+  return rows;
+},
+
   getExamById: async (exam_id) => {
     const [rows] = await db.query(
       `SELECT quiz_exam.*, 
@@ -146,6 +179,39 @@ const examModel = {
     );
     return rows;
   },
+
+  getExamAnalytics: async (exam_id) => {
+  const [rows] = await db.query(
+    `SELECT 
+     COUNT(DISTINCT student_id) as total_students,
+     SUM(CASE WHEN result_status = 'pass' THEN 1 ELSE 0 END) as passed,
+     SUM(CASE WHEN result_status = 'fail' THEN 1 ELSE 0 END) as failed,
+     AVG(percentage) as avg_percentage,
+     MAX(percentage) as highest,
+     MIN(percentage) as lowest
+     FROM result_summary
+     WHERE exam_id = ?`,
+    [exam_id]
+  );
+  return rows[0];
+},
+
+getStudentResultsForExam: async (exam_id) => {
+  const [rows] = await db.query(
+    `SELECT 
+     users.name as student_name,
+     users.email,
+     SUM(result_summary.marks_obtained) as total_obtained,
+     COUNT(DISTINCT result_summary.question_id) as questions_attempted,
+     AVG(result_summary.marks_obtained) as avg_marks
+     FROM result_summary
+     JOIN users ON result_summary.student_id = users.user_id
+     WHERE result_summary.exam_id = ?
+     GROUP BY result_summary.student_id`,
+    [exam_id]
+  );
+  return rows;
+},
 
   // Calculate total marks
   calculateTotalMarks: async (exam_id, student_id) => {

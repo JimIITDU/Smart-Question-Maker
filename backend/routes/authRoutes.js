@@ -13,4 +13,18 @@ router.post('/reset-password', authController.resetPassword);
 // Protected routes (need JWT token)
 router.get('/me', authMiddleware, authController.getMe);
 
+// Update profile
+router.put(
+  '/profile',
+  authMiddleware,
+  authController.updateProfile
+);
+
+// Change password
+router.put(
+  '/change-password',
+  authMiddleware,
+  authController.changePassword
+);
+
 module.exports = router;

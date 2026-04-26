@@ -68,6 +68,25 @@ const userModel = {
     );
   },
 
+  updateProfile: async (user_id, profileData) => {
+  const {
+    name,
+    phone,
+    gender,
+    date_of_birth,
+    address,
+    bio,
+  } = profileData;
+
+  await db.query(
+    `UPDATE users 
+     SET name = ?, phone = ?, gender = ?,
+     date_of_birth = ?, address = ?, bio = ?
+     WHERE user_id = ?`,
+    [name, phone, gender, date_of_birth, address, bio, user_id]
+  );
+},
+
 };
 
 module.exports = userModel;

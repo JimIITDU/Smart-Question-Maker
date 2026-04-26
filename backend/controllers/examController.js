@@ -76,6 +76,31 @@ getAllExams: async (req, res) => {
   }
 },
 
+getAnalytics: async (req, res) => {
+  try {
+    const analytics = await examModel.getExamAnalytics(
+      req.params.id
+    );
+    const students = await examModel.getStudentResultsForExam(
+      req.params.id
+    );
+
+    res.status(200).json({
+      success: true,
+      data: {
+        analytics,
+        students,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: error.message,
+    });
+  }
+},
+
   // Get exam by ID
   getExamById: async (req, res) => {
     try {

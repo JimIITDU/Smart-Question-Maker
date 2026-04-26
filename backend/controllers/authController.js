@@ -246,6 +246,82 @@ const authController = {
     }
   },
 
+  // Update profile
+updateProfile: async (req, res) => {
+  try {
+    const {
+      name,
+      phone,
+      gender,
+      date_of_birth,
+      address,
+      bio,
+    } = req.body;
+
+    await userModel.updateProfile(req.user.user_id, {
+      name,
+      phone,
+      gender,
+      date_of_birth,
+      address,
+      bio,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Profile updated successfully',
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: error.message,
+    });
+  }
+},
+
+// Change password
+changePassword: async (req, res) => {
+  try {
+    const { current_password, new_password } = req.body;
+
+    const user = await userModel.findById(req.user.user_id);
+
+    // Check current password
+    const isMatch = await bcrypt.compare(
+      current_password,
+      user.password_hash
+    );
+
+    if (!isMatch) {
+      return res.status(400).json({
+        success: false,
+        message: 'Current password is incorrect',
+      });
+    }
+
+    // Hash new password
+    const salt = await bcrypt.genSalt(10);
+    const password_hash = await bcrypt.hash(new_password, salt);
+
+    await userModel.updatePassword(
+      req.user.user_id,
+      password_hash
+    );
+
+    res.status(200).json({
+      success: true,
+      message: 'Password changed successfully',
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: error.message,
+    });
+  }
+},
+
   // Reset password
   resetPassword: async (req, res) => {
     try {

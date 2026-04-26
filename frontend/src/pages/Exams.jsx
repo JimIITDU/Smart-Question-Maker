@@ -71,17 +71,20 @@ const Exams = () => {
   }
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setError('')
-    try {
-      await createExam(formData)
-      setSuccess('Exam created successfully!')
-      setShowForm(false)
-      fetchExams()
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to create exam')
-    }
+  e.preventDefault()
+  setError('')
+  console.log('Sending data:', formData) // add this
+  try {
+    const res = await createExam(formData)
+    console.log('Response:', res.data) // add this
+    setSuccess('Exam created successfully!')
+    setShowForm(false)
+    fetchExams()
+  } catch (err) {
+    console.log('Error:', err.response) // add this
+    setError(err.response?.data?.message || 'Failed to create exam')
   }
+}
 
   const handleStartExam = async (id) => {
     try {
@@ -136,27 +139,29 @@ const Exams = () => {
       <main className="relative z-10 max-w-7xl mx-auto px-6 pt-8">
 
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
-          <div>
-            <h1 className="text-3xl font-bold text-white mb-2">
-              Exams <span className="text-indigo-400">Hub</span>
-            </h1>
-            <p className="text-gray-400 text-sm">Manage, schedule, and view exam results.</p>
-          </div>
-          {(user?.role_id === 2 || user?.role_id === 3) && (
-            <button
-              onClick={() => setShowForm(!showForm)}
-              className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${
-                showForm
-                  ? 'bg-white text-[#0B0C15] hover:bg-gray-200'
-                  : 'bg-gradient-to-r from-indigo-600 to-cyan-600 text-white shadow-lg shadow-indigo-900/40 hover:shadow-indigo-900/60 hover:scale-[1.02]'
-              }`}
-            >
-              <PlusIcon />
-              {showForm ? 'Cancel' : 'Create Exam'}
-            </button>
-          )}
-        </div>
+<div className="flex justify-between items-center mb-6">
+  <h1 className="text-2xl font-bold text-gray-800">Exams</h1>
+  <div className="flex gap-2">
+    {/* Join quiz button for students */}
+    {user?.role_id === 5 && (
+      <Link
+        to="/join-quiz"
+        className="bg-green-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-600 transition"
+      >
+        🎯 Join Live Quiz
+      </Link>
+    )}
+    {/* Create exam for teachers */}
+    {(user?.role_id === 2 || user?.role_id === 3) && (
+      <button
+        onClick={() => setShowForm(!showForm)}
+        className="bg-indigo-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-indigo-700 transition"
+      >
+        {showForm ? 'Cancel' : '+ Create Exam'}
+      </button>
+    )}
+  </div>
+</div>
 
         {/* Messages */}
         {error && (
@@ -244,6 +249,16 @@ const Exams = () => {
                   />
                 </div>
               </div>
+
+              {/* Show access code for live quiz */}
+{exam.exam_type === 'live_quiz' && exam.access_code && (
+  <div className="mt-2 bg-indigo-50 rounded-lg p-2 text-center">
+    <p className="text-xs text-gray-500">Access Code</p>
+    <p className="text-2xl font-bold tracking-widest text-indigo-600">
+      {exam.access_code}
+    </p>
+  </div>
+)}
 
               {/* Questions Selector */}
               <div className="space-y-2">
