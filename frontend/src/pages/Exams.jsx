@@ -18,6 +18,8 @@ const Exams = () => {
   const [showForm, setShowForm] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  // NEW STATE: For the generated access code popup
+  const [generatedCode, setGeneratedCode] = useState('')
 
   const [formData, setFormData] = useState({
     subject_id: '',
@@ -71,29 +73,28 @@ const Exams = () => {
   }
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setError('')
-    console.log('Sending data:', formData)
-    try {
-      const res = await createExam(formData)
-      console.log('Response:', res.data)
-      setSuccess('Exam created successfully!')
-      setShowForm(false)
-      fetchExams()
-      // Reset form
+  e.preventDefault();
+  setError('');
+  try {
+    const res = await createExam(formData);
+    
+    // Capture the code from your backend response structure
+    if (res.data.success) {
+      setGeneratedCode(res.data.data.access_code); 
+      setSuccess('Exam created successfully!');
+      setShowForm(false);
+      fetchExams();
+      
+      // Reset form...
       setFormData({
-        subject_id: '',
-        batch_id: '',
-        exam_type: 'regular',
-        start_time: '',
-        end_time: '',
-        question_ids: [],
-      })
-    } catch (err) {
-      console.log('Error:', err.response)
-      setError(err.response?.data?.message || 'Failed to create exam')
+        subject_id: '', batch_id: '', exam_type: 'regular',
+        start_time: '', end_time: '', question_ids: [],
+      });
     }
+  } catch (err) {
+    setError(err.response?.data?.message || 'Failed to create exam');
   }
+};
 
   const handleStartExam = async (id) => {
     try {
@@ -116,6 +117,44 @@ const Exams = () => {
 
   return (
     <div className="min-h-screen bg-[#0B0C15] pb-20">
+
+      {/* --- Success Modal for Access Code --- */}
+{generatedCode && (
+  <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-[#0B0C15]/80 backdrop-blur-sm animate-in fade-in duration-300">
+    <div className="bg-[#13151f] border border-indigo-500/30 rounded-3xl p-8 max-w-md w-full shadow-[0_0_50px_-12px_rgba(79,70,229,0.5)] text-center">
+      <div className="w-16 h-16 bg-emerald-500/20 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <h2 className="text-2xl font-bold text-white mb-2">Exam Created!</h2>
+      <p className="text-gray-400 mb-6">Share this access code with your students to let them join the live quiz.</p>
+      
+      <div className="bg-[#0B0C15] border border-white/10 rounded-2xl p-6 mb-6 group relative">
+        <span className="text-[10px] uppercase tracking-[0.2em] text-gray-500 block mb-2">Access Code</span>
+        <div className="text-4xl font-mono font-black text-indigo-400 tracking-widest uppercase">
+          {generatedCode}
+        </div>
+      </div>
+
+      <div className="flex gap-3">
+        <button 
+          onClick={() => {
+            navigator.clipboard.writeText(generatedCode);
+            setSuccess('Code copied to clipboard!');
+          }}
+          className="flex-1 bg-white/5 hover:bg-white/10 text-white py-3 rounded-xl font-semibold transition-all border border-white/10"
+        >
+          Copy Code
+        </button>
+        <button 
+          onClick={() => setGeneratedCode('')}
+          className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-xl font-semibold transition-all shadow-lg shadow-indigo-600/20"
+        >
+          Done
+        </button>
+      </div>
+    </div>
+  </div>
+)}
       
       {/* --- Ambient Background --- */}
       <div className="fixed top-[-10%] left-[-10%] w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none"></div>
