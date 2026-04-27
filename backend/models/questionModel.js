@@ -2,145 +2,109 @@ const db = require('../config/db');
 
 const questionModel = {
 
-  createQuestion: async (questionData) => {
+  createQuestion: async (data) => {
     const {
-      subject_id,
-      course_id,
-      question_text,
-      question_type,
-      difficulty,
-      expected_answer,
-      max_marks,
-      option_text_a,
-      option_text_b,
-      option_text_c,
-      option_text_d,
-      correct_option,
-      created_by,
-      source,
-    } = questionData;
-
-    const [result] = await db.query(
-      `INSERT INTO question_bank 
-       (subject_id, course_id, question_text, question_type,
-       difficulty, expected_answer, max_marks, option_text_a,
-       option_text_b, option_text_c, option_text_d, 
-       correct_option, created_by, source) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [subject_id, course_id, question_text, question_type,
-       difficulty, expected_answer, max_marks, option_text_a,
-       option_text_b, option_text_c, option_text_d,
-       correct_option, created_by, source]
+      subject_id, course_id, question_text, question_type,
+      difficulty, expected_answer, max_marks,
+      option_text_a, option_text_b, option_text_c, option_text_d,
+      correct_option, created_by, source,
+    } = data;
+    const result = await db.query(
+      `INSERT INTO question_bank
+       (subject_id, course_id, question_text, question_type, difficulty,
+        expected_answer, max_marks, option_text_a, option_text_b,
+        option_text_c, option_text_d, correct_option, created_by, source)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+       RETURNING question_id`,
+      [subject_id, course_id, question_text, question_type, difficulty,
+       expected_answer, max_marks, option_text_a, option_text_b,
+       option_text_c, option_text_d, correct_option, created_by, source]
     );
-    return result.insertId;
+    return result.rows[0].question_id;
   },
 
   getAllQuestions: async (filters) => {
-    const { subject_id, course_id, difficulty, question_type } = filters;
-    
-    let query = `
-      SELECT question_bank.*, 
-       subjects.subject_name,
-       users.name as created_by_name
-       FROM question_bank
-       JOIN subjects ON question_bank.subject_id = subjects.subject_id
-       JOIN users ON question_bank.created_by = users.user_id
-       WHERE 1=1
-    `;
-    
-    const params = [];
-
-    if (subject_id) {
-      query += ` AND question_bank.subject_id = ?`;
-      params.push(subject_id);
+    let query = 'SELECT * FROM question_bank WHERE 1=1';
+    const values = [];
+    let i = 1;
+    if (filters.subject_id) {
+      query += ` AND subject_id = $${i++}`;
+      values.push(filters.subject_id);
     }
-    if (course_id) {
-      query += ` AND question_bank.course_id = ?`;
-      params.push(course_id);
+    if (filters.course_id) {
+      query += ` AND course_id = $${i++}`;
+      values.push(filters.course_id);
     }
-    if (difficulty) {
-      query += ` AND question_bank.difficulty = ?`;
-      params.push(difficulty);
+    if (filters.difficulty) {
+      query += ` AND difficulty = $${i++}`;
+      values.push(filters.difficulty);
     }
-    if (question_type) {
-      query += ` AND question_bank.question_type = ?`;
-      params.push(question_type);
+    if (filters.question_type) {
+      query += ` AND question_type = $${i++}`;
+      values.push(filters.question_type);
     }
-
-    const [rows] = await db.query(query, params);
-    return rows;
+    query += ' ORDER BY created_at DESC';
+    const result = await db.query(query, values);
+    return result.rows;
   },
 
-  getQuestionById: async (question_id) => {
-    const [rows] = await db.query(
-      `SELECT question_bank.*, 
-       subjects.subject_name,
-       users.name as created_by_name
-       FROM question_bank
-       JOIN subjects ON question_bank.subject_id = subjects.subject_id
-       JOIN users ON question_bank.created_by = users.user_id
-       WHERE question_bank.question_id = ?`,
-      [question_id]
+  getQuestionById: async (id) => {
+    const result = await db.query(
+      'SELECT * FROM question_bank WHERE question_id = $1', [id]
     );
-    return rows[0];
+    return result.rows[0];
   },
 
-  updateQuestion: async (question_id, questionData) => {
+  updateQuestion: async (id, data) => {
     const {
-      question_text,
-      question_type,
-      difficulty,
-      expected_answer,
-      max_marks,
-      option_text_a,
-      option_text_b,
-      option_text_c,
-      option_text_d,
-      correct_option,
-    } = questionData;
-
+      question_text, question_type, difficulty, expected_answer,
+      max_marks, option_text_a, option_text_b,
+      option_text_c, option_text_d, correct_option,
+    } = data;
     await db.query(
-      `UPDATE question_bank 
-       SET question_text = ?, question_type = ?,
-       difficulty = ?, expected_answer = ?,
-       max_marks = ?, option_text_a = ?,
-       option_text_b = ?, option_text_c = ?,
-       option_text_d = ?, correct_option = ?
-       WHERE question_id = ?`,
-      [question_text, question_type, difficulty,
-       expected_answer, max_marks, option_text_a,
-       option_text_b, option_text_c, option_text_d,
-       correct_option, question_id]
+      `UPDATE question_bank
+       SET question_text=$1, question_type=$2, difficulty=$3,
+           expected_answer=$4, max_marks=$5, option_text_a=$6,
+           option_text_b=$7, option_text_c=$8, option_text_d=$9,
+           correct_option=$10
+       WHERE question_id=$11`,
+      [question_text, question_type, difficulty, expected_answer,
+       max_marks, option_text_a, option_text_b,
+       option_text_c, option_text_d, correct_option, id]
     );
   },
 
-  deleteQuestion: async (question_id) => {
+  deleteQuestion: async (id) => {
     await db.query(
-      `DELETE FROM question_bank 
-       WHERE question_id = ?`,
-      [question_id]
+      'DELETE FROM question_bank WHERE question_id = $1', [id]
     );
   },
 
   bulkCreateQuestions: async (questions) => {
-    const results = [];
-    for (const question of questions) {
-      const id = await questionModel.createQuestion(question);
-      results.push(id);
+    const ids = [];
+    for (const q of questions) {
+      const id = await questionModel.createQuestion(q);
+      ids.push(id);
     }
-    return results;
+    return ids;
   },
 
   getRandomQuestions: async (subject_id, difficulty, limit) => {
-    const [rows] = await db.query(
-      `SELECT * FROM question_bank
-       WHERE subject_id = ?
-       AND difficulty = ?
-       ORDER BY RAND()
-       LIMIT ?`,
-      [subject_id, difficulty, limit]
-    );
-    return rows;
+    let query = 'SELECT * FROM question_bank WHERE 1=1';
+    const values = [];
+    let i = 1;
+    if (subject_id) {
+      query += ` AND subject_id = $${i++}`;
+      values.push(subject_id);
+    }
+    if (difficulty) {
+      query += ` AND difficulty = $${i++}`;
+      values.push(difficulty);
+    }
+    query += ` ORDER BY RANDOM() LIMIT $${i}`;
+    values.push(limit);
+    const result = await db.query(query, values);
+    return result.rows;
   },
 
 };
