@@ -2,8 +2,6 @@ const examModel = require('../models/examModel');
 const questionModel = require('../models/questionModel');
 
 const examController = {
-
-  // Create exam
   createExam: async (req, res) => {
     try {
       const {
@@ -15,40 +13,54 @@ const examController = {
         question_ids,
       } = req.body;
 
-      // Generate access code for live quiz
-      const access_code = Math.random()
-        .toString(36)
-        .substring(2, 8)
-        .toUpperCase();
+      // 1. Convert '2026-04-27T23:32' to '2026-04-27 23:32:00'
+      const formattedStart = start_time ? start_time.replace('T', ' ') : null;
+      const formattedEnd = end_time ? end_time.replace('T', ' ') : null;
 
+      // 2. Access Code
+      const access_code = Math.random().toString(36).substring(2, 8).toUpperCase();
+
+      // 3. User ID Check (Safety for different middleware setups)
+      const host_teacher_id = req.user?.user_id || req.user?.id;
+
+      if (!host_teacher_id) {
+        return res.status(401).json({ success: false, message: "User not authenticated" });
+      }
+
+      // 4. Create the Exam
       const examId = await examModel.createExam({
         subject_id,
         batch_id,
         exam_type,
-        host_teacher_id: req.user.user_id,
-        start_time,
-        end_time,
+        host_teacher_id,
+        start_time: formattedStart,
+        end_time: formattedEnd,
         access_code,
       });
 
-      // Add questions to exam
-      if (question_ids && question_ids.length > 0) {
+      // 5. Add Questions
+      if (Array.isArray(question_ids) && question_ids.length > 0) {
         await examModel.addQuestionsToExam(examId, question_ids);
       }
 
       res.status(201).json({
         success: true,
         message: 'Exam created successfully',
-        data: {
-          exam_id: examId,
-          access_code,
-        },
+        data: { exam_id: examId, access_code },
       });
+
     } catch (error) {
+      // THIS PRINTS THE REAL ERROR IN YOUR TERMINAL
+      console.error("--- BACKEND CRASH LOG ---");
+      console.error(error); 
+      
+      // THIS SENDS THE REAL ERROR TO YOUR BROWSER
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: 'Database Error',
         error: error.message,
+        sqlMessage: error.sqlMessage, // Specific MySQL error
+        hint: "Check if subject_id 102 and batch_id 201 exist in your DB"
       });
     }
   },
