@@ -71,20 +71,29 @@ const Exams = () => {
   }
 
   const handleSubmit = async (e) => {
-  e.preventDefault()
-  setError('')
-  console.log('Sending data:', formData) // add this
-  try {
-    const res = await createExam(formData)
-    console.log('Response:', res.data) // add this
-    setSuccess('Exam created successfully!')
-    setShowForm(false)
-    fetchExams()
-  } catch (err) {
-    console.log('Error:', err.response) // add this
-    setError(err.response?.data?.message || 'Failed to create exam')
+    e.preventDefault()
+    setError('')
+    console.log('Sending data:', formData)
+    try {
+      const res = await createExam(formData)
+      console.log('Response:', res.data)
+      setSuccess('Exam created successfully!')
+      setShowForm(false)
+      fetchExams()
+      // Reset form
+      setFormData({
+        subject_id: '',
+        batch_id: '',
+        exam_type: 'regular',
+        start_time: '',
+        end_time: '',
+        question_ids: [],
+      })
+    } catch (err) {
+      console.log('Error:', err.response)
+      setError(err.response?.data?.message || 'Failed to create exam')
+    }
   }
-}
 
   const handleStartExam = async (id) => {
     try {
@@ -139,29 +148,27 @@ const Exams = () => {
       <main className="relative z-10 max-w-7xl mx-auto px-6 pt-8">
 
         {/* Header */}
-<div className="flex justify-between items-center mb-6">
-  <h1 className="text-2xl font-bold text-gray-800">Exams</h1>
-  <div className="flex gap-2">
-    {/* Join quiz button for students */}
-    {user?.role_id === 5 && (
-      <Link
-        to="/join-quiz"
-        className="bg-green-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-600 transition"
-      >
-        🎯 Join Live Quiz
-      </Link>
-    )}
-    {/* Create exam for teachers */}
-    {(user?.role_id === 2 || user?.role_id === 3) && (
-      <button
-        onClick={() => setShowForm(!showForm)}
-        className="bg-indigo-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-indigo-700 transition"
-      >
-        {showForm ? 'Cancel' : '+ Create Exam'}
-      </button>
-    )}
-  </div>
-</div>
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold text-gray-800">Exams</h1>
+          <div className="flex gap-2">
+            {user?.role_id === 5 && (
+              <Link
+                to="/join-quiz"
+                className="bg-green-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-600 transition"
+              >
+                🎯 Join Live Quiz
+              </Link>
+            )}
+            {(user?.role_id === 2 || user?.role_id === 3) && (
+              <button
+                onClick={() => setShowForm(!showForm)}
+                className="bg-indigo-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-indigo-700 transition"
+              >
+                {showForm ? 'Cancel' : '+ Create Exam'}
+              </button>
+            )}
+          </div>
+        </div>
 
         {/* Messages */}
         {error && (
@@ -250,15 +257,14 @@ const Exams = () => {
                 </div>
               </div>
 
-              {/* Show access code for live quiz */}
-{exam.exam_type === 'live_quiz' && exam.access_code && (
-  <div className="mt-2 bg-indigo-50 rounded-lg p-2 text-center">
-    <p className="text-xs text-gray-500">Access Code</p>
-    <p className="text-2xl font-bold tracking-widest text-indigo-600">
-      {exam.access_code}
-    </p>
-  </div>
-)}
+              {/* ✅ FIXED: Removed invalid {exam.exam_type} reference */}
+              {formData.exam_type === 'live_quiz' && (
+                <div className="mt-4 p-4 bg-indigo-500/10 border border-indigo-500/20 rounded-xl text-center">
+                  <p className="text-sm text-indigo-400">
+                    Live Quiz mode selected. An access code will be generated after creation.
+                  </p>
+                </div>
+              )}
 
               {/* Questions Selector */}
               <div className="space-y-2">
@@ -332,7 +338,7 @@ const Exams = () => {
                   className="group relative bg-[#13151f] border border-white/5 rounded-2xl p-6 hover:border-white/10 hover:shadow-[0_0_30px_-15px_rgba(99,102,241,0.15)] transition-all duration-300 flex flex-col h-full"
                 >
                   {/* Status Dot Indicator */}
-                  <div className={`absolute top-0 right-0 mt-4 mr-4 w-2.5 h-2.5 rounded-full shadow-[0_0_10px_currentColor] ${status.color} ${status.text}`}></div>
+                  <div className={`absolute top-0 right-0 mt-4 mr-4 w-2.5 h-2.5 rounded-full shadow-[0_0_10px_currentColor] ${status.color}`}></div>
 
                   {/* Header */}
                   <div className="flex items-start justify-between mb-4">
@@ -347,7 +353,7 @@ const Exams = () => {
                   {/* Content */}
                   <div className="flex-1">
                     <h3 className="text-xl font-bold text-white mb-2 group-hover:text-indigo-400 transition-colors">
-                      {exam.subject_name}
+                      {exam.subject_name || 'Untitled Exam'}
                     </h3>
                     
                     <div className="space-y-2 mb-6">
@@ -357,7 +363,7 @@ const Exams = () => {
                       </div>
                       <div className="flex items-center gap-2 text-sm text-gray-400">
                         <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                        {new Date(exam.start_time).toLocaleDateString()} at {new Date(exam.start_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                        {new Date(exam.start_time).toLocaleDateString()} at {new Date(exam.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </div>
                       {exam.access_code && (
                         <div className="mt-2 p-2 bg-white/5 rounded border border-white/5 text-center">
