@@ -19,35 +19,53 @@ const examModel = {
     return result.rows[0].exam_id;
   },
 
-  getExamById: async (id) => {
+  getAllExams: async (teacher_id) => {
     const result = await db.query(
-      'SELECT * FROM quiz_exam WHERE exam_id = $1', [id]
-    );
-    return result.rows[0];
-  },
-
-  getExamsByBatch: async (batch_id) => {
-    const result = await db.query(
-      `SELECT * FROM quiz_exam WHERE batch_id = $1
-       ORDER BY start_time DESC`,
-      [batch_id]
+      `SELECT * FROM quiz_exam WHERE host_teacher_id = $1
+       ORDER BY created_at DESC`,
+      [teacher_id]
     );
     return result.rows;
   },
 
+  getAllExamsForStudent: async () => {
+    const result = await db.query(
+      `SELECT * FROM quiz_exam WHERE status != 'completed'
+       ORDER BY start_time ASC`
+    );
+    return result.rows;
+  },
+
+  getExamById: async (id) => {
+    const result = await db.query(
+      `SELECT * FROM quiz_exam WHERE exam_id = $1`, [id]
+    );
+    return result.rows[0];
+  },
+
+  getExamByAccessCode: async (access_code) => {
+    const result = await db.query(
+      `SELECT * FROM quiz_exam WHERE access_code = $1`,
+      [access_code]
+    );
+    return result.rows[0];
+  },
+
   updateExamStatus: async (exam_id, status) => {
     await db.query(
-      'UPDATE quiz_exam SET status = $1 WHERE exam_id = $2',
+      `UPDATE quiz_exam SET status = $1 WHERE exam_id = $2`,
       [status, exam_id]
     );
   },
 
-  addQuestionToExam: async (exam_id, question_id) => {
-    await db.query(
-      `INSERT INTO exam_questions (exam_id, question_id)
-       VALUES ($1, $2) ON CONFLICT DO NOTHING`,
-      [exam_id, question_id]
-    );
+  addQuestionsToExam: async (exam_id, question_ids) => {
+    for (const question_id of question_ids) {
+      await db.query(
+        `INSERT INTO exam_questions (exam_id, question_id)
+         VALUES ($1, $2) ON CONFLICT DO NOTHING`,
+        [exam_id, question_id]
+      );
+    }
   },
 
   getExamQuestions: async (exam_id) => {
@@ -60,24 +78,34 @@ const examModel = {
     return result.rows;
   },
 
+  checkAlreadySubmitted: async (exam_id, student_id) => {
+    const result = await db.query(
+      `SELECT COUNT(*) FROM result_summary
+       WHERE exam_id = $1 AND student_id = $2
+       AND answer_status = 'submitted'`,
+      [exam_id, student_id]
+    );
+    return parseInt(result.rows[0].count) > 0;
+  },
+
   submitAnswer: async (data) => {
     const {
       exam_id, student_id, question_id,
-      descriptive_answer, marks_obtained, answer_status,
+      descriptive_answer, marks_obtained, evaluated_by,
     } = data;
     const result = await db.query(
       `INSERT INTO result_summary
        (exam_id, student_id, question_id, descriptive_answer,
-        marks_obtained, answer_status, answered_at)
-       VALUES ($1,$2,$3,$4,$5,$6, NOW())
+        marks_obtained, evaluated_by, answer_status, answered_at)
+       VALUES ($1,$2,$3,$4,$5,$6,'submitted', NOW())
        RETURNING result_id`,
       [exam_id, student_id, question_id, descriptive_answer,
-       marks_obtained, answer_status]
+       marks_obtained, evaluated_by]
     );
     return result.rows[0].result_id;
   },
 
-  getResultByStudent: async (exam_id, student_id) => {
+  getStudentResults: async (exam_id, student_id) => {
     const result = await db.query(
       `SELECT rs.*, qb.question_text, qb.correct_option, qb.max_marks
        FROM result_summary rs
@@ -86,6 +114,19 @@ const examModel = {
       [exam_id, student_id]
     );
     return result.rows;
+  },
+
+  calculateTotalMarks: async (exam_id, student_id) => {
+    const result = await db.query(
+      `SELECT
+         SUM(qb.max_marks) as total_marks,
+         SUM(rs.marks_obtained) as obtained_marks
+       FROM result_summary rs
+       JOIN question_bank qb ON rs.question_id = qb.question_id
+       WHERE rs.exam_id = $1 AND rs.student_id = $2`,
+      [exam_id, student_id]
+    );
+    return result.rows[0];
   },
 
 };

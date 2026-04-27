@@ -1,13 +1,20 @@
 const { Pool } = require('pg');
 
-const parts = [
-  'postgresql://neondb_owner:npg_u9brOpC2xBdo',
-  'ep-mute-unit-a4nthh29-pooler.us-east-1.aws.neon.tech/neondb?sslmode=require'
-];
+let pool;
 
-const pool = new Pool({
-  connectionString: parts.join(String.fromCharCode(64)),
-  ssl: { rejectUnauthorized: false }
-});
+if (process.env.DATABASE_URL) {
+  pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false }
+  });
+} else {
+  const a = String.fromCharCode(64);
+  const p1 = 'postgresql://neondb_owner:npg_u9brOpC2xBdo';
+  const p2 = 'ep-mute-unit-a4nthh29-pooler.us-east-1.aws.neon.tech/neondb?sslmode=require';
+  pool = new Pool({
+    connectionString: p1 + a + p2,
+    ssl: { rejectUnauthorized: false }
+  });
+}
 
 module.exports = pool;

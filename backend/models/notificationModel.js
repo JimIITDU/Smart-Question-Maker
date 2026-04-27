@@ -12,7 +12,17 @@ const notificationModel = {
     return result.rows[0].notification_id;
   },
 
-  getNotificationsByUser: async (user_id) => {
+  createBulkNotifications: async (user_ids, message, type) => {
+    for (const user_id of user_ids) {
+      await db.query(
+        `INSERT INTO notification (user_id, message, type)
+         VALUES ($1, $2, $3)`,
+        [user_id, message, type]
+      );
+    }
+  },
+
+  getNotificationsByUserId: async (user_id) => {
     const result = await db.query(
       `SELECT * FROM notification WHERE user_id = $1
        ORDER BY created_at DESC`,
@@ -21,11 +31,29 @@ const notificationModel = {
     return result.rows;
   },
 
-  markAsRead: async (notification_id) => {
+  getUnreadNotifications: async (user_id) => {
+    const result = await db.query(
+      `SELECT * FROM notification
+       WHERE user_id = $1 AND status = 'unread'
+       ORDER BY created_at DESC`,
+      [user_id]
+    );
+    return result.rows;
+  },
+
+  getNotificationById: async (id) => {
+    const result = await db.query(
+      `SELECT * FROM notification WHERE notification_id = $1`,
+      [id]
+    );
+    return result.rows[0];
+  },
+
+  markAsRead: async (id) => {
     await db.query(
       `UPDATE notification SET status = 'read'
        WHERE notification_id = $1`,
-      [notification_id]
+      [id]
     );
   },
 
@@ -34,6 +62,13 @@ const notificationModel = {
       `UPDATE notification SET status = 'read'
        WHERE user_id = $1`,
       [user_id]
+    );
+  },
+
+  deleteNotification: async (id) => {
+    await db.query(
+      `DELETE FROM notification WHERE notification_id = $1`,
+      [id]
     );
   },
 
