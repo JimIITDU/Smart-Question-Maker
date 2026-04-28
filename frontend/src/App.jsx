@@ -1,7 +1,7 @@
 import React from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './context/AuthContext.jsx'
-import HomePage from './pages/Homepage.jsx'
+// import HomePage from './pages/Homepage.jsx'
 
 import Login from './pages/Login.jsx'
 import Register from './pages/Register.jsx'
@@ -63,7 +63,7 @@ function App() {
         } />
 
         {/* Default */}
-        <Route path="/" element={<HomePage />} />
+        <Route path="/" element={<Login />} />
       </Routes>
     </BrowserRouter>
   )
