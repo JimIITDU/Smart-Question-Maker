@@ -1,11 +1,44 @@
-﻿import React from 'react';
+﻿import React from 'react'
+import { Link } from 'react-router-dom'
+import { FiArrowLeft, FiUsers, FiUserPlus } from 'react-icons/fi'
 
 const ManageUsers = () => {
   return (
-    <div className="p-4">
-      <h1>ManageUsers Placeholder</h1>
-    </div>
-  );
-};
+    <div className="min-h-screen bg-[#030712] text-white">
+      <nav className="fixed top-0 w-full z-50 border-b border-white/5 bg-[#030712]/70 backdrop-blur-xl">
+        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center gap-4">
+          <Link to="/admin" className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
+            <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center"><FiArrowLeft /></div>
+            <span className="text-sm">Dashboard</span>
+          </Link>
+          <h1 className="text-lg font-bold text-white">Manage Users</h1>
+        </div>
+      </nav>
 
-export default ManageUsers;
+      <main className="max-w-7xl mx-auto px-6 pt-28 pb-20">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-white mb-2">Manage <span className="text-indigo-400">Users</span></h1>
+          <p className="text-gray-400">Manage all users in your coaching center</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          {[
+            { label: 'Teachers', path: '/admin/teachers', icon: FiUserPlus, color: 'from-amber-500 to-orange-500', desc: 'Manage teacher accounts' },
+            { label: 'Staff', path: '/admin/staff', icon: FiUsers, color: 'from-rose-500 to-pink-500', desc: 'Manage staff accounts' },
+            { label: 'Students', path: '/admin/students', icon: FiUsers, color: 'from-emerald-500 to-teal-500', desc: 'Manage student enrollment' },
+          ].map((item, i) => (
+            <Link key={i} to={item.path} className="group bg-white/5 border border-white/5 hover:border-white/10 rounded-2xl p-6 transition-all hover:-translate-y-1">
+              <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${item.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
+                <item.icon className="text-white text-xl" />
+              </div>
+              <h3 className="text-white font-bold mb-1">{item.label}</h3>
+              <p className="text-gray-500 text-sm">{item.desc}</p>
+            </Link>
+          ))}
+        </div>
+      </main>
+    </div>
+  )
+}
+
+export default ManageUsers
