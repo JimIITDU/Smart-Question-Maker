@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useLocation, Link } from 'react-router-dom'
-import { getResults } from '../services/api'
+import { getResults } from '../../services/api'
 
 // --- Icons ---
 const ArrowLeft = () => (

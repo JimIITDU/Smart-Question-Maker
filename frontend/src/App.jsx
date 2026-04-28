@@ -7,13 +7,13 @@ import Login from './pages/Auth/Login.jsx'
 import Register from './pages/Auth/Register.jsx'
 import VerifyOTP from './pages/Auth/VerifyOTP.jsx'
 import Dashboard from './pages/Dashboard.jsx'
-import QuestionBank from './pages/QuestionBank.jsx'
-import Exams from './pages/Exams.jsx'
-import TakeExam from './pages/TakeExam.jsx'
-import Results from './pages/Results.jsx'
+import QuestionBank from './pages/Teacher/QuestionBank.jsx'
+import Exams from './pages/Student/Exams.jsx'
+import TakeExam from './pages/Student/TakeExam.jsx'
+import Results from './pages/Student/Results.jsx'
 import Notifications from './pages/Notifications.jsx'
 import Profile from './pages/Profile.jsx'
-import JoinQuiz from './pages/JoinQuiz.jsx'
+import JoinQuiz from './pages/Student/JoinQuiz.jsx'
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth()

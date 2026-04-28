@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { getExamById, getExamQuestions, submitExam } from '../services/api'
+import { getExamById, getExamQuestions, submitExam } from '../../services/api'
 
 // --- Icons ---
 const ClockIcon = () => (

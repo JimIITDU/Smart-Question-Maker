@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { joinExam } from '../services/api'
+import { joinExam } from '../../services/api'
 
 // --- Icons ---
 const TargetIcon = () => (
