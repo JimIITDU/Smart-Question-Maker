@@ -140,7 +140,6 @@ function App() {
               <Route path="/teacher/analytics" element={<Analytics />} />
               <Route path="/teacher/upload-material" element={<UploadMaterial />} />
             </Route>
-
             {/* -------------------- STUDENT (role_id: 5) -------------------- */}
             <Route element={<RoleBasedRoute allowedRoles={[5]} />}>
               <Route path="/student" element={<StudentDashboard />} />
@@ -151,6 +150,7 @@ function App() {
               <Route path="/student/study-materials" element={<StudyMaterials />} />
               <Route path="/student/join-quiz" element={<JoinQuiz />} />
             </Route>
+
 
             {/* -------------------- PARENT (role_id: 6) -------------------- */}
             <Route element={<RoleBasedRoute allowedRoles={[6]} />}>
