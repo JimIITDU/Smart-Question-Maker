@@ -1,8 +1,8 @@
 import React from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './context/AuthContext.jsx'
-// import HomePage from './pages/Homepage.jsx'
 
+import HomePage from './pages/HomePage.jsx'
 import Login from './pages/Login.jsx'
 import Register from './pages/Register.jsx'
 import VerifyOTP from './pages/VerifyOTP.jsx'
@@ -63,7 +63,7 @@ function App() {
         } />
 
         {/* Default */}
-        <Route path="/" element={<Login />} />
+        <Route path="/" element={<HomePage />} />
       </Routes>
     </BrowserRouter>
   )
