@@ -32,15 +32,15 @@ const CoachingAdminDashboard = () => {
   }, [])
 
   const menuItems = [
-    { label: 'Apply for Center', path: '/admin/apply', icon: FiHome, color: 'from-blue-500 to-cyan-500', desc: 'Register your coaching center' },
-    { label: 'Manage Courses', path: '/admin/courses', icon: FiBook, color: 'from-indigo-500 to-blue-500', desc: `${stats.courses} courses` },
-    { label: 'Manage Batches', path: '/admin/batches', icon: FiLayers, color: 'from-purple-500 to-indigo-500', desc: `${stats.batches} batches` },
-    { label: 'Manage Subjects', path: '/admin/subjects', icon: FiBook, color: 'from-violet-500 to-purple-500', desc: `${stats.subjects} subjects` },
-    { label: 'Manage Students', path: '/admin/students', icon: FiUsers, color: 'from-emerald-500 to-teal-500', desc: 'Student enrollment' },
-    { label: 'Manage Teachers', path: '/admin/teachers', icon: FiUserPlus, color: 'from-amber-500 to-orange-500', desc: 'Teacher accounts' },
-    { label: 'Manage Staff', path: '/admin/staff', icon: FiUsers, color: 'from-rose-500 to-pink-500', desc: 'Staff accounts' },
-    { label: 'Fee Management', path: '/admin/fees', icon: FiDollarSign, color: 'from-cyan-500 to-blue-500', desc: 'Student fee tracking' },
-    { label: 'Subscription', path: '/admin/subscription', icon: FiCreditCard, color: 'from-teal-500 to-emerald-500', desc: 'Platform subscription' },
+    { label: 'Apply for Center', path: '/coaching-admin/apply', icon: FiHome, color: 'from-blue-500 to-cyan-500', desc: 'Register your coaching center' },
+    { label: 'Manage Courses', path: '/coaching-admin/courses', icon: FiBook, color: 'from-indigo-500 to-blue-500', desc: `${stats.courses} courses` },
+    { label: 'Manage Batches', path: '/coaching-admin/batches', icon: FiLayers, color: 'from-purple-500 to-indigo-500', desc: `${stats.batches} batches` },
+    { label: 'Manage Subjects', path: '/coaching-admin/subjects', icon: FiBook, color: 'from-violet-500 to-purple-500', desc: `${stats.subjects} subjects` },
+    { label: 'Manage Students', path: '/coaching-admin/students', icon: FiUsers, color: 'from-emerald-500 to-teal-500', desc: 'Student enrollment' },
+    { label: 'Manage Teachers', path: '/coaching-admin/teachers', icon: FiUserPlus, color: 'from-amber-500 to-orange-500', desc: 'Teacher accounts' },
+    { label: 'Manage Staff', path: '/coaching-admin/staff', icon: FiUsers, color: 'from-rose-500 to-pink-500', desc: 'Staff accounts' },
+    { label: 'Fee Management', path: '/coaching-admin/fees', icon: FiDollarSign, color: 'from-cyan-500 to-blue-500', desc: 'Student fee tracking' },
+    { label: 'Subscription', path: '/coaching-admin/subscription', icon: FiCreditCard, color: 'from-teal-500 to-emerald-500', desc: 'Platform subscription' },
     { label: 'Notifications', path: '/notifications', icon: FiBell, color: 'from-yellow-500 to-amber-500', desc: `${stats.notifications} unread` },
     { label: 'Profile', path: '/profile', icon: FiUser, color: 'from-gray-500 to-gray-600', desc: 'Manage your profile' },
   ]
@@ -86,7 +86,7 @@ const CoachingAdminDashboard = () => {
               <p className="text-amber-400 font-bold mb-1">No Coaching Center Yet</p>
               <p className="text-gray-400 text-sm">Apply for a coaching center to get started</p>
             </div>
-            <Link to="/admin/apply" className="px-4 py-2 bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded-xl text-sm font-semibold hover:bg-amber-500/30 transition-all">
+            <Link to="/coaching-admin/apply" className="px-4 py-2 bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded-xl text-sm font-semibold hover:bg-amber-500/30 transition-all">
               Apply Now
             </Link>
           </div>

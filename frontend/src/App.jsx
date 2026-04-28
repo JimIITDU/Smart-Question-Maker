@@ -90,7 +90,7 @@ function App() {
 
         {/* ==================== PROTECTED ROUTES ==================== */}
         <Route element={<ProtectedRoute />}>
-          <Route element={<LayoutWrapper />}>
+          {/* <Route element={<LayoutWrapper />}> */}
             {/* Shared — any authenticated user */}
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/notifications" element={<Notifications />} />
@@ -161,7 +161,7 @@ function App() {
             {/* -------------------- FALLBACK 404 -------------------- */}
             <Route path="*" element={<ErrorPage />} />
           </Route>
-        </Route>
+        {/* </Route> */}
       </Routes>
     </BrowserRouter>
   )
