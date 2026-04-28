@@ -1,7 +1,7 @@
 ﻿import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext.jsx'
-import { getAllQuestions, getAllExams, getUnreadNotifications } from '../services/api'
+import { useAuth } from '../../context/AuthContext.jsx'
+import { getAllQuestions, getAllExams, getUnreadNotifications } from '../../services/api'
 import { FiBook, FiFileText, FiBarChart2, FiUpload, FiCpu, FiZap, FiBell, FiUser } from 'react-icons/fi'
 
 const TeacherDashboard = () => {

@@ -1,6 +1,6 @@
 ﻿import React, { useState, useEffect } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { getAllQuestions } from '../services/api'
+import { getAllQuestions } from '../../services/api'
 import toast from 'react-hot-toast'
 import { FiArrowLeft, FiSave } from 'react-icons/fi'
 

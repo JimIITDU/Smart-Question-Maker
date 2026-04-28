@@ -1,6 +1,6 @@
 ﻿import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { getAllExams } from '../services/api'
+import { getAllExams } from '../../services/api'
 import { FiArrowLeft, FiBarChart2 } from 'react-icons/fi'
 
 const ChildResults = () => {

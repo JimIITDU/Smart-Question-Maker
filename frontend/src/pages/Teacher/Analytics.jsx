@@ -1,6 +1,6 @@
 ﻿import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { getAllExams, getAllQuestions } from '../services/api'
+import { getAllExams, getAllQuestions } from '../../services/api'
 import { FiArrowLeft, FiBarChart2, FiFileText, FiBook } from 'react-icons/fi'
 
 const Analytics = () => {

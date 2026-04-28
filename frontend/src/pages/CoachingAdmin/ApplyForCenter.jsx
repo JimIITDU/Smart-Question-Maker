@@ -1,6 +1,6 @@
 ﻿import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { applyForCenter } from '../services/api'
+import { applyForCenter } from '../../services/api'
 import toast from 'react-hot-toast'
 import { FiArrowLeft, FiSave } from 'react-icons/fi'
 

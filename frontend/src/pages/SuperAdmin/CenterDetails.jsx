@@ -1,6 +1,6 @@
 ﻿import React, { useState, useEffect } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { approveCenter, rejectCenter } from '../services/api'
+import { approveCenter, rejectCenter } from '../../services/api'
 import toast from 'react-hot-toast'
 import { FiArrowLeft, FiCheck, FiX } from 'react-icons/fi'
 

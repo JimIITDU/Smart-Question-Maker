@@ -1,72 +1,171 @@
 import React from 'react'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { useAuth } from './context/AuthContext.jsx'
+import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom'
 
+// Layout & Route Guards
+import Layout from './components/Layout.jsx'
+import ProtectedRoute from './components/ProtectedRoute.jsx'
+import RoleBasedRoute from './components/RoleBasedRoute.jsx'
+import ErrorPage from './components/ErrorPage.jsx'
+
+// Public / Auth pages
 import HomePage from './pages/HomePage.jsx'
 import Login from './pages/Auth/Login.jsx'
 import Register from './pages/Auth/Register.jsx'
 import VerifyOTP from './pages/Auth/VerifyOTP.jsx'
+import ForgotPassword from './pages/Auth/ForgotPassword.jsx'
+import ResetPassword from './pages/Auth/ResetPassword.jsx'
+
+// Shared protected pages
 import Dashboard from './pages/Dashboard.jsx'
+import Notifications from './pages/Notifications.jsx'
+import Profile from './pages/Profile.jsx'
+
+// SuperAdmin pages (role_id = 1)
+import SuperAdminDashboard from './pages/SuperAdmin/SuperAdminDashboard.jsx'
+import ManageCenters from './pages/SuperAdmin/ManageCenters.jsx'
+import CenterDetails from './pages/SuperAdmin/CenterDetails.jsx'
+import ManageSubscriptionPlans from './pages/SuperAdmin/ManageSubscriptionPlans.jsx'
+
+// CoachingAdmin pages (role_id = 2)
+import CoachingAdminDashboard from './pages/CoachingAdmin/CoachingAdminDashboard.jsx'
+import ApplyForCenter from './pages/CoachingAdmin/ApplyForCenter.jsx'
+import ManageCourses from './pages/CoachingAdmin/ManageCourses.jsx'
+import ManageBatches from './pages/CoachingAdmin/ManageBatches.jsx'
+import ManageSubjects from './pages/CoachingAdmin/ManageSubjects.jsx'
+import ManageStudents from './pages/CoachingAdmin/ManageStudents.jsx'
+import ManageTeachers from './pages/CoachingAdmin/ManageTeachers.jsx'
+import ManageStaff from './pages/CoachingAdmin/ManageStaff.jsx'
+import ManageUsers from './pages/CoachingAdmin/ManageUsers.jsx'
+import FeeManagement from './pages/CoachingAdmin/FeeManagement.jsx'
+import SubscriptionManagement from './pages/CoachingAdmin/SubscriptionManagement.jsx'
+
+// Teacher pages (role_id = 3)
+import TeacherDashboard from './pages/Teacher/TeacherDashboard.jsx'
 import QuestionBank from './pages/Teacher/QuestionBank.jsx'
+import CreateQuestion from './pages/Teacher/CreateQuestion.jsx'
+import EditQuestion from './pages/Teacher/EditQuestion.jsx'
+import AIQuestionGenerator from './pages/Teacher/AIQuestionGenerator.jsx'
+import ManageExams from './pages/Teacher/ManageExams.jsx'
+import CreateExam from './pages/Teacher/CreateExam.jsx'
+import ExamDetails from './pages/Teacher/ExamDetails.jsx'
+import LiveQuiz from './pages/Teacher/LiveQuiz.jsx'
+import Analytics from './pages/Teacher/Analytics.jsx'
+import UploadMaterial from './pages/Teacher/UploadMaterial.jsx'
+
+// Student pages (role_id = 5)
+import StudentDashboard from './pages/Student/StudentDashboard.jsx'
 import Exams from './pages/Student/Exams.jsx'
 import TakeExam from './pages/Student/TakeExam.jsx'
 import Results from './pages/Student/Results.jsx'
-import Notifications from './pages/Notifications.jsx'
-import Profile from './pages/Profile.jsx'
+import MyResults from './pages/Student/MyResults.jsx'
+import StudyMaterials from './pages/Student/StudyMaterials.jsx'
 import JoinQuiz from './pages/Student/JoinQuiz.jsx'
 
-const ProtectedRoute = ({ children }) => {
-  const { user, loading } = useAuth()
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-xl font-semibold">Loading...</div>
-      </div>
-    )
-  }
-  return user ? children : <Navigate to="/login" />
-}
+// Parent pages (role_id = 6)
+import ParentDashboard from './pages/Parent/ParentDashboard.jsx'
+import ChildResults from './pages/Parent/ChildResults.jsx'
+
+/**
+ * LayoutWrapper
+ * Wraps <Outlet /> inside the application's Sidebar + Navbar layout
+ * so every authenticated page renders within the dashboard shell.
+ */
+const LayoutWrapper = () => (
+  <Layout>
+    <Outlet />
+  </Layout>
+)
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Public routes */}
+        {/* ==================== PUBLIC ROUTES ==================== */}
+        <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/verify-otp" element={<VerifyOTP />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
 
-        {/* Protected routes */}
-        <Route path="/dashboard" element={
-          <ProtectedRoute><Dashboard /></ProtectedRoute>
-        } />
-        <Route path="/questions" element={
-          <ProtectedRoute><QuestionBank /></ProtectedRoute>
-        } />
-        <Route path="/exams" element={
-          <ProtectedRoute><Exams /></ProtectedRoute>
-        } />
-        <Route path="/exams/:id/take" element={
-          <ProtectedRoute><TakeExam /></ProtectedRoute>
-        } />
-        <Route path="/results/:id" element={
-          <ProtectedRoute><Results /></ProtectedRoute>
-        } />
-        <Route path="/notifications" element={
-          <ProtectedRoute><Notifications /></ProtectedRoute>
-        } />
-        <Route path="/profile" element={
-          <ProtectedRoute><Profile /></ProtectedRoute>
-        } />
-        <Route path="/join-quiz" element={
-          <ProtectedRoute><JoinQuiz /></ProtectedRoute>
-        } />
+        {/* ==================== PROTECTED ROUTES ==================== */}
+        <Route element={<ProtectedRoute />}>
+          <Route element={<LayoutWrapper />}>
+            {/* Shared — any authenticated user */}
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/notifications" element={<Notifications />} />
+            <Route path="/profile" element={<Profile />} />
 
-        {/* Default */}
-        <Route path="/" element={<HomePage />} />
+            {/* Legacy / shared top-level paths (backward compatibility) */}
+            <Route path="/questions" element={<QuestionBank />} />
+            <Route path="/exams" element={<Exams />} />
+            <Route path="/exams/:id/take" element={<TakeExam />} />
+            <Route path="/results/:id" element={<Results />} />
+            <Route path="/join-quiz" element={<JoinQuiz />} />
+
+            {/* -------------------- SUPER ADMIN (role_id: 1) -------------------- */}
+            <Route element={<RoleBasedRoute allowedRoles={[1]} />}>
+              <Route path="/super-admin" element={<SuperAdminDashboard />} />
+              <Route path="/super-admin/centers" element={<ManageCenters />} />
+              <Route path="/super-admin/centers/:id" element={<CenterDetails />} />
+              <Route path="/super-admin/subscriptions" element={<ManageSubscriptionPlans />} />
+            </Route>
+
+            {/* -------------------- COACHING ADMIN (role_id: 2) -------------------- */}
+            <Route element={<RoleBasedRoute allowedRoles={[2]} />}>
+              <Route path="/coaching-admin" element={<CoachingAdminDashboard />} />
+              <Route path="/coaching-admin/apply" element={<ApplyForCenter />} />
+              <Route path="/coaching-admin/courses" element={<ManageCourses />} />
+              <Route path="/coaching-admin/batches" element={<ManageBatches />} />
+              <Route path="/coaching-admin/subjects" element={<ManageSubjects />} />
+              <Route path="/coaching-admin/students" element={<ManageStudents />} />
+              <Route path="/coaching-admin/teachers" element={<ManageTeachers />} />
+              <Route path="/coaching-admin/staff" element={<ManageStaff />} />
+              <Route path="/coaching-admin/users" element={<ManageUsers />} />
+              <Route path="/coaching-admin/fees" element={<FeeManagement />} />
+              <Route path="/coaching-admin/subscription" element={<SubscriptionManagement />} />
+            </Route>
+
+            {/* -------------------- TEACHER (role_id: 3) -------------------- */}
+            <Route element={<RoleBasedRoute allowedRoles={[3]} />}>
+              <Route path="/teacher" element={<TeacherDashboard />} />
+              <Route path="/teacher/questions" element={<QuestionBank />} />
+              <Route path="/teacher/questions/create" element={<CreateQuestion />} />
+              <Route path="/teacher/questions/:id/edit" element={<EditQuestion />} />
+              <Route path="/teacher/questions/ai-generate" element={<AIQuestionGenerator />} />
+              <Route path="/teacher/exams" element={<ManageExams />} />
+              <Route path="/teacher/exams/create" element={<CreateExam />} />
+              <Route path="/teacher/exams/:id" element={<ExamDetails />} />
+              <Route path="/teacher/live-quiz" element={<LiveQuiz />} />
+              <Route path="/teacher/analytics" element={<Analytics />} />
+              <Route path="/teacher/upload-material" element={<UploadMaterial />} />
+            </Route>
+
+            {/* -------------------- STUDENT (role_id: 5) -------------------- */}
+            <Route element={<RoleBasedRoute allowedRoles={[5]} />}>
+              <Route path="/student" element={<StudentDashboard />} />
+              <Route path="/student/exams" element={<Exams />} />
+              <Route path="/student/exams/:id/take" element={<TakeExam />} />
+              <Route path="/student/results" element={<MyResults />} />
+              <Route path="/student/results/:id" element={<Results />} />
+              <Route path="/student/study-materials" element={<StudyMaterials />} />
+              <Route path="/student/join-quiz" element={<JoinQuiz />} />
+            </Route>
+
+            {/* -------------------- PARENT (role_id: 6) -------------------- */}
+            <Route element={<RoleBasedRoute allowedRoles={[6]} />}>
+              <Route path="/parent" element={<ParentDashboard />} />
+              <Route path="/parent/child-results" element={<ChildResults />} />
+            </Route>
+
+            {/* -------------------- FALLBACK 404 -------------------- */}
+            <Route path="*" element={<ErrorPage />} />
+          </Route>
+        </Route>
       </Routes>
     </BrowserRouter>
   )
 }
 
 export default App
+

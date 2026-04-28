@@ -1,6 +1,6 @@
 ﻿import React, { useState, useEffect } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { getExamById, getExamQuestions, getResults } from '../services/api'
+import { getExamById, getExamQuestions, getResults } from '../../services/api'
 import { FiArrowLeft } from 'react-icons/fi'
 
 const ExamDetails = () => {

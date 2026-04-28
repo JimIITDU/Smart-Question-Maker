@@ -8,7 +8,7 @@ const Sidebar = () => {
 
   const isActive = (path) => location.pathname === path
 
-  // Helper to determine if the user can see "Questions"
+  // Logic: Show Questions link only for Coaching Admin (2) and Teacher (3)
   const canSeeQuestions = user?.role_id === 2 || user?.role_id === 3
 
   const menuItems = [

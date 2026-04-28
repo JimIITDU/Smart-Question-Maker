@@ -1,6 +1,6 @@
 ﻿import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { getAllBatches } from '../services/api'
+import { getAllBatches } from '../../services/api'
 import toast from 'react-hot-toast'
 import { FiArrowLeft, FiUsers, FiUserPlus } from 'react-icons/fi'
 

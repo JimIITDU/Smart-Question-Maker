@@ -1,7 +1,7 @@
 ﻿import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext.jsx'
-import { getMyCenter, getAllCourses, getAllBatches, getAllSubjects, getUnreadNotifications } from '../services/api'
+import { useAuth } from '../../context/AuthContext.jsx'
+import { getMyCenter, getAllCourses, getAllBatches, getAllSubjects, getUnreadNotifications } from '../../services/api'
 import { FiHome, FiBook, FiUsers, FiLayers, FiBell, FiUser, FiDollarSign, FiCreditCard, FiUserPlus, FiSettings } from 'react-icons/fi'
 
 const CoachingAdminDashboard = () => {
