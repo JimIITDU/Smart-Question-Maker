@@ -20,6 +20,7 @@ const notificationController = {
         data: { notification_id: notificationId },
       });
     } catch (error) {
+      console.error('createNotification error:', error);
       res.status(500).json({
         success: false,
         message: 'Server error',
@@ -29,6 +30,7 @@ const notificationController = {
   },
 
   // Broadcast notification to multiple users
+
   broadcastNotification: async (req, res) => {
     try {
       const { user_ids, message, type } = req.body;
@@ -51,6 +53,7 @@ const notificationController = {
         message: `Notification sent to ${user_ids.length} users`,
       });
     } catch (error) {
+      console.error('broadcastNotification error:', error);
       res.status(500).json({
         success: false,
         message: 'Server error',
@@ -60,6 +63,7 @@ const notificationController = {
   },
 
   // Get my notifications
+
   getMyNotifications: async (req, res) => {
     try {
       const notifications = await notificationModel
@@ -71,6 +75,7 @@ const notificationController = {
         data: notifications,
       });
     } catch (error) {
+      console.error('getMyNotifications error:', error);
       res.status(500).json({
         success: false,
         message: 'Server error',
@@ -80,6 +85,7 @@ const notificationController = {
   },
 
   // Get unread notifications
+
   getUnreadNotifications: async (req, res) => {
     try {
       const notifications = await notificationModel
@@ -91,6 +97,7 @@ const notificationController = {
         data: notifications,
       });
     } catch (error) {
+      console.error('getUnreadNotifications error:', error);
       res.status(500).json({
         success: false,
         message: 'Server error',
@@ -100,6 +107,7 @@ const notificationController = {
   },
 
   // Mark as read
+
   markAsRead: async (req, res) => {
     try {
       const notification = await notificationModel
@@ -119,6 +127,7 @@ const notificationController = {
         message: 'Notification marked as read',
       });
     } catch (error) {
+      console.error('markAsRead error:', error);
       res.status(500).json({
         success: false,
         message: 'Server error',
@@ -128,6 +137,7 @@ const notificationController = {
   },
 
   // Mark all as read
+
   markAllAsRead: async (req, res) => {
     try {
       await notificationModel.markAllAsRead(req.user.user_id);
@@ -137,6 +147,7 @@ const notificationController = {
         message: 'All notifications marked as read',
       });
     } catch (error) {
+      console.error('markAllAsRead error:', error);
       res.status(500).json({
         success: false,
         message: 'Server error',
@@ -146,6 +157,7 @@ const notificationController = {
   },
 
   // Delete notification
+
   deleteNotification: async (req, res) => {
     try {
       const notification = await notificationModel
@@ -165,6 +177,7 @@ const notificationController = {
         message: 'Notification deleted successfully',
       });
     } catch (error) {
+      console.error('deleteNotification error:', error);
       res.status(500).json({
         success: false,
         message: 'Server error',
@@ -174,5 +187,6 @@ const notificationController = {
   },
 
 };
+
 
 module.exports = notificationController;

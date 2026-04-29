@@ -11,6 +11,8 @@ const examController = {
         start_time,
         end_time,
         question_ids,
+        title,
+        duration_minutes,
       } = req.body;
 
       // 1. Convert '2026-04-27T23:32' to '2026-04-27 23:32:00'
@@ -33,6 +35,8 @@ const examController = {
         batch_id,
         exam_type,
         host_teacher_id,
+        title: title || `Exam ${subject_id || 'N/A'}`,
+        duration_minutes: duration_minutes || 60,
         start_time: formattedStart,
         end_time: formattedEnd,
         access_code,
@@ -66,27 +70,28 @@ const examController = {
   },
 
   // Get all exams
-getAllExams: async (req, res) => {
-  try {
-    let exams;
-    if (req.user.role_id === 5) {
-      exams = await examModel.getAllExamsForStudent();
-    } else {
-      exams = await examModel.getAllExams(req.user.user_id);
+  getAllExams: async (req, res) => {
+    try {
+      let exams;
+      if (req.user.role_id === 5) {
+        exams = await examModel.getAllExamsForStudent();
+      } else {
+        exams = await examModel.getAllExams(req.user.user_id);
+      }
+      res.status(200).json({
+        success: true,
+        count: exams.length,
+        data: exams,
+      });
+    } catch (error) {
+      console.error('getAllExams error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Server error',
+        error: error.message,
+      });
     }
-    res.status(200).json({
-      success: true,
-      count: exams.length,
-      data: exams,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Server error',
-      error: error.message,
-    });
-  }
-},
+  },
 
   // Get exam by ID
   getExamById: async (req, res) => {
@@ -103,6 +108,7 @@ getAllExams: async (req, res) => {
         data: exam,
       });
     } catch (error) {
+      console.error('getExamById error:', error);
       res.status(500).json({
         success: false,
         message: 'Server error',
@@ -140,6 +146,7 @@ getAllExams: async (req, res) => {
         data: questions,
       });
     } catch (error) {
+      console.error('getExamQuestions error:', error);
       res.status(500).json({
         success: false,
         message: 'Server error',
@@ -166,6 +173,7 @@ getAllExams: async (req, res) => {
         message: 'Exam started successfully',
       });
     } catch (error) {
+      console.error('startExam error:', error);
       res.status(500).json({
         success: false,
         message: 'Server error',
@@ -215,6 +223,7 @@ getAllExams: async (req, res) => {
         },
       });
     } catch (error) {
+      console.error('joinExam error:', error);
       res.status(500).json({
         success: false,
         message: 'Server error',
@@ -295,6 +304,7 @@ getAllExams: async (req, res) => {
         },
       });
     } catch (error) {
+      console.error('submitExam error:', error);
       res.status(500).json({
         success: false,
         message: 'Server error',
@@ -324,6 +334,7 @@ getAllExams: async (req, res) => {
         },
       });
     } catch (error) {
+      console.error('getResults error:', error);
       res.status(500).json({
         success: false,
         message: 'Server error',
@@ -353,6 +364,7 @@ getAllExams: async (req, res) => {
         message: 'Exam ended successfully',
       });
     } catch (error) {
+      console.error('endExam error:', error);
       res.status(500).json({
         success: false,
         message: 'Server error',

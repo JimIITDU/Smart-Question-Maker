@@ -40,8 +40,10 @@ const Exams = () => {
       const res = await getAllExams()
       setExams(res.data.data)
     } catch (err) {
+      console.error('fetchExams error:', err)
       setError('Failed to load exams')
     } finally {
+
       setLoading(false)
     }
   }
@@ -50,7 +52,10 @@ const Exams = () => {
     try {
       const res = await getAllQuestions()
       setQuestions(res.data.data)
-    } catch (err) {}
+    } catch (err) {
+      console.error('fetchQuestions error:', err)
+    }
+
   }
 
   const handleChange = (e) => {
@@ -92,8 +97,10 @@ const Exams = () => {
       });
     }
   } catch (err) {
+    console.error('createExam error:', err)
     setError(err.response?.data?.message || 'Failed to create exam');
   }
+
 };
 
   const handleStartExam = async (id) => {
@@ -102,8 +109,10 @@ const Exams = () => {
       setSuccess('Exam started!')
       fetchExams()
     } catch (err) {
+      console.error('startExam error:', err)
       setError('Failed to start exam')
     }
+
   }
 
   const getStatusInfo = (status) => {

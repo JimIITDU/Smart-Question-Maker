@@ -21,35 +21,55 @@ const examModel = {
 
   getAllExams: async (teacher_id) => {
     const result = await db.query(
-      `SELECT * FROM quiz_exam WHERE host_teacher_id = $1
-       ORDER BY created_at DESC`,
+      `SELECT q.*, s.subject_name, b.batch_name 
+       FROM quiz_exam q
+       LEFT JOIN subjects s ON q.subject_id = s.subject_id
+       LEFT JOIN batch b ON q.batch_id = b.batch_id
+       WHERE q.host_teacher_id = $1
+       ORDER BY q.created_at DESC`,
       [teacher_id]
     );
     return result.rows;
   },
 
+
   getAllExamsForStudent: async () => {
     const result = await db.query(
-      `SELECT * FROM quiz_exam WHERE status != 'completed'
-       ORDER BY start_time ASC`
+      `SELECT q.*, s.subject_name, b.batch_name 
+       FROM quiz_exam q
+       LEFT JOIN subjects s ON q.subject_id = s.subject_id
+       LEFT JOIN batch b ON q.batch_id = b.batch_id
+       WHERE q.status != 'completed'
+       ORDER BY q.start_time ASC`
     );
     return result.rows;
   },
 
+
   getExamById: async (id) => {
     const result = await db.query(
-      `SELECT * FROM quiz_exam WHERE exam_id = $1`, [id]
+      `SELECT q.*, s.subject_name, b.batch_name 
+       FROM quiz_exam q
+       LEFT JOIN subjects s ON q.subject_id = s.subject_id
+       LEFT JOIN batch b ON q.batch_id = b.batch_id
+       WHERE q.exam_id = $1`, [id]
     );
     return result.rows[0];
   },
 
+
   getExamByAccessCode: async (access_code) => {
     const result = await db.query(
-      `SELECT * FROM quiz_exam WHERE access_code = $1`,
+      `SELECT q.*, s.subject_name, b.batch_name 
+       FROM quiz_exam q
+       LEFT JOIN subjects s ON q.subject_id = s.subject_id
+       LEFT JOIN batch b ON q.batch_id = b.batch_id
+       WHERE q.access_code = $1`,
       [access_code]
     );
     return result.rows[0];
   },
+
 
   updateExamStatus: async (exam_id, status) => {
     await db.query(

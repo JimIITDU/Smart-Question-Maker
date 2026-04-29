@@ -41,8 +41,10 @@ const Notifications = () => {
       const res = await getNotifications()
       setNotifications(res.data.data)
     } catch (err) {
+      console.error('fetchNotifications error:', err)
       setError('Failed to load notifications')
     } finally {
+
       setLoading(false)
     }
   }
