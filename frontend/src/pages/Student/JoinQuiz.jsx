@@ -37,29 +37,9 @@ const JoinQuiz = () => {
   return (
     <div className="min-h-screen bg-[#0B0C15] flex flex-col">
       
-      {/* --- Ambient Background --- */}
+{/* --- Ambient Background --- */}
       <div className="fixed top-[-20%] left-[-10%] w-[600px] h-[600px] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none"></div>
       <div className="fixed bottom-[-20%] right-[-10%] w-[600px] h-[600px] bg-cyan-600/10 rounded-full blur-[120px] pointer-events-none"></div>
-
-      {/* --- Navbar --- */}
-      <nav className="sticky top-0 z-50 border-b border-white/5 bg-[#0B0C15]/70 backdrop-blur-xl">
-        <div className="max-w-md mx-auto px-6 h-20 flex justify-between items-center">
-          <Link
-            to="/dashboard"
-            className="flex items-center gap-3 text-gray-400 hover:text-white transition-colors"
-          >
-            <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors">
-              <ArrowLeft />
-            </div>
-          </Link>
-
-          <div className="flex items-center gap-3">
-             <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center font-bold text-xs text-white">
-              SQ
-             </div>
-          </div>
-        </div>
-      </nav>
 
       <main className="relative z-10 flex-1 flex items-center justify-center p-4">
         

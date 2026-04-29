@@ -7,7 +7,7 @@ import {
   FiAward, 
   FiBarChart2,
   FiCheckCircle,
-  FiCpu,
+  FiCpu, // Back to CPU for the original "Smart" feel
   FiTrendingUp,
   FiZap,
   FiLayers
@@ -19,7 +19,7 @@ const HomePage = () => {
   return (
     <div className="min-h-screen bg-[#030712] text-white selection:bg-blue-500 selection:text-white relative overflow-hidden font-sans">
       
-      {/* --- Ambient Background Glows --- */}
+      {/* --- Ambient Background Glows (Original Blue Theme) --- */}
       <div className="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[120px] animate-pulse"></div>
         <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-purple-600/10 rounded-full blur-[120px]"></div>
@@ -29,14 +29,40 @@ const HomePage = () => {
       {/* --- Navigation Bar --- */}
       <nav className="fixed top-0 w-full z-50 transition-all duration-300 border-b border-white/5 bg-[#030712]/70 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-6 lg:px-8 h-20 flex justify-between items-center">
-          <div className="flex items-center space-x-3 cursor-pointer group">
+          {/* --- LOGO SECTION --- */}
+          <div 
+            className="flex items-center space-x-3 cursor-pointer group"
+            onClick={() => navigate('/')}
+          >
+            {/* CSS Version of the Logo to match Blue Theme */}
             <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:scale-105 transition-transform duration-300">
               <FiCpu className="text-white text-lg" />
             </div>
-            <span className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
-              ProshnoGhor
-            </span>
+            <div className="flex flex-col">
+              <span className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400 leading-none">
+                Proshno<span className="text-blue-400">Ghor</span>
+              </span>
+              <span className="text-[10px] text-gray-500 font-medium tracking-widest uppercase">
+                প্রশ্নঘর
+              </span>
+            </div>
+
+            {/* 
+               IF YOU WANT TO USE THE IMAGE INSTEAD:
+               Uncomment the code below.
+               Make sure you save the image as 'proshno-logo.png' in the same folder.
+            */}
+            {/* 
+            <div className="relative w-32 h-8">
+              <img 
+                src="./proshno-logo.png" 
+                alt="ProshnoGhor" 
+                className="w-full h-full object-contain" 
+              />
+            </div> 
+            */}
           </div>
+
           <div className="hidden md:flex items-center space-x-6">
             <button
               onClick={() => navigate('/login')}
@@ -98,7 +124,7 @@ const HomePage = () => {
             </div>
           </div>
 
-          {/* Hero Visual - Abstract Dashboard */}
+          {/* Hero Visual - Abstract Dashboard (Blue Theme) */}
           <div className="relative hidden lg:block animate-float">
             <div className="absolute inset-0 bg-gradient-to-tr from-blue-600 to-purple-600 rounded-2xl blur-[60px] opacity-30"></div>
             <div className="relative bg-[#0F172A]/80 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-2xl overflow-hidden">
@@ -137,7 +163,7 @@ const HomePage = () => {
             
             {/* Floating Badge */}
             <div className="absolute -bottom-6 -right-6 bg-[#0F172A] border border-white/10 p-4 rounded-xl shadow-xl flex items-center gap-3 animate-bounce-slow">
-              <div className="w-10 h-10 bg-green-500/20 rounded-full flex items-center justify-center text-green-400">
+              <div className="w-10 h-10 bg-blue-500/20 rounded-full flex items-center justify-center text-blue-400">
                 <FiTrendingUp />
               </div>
               <div>
@@ -236,7 +262,7 @@ const HomePage = () => {
         </div>
       </div>
 
-      {/* --- Role-based Section (Revised for Cohesion) --- */}
+      {/* --- Role-based Section --- */}
       <div className="max-w-7xl mx-auto px-6 lg:px-8 py-24">
         <div className="bg-gradient-to-b from-white/5 to-transparent border border-white/10 rounded-3xl p-8 lg:p-16 relative overflow-hidden">
           {/* Background Decor */}
@@ -274,7 +300,7 @@ const HomePage = () => {
                 <ul className="space-y-4">
                   {item.list.map((listItem, i) => (
                     <li key={i} className="flex items-center text-gray-300 text-sm group-hover:text-white transition-colors">
-                      <div className={`w-5 h-5 rounded-full bg-gradient-to-br ${item.accent} flex items-center justify-center mr-3 shadow-lg shadow-${item.accent.split('-')[1]}-500/20`}>
+                      <div className={`w-5 h-5 rounded-full bg-gradient-to-br ${item.accent} flex items-center justify-center mr-3 shadow-lg`}>
                         <FiCheckCircle className="text-[10px] text-white" />
                       </div>
                       {listItem}
@@ -322,7 +348,10 @@ const HomePage = () => {
                 <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
                   <FiCpu className="text-white text-sm" />
                 </div>
-                <span className="text-lg font-bold text-white">Smart Coaching</span>
+                <div className="flex flex-col">
+                  <span className="text-lg font-bold text-white">Proshno<span className="text-blue-400">Ghor</span></span>
+                  <span className="text-[10px] text-gray-500 uppercase tracking-widest -mt-1">প্রশ্নঘর</span>
+                </div>
               </div>
               <p className="text-gray-500 text-sm leading-relaxed">
                 Empowering education institutes with next-generation management tools.
@@ -358,7 +387,7 @@ const HomePage = () => {
           </div>
           
           <div className="border-t border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-gray-600 text-sm">&copy; 2026 Smart Coaching Inc. All rights reserved.</p>
+            <p className="text-gray-600 text-sm">&copy; 2026 ProshnoGhor Inc. All rights reserved.</p>
             <div className="flex space-x-6">
               {[1,2,3].map(i => (
                 <div key={i} className="w-5 h-5 bg-gray-800 rounded-full hover:bg-blue-500 transition-colors cursor-pointer"></div>

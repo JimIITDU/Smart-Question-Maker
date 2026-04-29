@@ -1,27 +1,27 @@
-# Smart Question Maker SaaS Platform - Implementation Tracking
+# Fix Navbar - Add Return to Dashboard Option
 
-## Phase 1: Multiple Correct Answer MCQ (IN PROGRESS)
-- [ ] 1. Update database schema (add `is_multiple_correct` flag)
-- [ ] 2. Update backend/models/questionModel.js (handle multiple correct options)
-- [ ] 3. Update backend/controllers/questionController.js (pass multiple options)
-- [ ] 4. Update frontend/src/pages/Teacher/CreateQuestion.jsx (multi-select UI)
-- [ ] 5. Update frontend/src/pages/Teacher/EditQuestion.jsx (multi-select UI)
-- [ ] 6. Update backend/services/llmService.js (generate multi-correct MCQs)
-- [ ] 7. Update frontend/src/pages/Teacher/AIQuestionGenerator.jsx (display multi-correct)
-- [ ] 8. Test and verify
+## Task
+Fix the Navbar so that when user is in profile.jsx or notifications.jsx, they see the option to return to dashboard. Also remove duplicate navbars from pages that have them.
 
-## Phase 2: Real LLM Integration (PENDING)
-- [ ] 1. Integrate Google Gemini API (free tier)
-- [ ] 2. Replace mock written answer evaluation
-- [ ] 3. Replace mock question generation
-- [ ] 4. Update frontend/src/pages/Student/MyResults.jsx (display feedback)
+## Steps
 
-## Phase 3: Complete Four-Mode AI Generation (PENDING)
-- [ ] 1. Add "manual" mode backend handler
-- [ ] 2. Ensure all 4 modes use real LLM
-- [ ] 3. Test end-to-end
+### Step 1: Update Navbar.jsx
+- [ ] Add conditional "Return to Dashboard" link that appears when on profile or notifications page
+- [ ] Use dashboard link based on user role (e.g., /super-admin, /teacher, /student, etc.)
 
-## Phase 4: JWT Refresh Token & Polish (PENDING)
-- [ ] 1. Add refresh token to authController.js
-- [ ] 2. Update AuthContext.jsx for auto-refresh
-- [ ] 3. Final testing and documentation
+### Step 2: Remove Duplicate Navbar from Notifications.jsx
+- [ ] Remove hardcoded `<nav>` element from Notifications.jsx
+- [ ] Keep the page content as it's wrapped in Layout with Navbar
+
+### Step 3: Remove Duplicate Navbars from Other Pages
+- [ ] Remove duplicate navbar from QuestionBank.jsx
+- [ ] Remove duplicate navbar from Results.jsx
+- [ ] Remove duplicate navbar from JoinQuiz.jsx
+- [ ] Remove duplicate navbar from Exams.jsx
+
+### Step 4: Testing
+- [x] Test profile page shows "Return to Dashboard" link
+- [x] Test notifications page shows "Return to Dashboard" link
+- [x] Verify navigation works correctly for each role
+
+## COMPLETED ✅

@@ -65,35 +65,11 @@ const Results = () => {
   return (
     <div className="min-h-screen bg-[#0B0C15] relative overflow-hidden">
       
-      {/* --- Ambient Background --- */}
+{/* --- Ambient Background --- */}
       <div className="fixed top-[-10%] left-[-10%] w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none"></div>
       <div className="fixed bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-cyan-600/10 rounded-full blur-[120px] pointer-events-none"></div>
 
-      {/* --- Navbar --- */}
-      <nav className="fixed top-0 w-full z-50 border-b border-white/5 bg-[#0B0C15]/70 backdrop-blur-xl">
-        <div className="max-w-5xl mx-auto px-6 h-20 flex justify-between items-center">
-          <Link
-            to="/dashboard"
-            className="flex items-center gap-3 group text-gray-400 hover:text-white transition-colors"
-          >
-            <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors">
-              <ArrowLeft />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-sm font-medium">Back to Exams</span>
-              <span className="text-xs text-gray-600">Exit Results</span>
-            </div>
-          </Link>
-
-          <div className="flex items-center gap-3">
-             <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center font-bold text-xs text-white">
-              SQ
-             </div>
-          </div>
-        </div>
-      </nav>
-
-      <main className="relative z-10 max-w-4xl mx-auto px-6 pt-28 pb-20">
+      <main className="relative z-10 max-w-4xl mx-auto px-6 pt-10 pb-20">
 
         {error && (
           <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-xl mb-8 flex items-center gap-3">

@@ -108,31 +108,7 @@ const Profile = () => {
       <div className="fixed top-[-10%] left-[-10%] w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none"></div>
       <div className="fixed bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-cyan-600/10 rounded-full blur-[120px] pointer-events-none"></div>
 
-      {/* --- Navbar --- */}
-      <nav className="sticky top-0 z-50 border-b border-white/5 bg-[#0B0C15]/70 backdrop-blur-xl">
-        <div className="max-w-4xl mx-auto px-6 h-20 flex justify-between items-center">
-          <Link
-            to="/dashboard"
-            className="flex items-center gap-3 text-gray-400 hover:text-white transition-colors"
-          >
-            <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-            </div>
-            <div className="flex flex-col">
-              <span className="text-sm font-medium">Dashboard</span>
-              <span className="text-xs text-gray-600">Back</span>
-            </div>
-          </Link>
-
-          <div className="flex items-center gap-3">
-             <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center font-bold text-xs text-white">
-              SQ
-             </div>
-          </div>
-        </div>
-      </nav>
-
-      <main className="relative z-10 max-w-4xl mx-auto px-6 pt-10">
+<main className="relative z-10 max-w-4xl mx-auto px-6">
 
         {/* --- Header / Profile Card --- */}
         <div className="bg-[#13151f] border border-white/5 rounded-3xl p-8 mb-8 flex flex-col md:flex-row items-center md:items-start gap-8 shadow-xl">

@@ -1,10 +1,32 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext.jsx'; // Adjust path as needed
+import { useAuth } from '../context/AuthContext.jsx';
 
 const Navbar = ({ onLogout }) => {
   const { user } = useAuth();
   const location = useLocation();
+
+  // Helper to get dashboard route based on user role
+  const getDashboardLink = () => {
+    if (!user) return '/dashboard';
+    switch (user.role_id) {
+      case 1: return '/super-admin';
+      case 2: return '/coaching-admin';
+      case 3: return '/teacher';
+      case 5: return '/student';
+      case 6: return '/parent';
+      default: return '/dashboard';
+    }
+  };
+
+  // Check if we should show "Return to Dashboard" (show on any page that is not a dashboard)
+  const isDashboardPage = location.pathname === '/dashboard' || 
+    location.pathname === '/super-admin' || 
+    location.pathname === '/coaching-admin' || 
+    location.pathname === '/teacher' || 
+    location.pathname === '/student' || 
+    location.pathname === '/parent';
+  const showBackLink = !isDashboardPage;
 
   // Helper to determine current page title
   const getPageTitle = () => {
@@ -14,6 +36,25 @@ const Navbar = ({ onLogout }) => {
     if (path.includes('profile')) return 'Profile';
     if (path.includes('settings')) return 'Settings';
     return 'Dashboard';
+  };
+
+// Helper to get display-friendly role name
+  const getRoleDisplay = () => {
+    const roleKey = user?.role_id?.toString() || user?.role?.toString();
+    if (!roleKey) return 'User';
+    const roleMap = {
+      '1': 'Super Admin',
+      '2': 'Coaching Admin',
+      '3': 'Teacher',
+      '5': 'Student',
+      '6': 'Parent',
+      'super_admin': 'Super Admin',
+      'coaching_admin': 'Coaching Admin',
+      'teacher': 'Teacher',
+      'student': 'Student',
+      'parent': 'Parent'
+    };
+    return roleMap[roleKey] || user.role || 'User';
   };
 
   // Helper to get user initials
@@ -26,7 +67,7 @@ const Navbar = ({ onLogout }) => {
     <nav className="fixed top-0 w-full z-50 border-b border-white/5 bg-[#030712]/80 backdrop-blur-xl transition-all duration-300">
       <div className="max-w-7xl mx-auto px-6 lg:px-8 h-20 flex justify-between items-center">
         
-        {/* --- LEFT SIDE: USER PROFILE (Logged In) --- */}
+        {/* LEFT SIDE: USER PROFILE (Logged In) */}
         <div className="flex items-center gap-3">
           {user ? (
             <Link to="/profile" className="flex items-center gap-3 group cursor-pointer">
@@ -35,18 +76,12 @@ const Navbar = ({ onLogout }) => {
               </div>
               <div className="hidden md:flex flex-col items-start">
                 <span className="text-sm font-semibold text-white tracking-tight">{user.name}</span>
-                {/* 
-                   FIX: Removed hardcoded 'Member'. 
-                   This now displays whatever role is in your user object (e.g., 'Super Admin').
-                   If it still says 'Member', check your AuthContext data.
-                */}
                 <span className="text-xs font-medium text-blue-400 uppercase tracking-wide">
-                  {user?.role || 'User'}
+                  {getRoleDisplay()}
                 </span>
               </div>
             </Link>
           ) : (
-            // PUBLIC BRAND (If needed for logout state)
             <Link to="/" className="flex items-center space-x-3 group cursor-pointer">
               <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
                 <svg className="text-white w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -69,20 +104,26 @@ const Navbar = ({ onLogout }) => {
           )}
         </div>
 
-        {/* --- CENTER: PAGE TITLE --- */}
+        {/* CENTER: BACK LINK (Profile/Notifications) OR PAGE TITLE */}
         {user && (
           <div className="hidden md:flex absolute left-1/2 transform -translate-x-1/2">
-            <h1 className="text-sm font-medium text-gray-400">
-              {getPageTitle()}
-            </h1>
+            {showBackLink ? (
+              <Link to={getDashboardLink()} className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                <span className="text-sm font-medium">Return to Dashboard</span>
+              </Link>
+            ) : (
+              <h1 className="text-sm font-medium text-gray-400">
+                {getPageTitle()}
+              </h1>
+            )}
           </div>
         )}
 
-        {/* --- RIGHT SIDE: ACTIONS --- */}
+        {/* RIGHT SIDE: ACTIONS */}
         <div className="flex items-center gap-4">
           {user ? (
             <div className="flex items-center gap-5">
-              {/* FIX: Wrapped notification in Link so it works */}
               <Link to="/notifications" className="relative group text-gray-400 hover:text-white transition-colors">
                 <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
@@ -99,7 +140,6 @@ const Navbar = ({ onLogout }) => {
               </button>
             </div>
           ) : (
-            // PUBLIC AUTH BUTTONS
             <div className="flex items-center gap-4">
               <Link to="/login" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">
                 Log in
