@@ -25,10 +25,10 @@ const StudentDashboard = () => {
   }, [])
 
   const menuItems = [
-    { label: 'My Exams', path: '/exams', icon: FiFileText, color: 'from-blue-600 to-cyan-600', desc: 'View scheduled exams' },
-    { label: 'Join Live Quiz', path: '/join-quiz', icon: FiZap, color: 'from-emerald-600 to-teal-600', desc: 'Join with access code' },
-    { label: 'My Results', path: '/my-results', icon: FiBarChart2, color: 'from-purple-600 to-pink-600', desc: 'View your performance' },
-    { label: 'Study Materials', path: '/materials', icon: FiBook, color: 'from-amber-600 to-orange-600', desc: 'Access learning resources' },
+    { label: 'My Exams', path: '/student/exams', icon: FiFileText, color: 'from-blue-600 to-cyan-600', desc: 'View scheduled exams' },
+    { label: 'Join Live Quiz', path: '/student/join-quiz', icon: FiZap, color: 'from-emerald-600 to-teal-600', desc: 'Join with access code' },
+    { label: 'My Results', path: '/student/results', icon: FiBarChart2, color: 'from-purple-600 to-pink-600', desc: 'View your performance' },
+    { label: 'Study Materials', path: '/student/study-materials', icon: FiBook, color: 'from-amber-600 to-orange-600', desc: 'Access learning resources' },
     { label: 'Notifications', path: '/notifications', icon: FiBell, color: 'from-rose-600 to-pink-600', desc: `${stats.notifications} unread` },
     { label: 'Profile', path: '/profile', icon: FiUser, color: 'from-gray-600 to-gray-700', desc: 'Manage your profile' },
   ]
