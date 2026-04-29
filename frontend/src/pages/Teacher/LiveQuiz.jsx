@@ -35,7 +35,7 @@ const LiveQuiz = () => {
             <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center"><FiArrowLeft /></div>
             <span className="text-sm">Dashboard</span>
           </Link>
-          <Link to="/exams/create" className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl font-semibold text-sm hover:shadow-lg transition-all">
+          <Link to="/teacher/exams/create" className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl font-semibold text-sm hover:shadow-lg transition-all">
             <FiZap /> New Live Quiz
           </Link>
         </div>

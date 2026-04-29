@@ -190,6 +190,35 @@ const questionController = {
     }
   },
 
+  aiGenerate: async (req, res) => {
+    try {
+      const llmService = require('../services/llmService');
+      const { mode = 'random', topic, hints, subject_id, question_type, difficulty, count } = req.body;
+
+      const questions = await llmService.generateQuestion(mode, {
+        topic,
+        hints,
+        subject_id,
+        question_type,
+        difficulty,
+        count: parseInt(count) || 5
+      });
+
+      res.status(200).json({
+        success: true,
+        message: `${questions.length} questions generated`,
+        data: questions
+      });
+    } catch (error) {
+      console.error('AI generate error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'AI generation failed',
+        error: error.message
+      });
+    }
+  },
+
 };
 
 module.exports = questionController;

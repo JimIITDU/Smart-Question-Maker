@@ -74,4 +74,13 @@ router.delete(
   questionController.deleteQuestion
 );
 
+// AI Generate questions (teacher/coaching admin)
+router.post(
+  '/ai-generate',
+  authMiddleware,
+  tenantMiddleware,
+  roleMiddleware(2, 3),
+  questionController.aiGenerate
+);
+
 module.exports = router;

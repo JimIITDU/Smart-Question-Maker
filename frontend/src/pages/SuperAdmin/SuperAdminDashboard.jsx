@@ -26,7 +26,7 @@ const SuperAdminDashboard = () => {
 
   const menuItems = [
     { label: 'Manage Centers', path: '/super-admin/centers', icon: FiHome, color: 'from-blue-500 to-cyan-500', desc: `${stats.total} total centers` },
-    { label: 'Pending Approvals', path: '/super-admin/centers', icon: FiCheckCircle, color: 'from-amber-500 to-orange-500', desc: `${stats.pending} pending` },
+    // { label: 'Pending Approvals', path: '/super-admin/centers', icon: FiCheckCircle, color: 'from-amber-500 to-orange-500', desc: `${stats.pending} pending` },
     { label: 'Subscription Plans', path: '/super-admin/subscriptions', icon: FiCreditCard, color: 'from-purple-500 to-pink-500', desc: 'Manage platform plans' },
     { label: 'Notifications', path: '/notifications', icon: FiBell, color: 'from-rose-500 to-pink-500', desc: `${stats.notifications} unread` },
     { label: 'Profile', path: '/profile', icon: FiUser, color: 'from-gray-500 to-gray-600', desc: 'Manage your profile' },

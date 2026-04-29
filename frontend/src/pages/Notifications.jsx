@@ -44,7 +44,6 @@ const Notifications = () => {
       console.error('fetchNotifications error:', err)
       setError('Failed to load notifications')
     } finally {
-
       setLoading(false)
     }
   }
@@ -53,14 +52,18 @@ const Notifications = () => {
     try {
       await markAsRead(id)
       fetchNotifications()
-    } catch (err) {}
+    } catch (err) {
+      console.error('markAsRead error:', err)
+    }
   }
 
   const handleMarkAllAsRead = async () => {
     try {
       await markAllAsRead()
       fetchNotifications()
-    } catch (err) {}
+    } catch (err) {
+      console.error('markAllAsRead error:', err)
+    }
   }
 
   const getTypeStyle = (type) => {

@@ -145,6 +145,100 @@ const llmService = {
     }
     return results
   },
+
+  /**
+   * Generate questions using different modes
+   * @param {string} mode - 'random', 'guided', 'zero-shot'
+   * @param {object} params - topic, hints, subject_id, question_type, difficulty, count
+   * @returns {Promise<Array>} Array of generated questions
+   */
+  generateQuestion: async (mode, params) => {
+    const { topic = '', hints = '', subject_id = '', question_type = 'mcq', difficulty = 'medium', count = 5 } = params;
+    
+    // Simulate LLM delay
+    await new Promise(resolve => setTimeout(resolve, 1500 + Math.random() * 1500));
+
+    const sampleQuestions = {
+      physics: [
+        {
+          question_text: "What is Newton's first law of motion?",
+          question_type: 'descriptive',
+          difficulty: 'easy',
+          max_marks: 5,
+          expected_answer: "An object at rest stays at rest and an object in motion stays in motion with the same speed and in the same direction unless acted upon by an unbalanced force.",
+          correct_option: null
+        },
+        {
+          question_text: "Which of the following is true about acceleration due to gravity?",
+          question_type: 'mcq',
+          difficulty: 'medium',
+          max_marks: 2,
+          option_text_a: "It is constant everywhere on Earth",
+          option_text_b: "It varies with latitude",
+          option_text_c: "It is zero at the equator",
+          option_text_d: "It increases with altitude",
+          correct_option: "B"
+        }
+      ],
+      math: [
+        {
+          question_text: "Solve for x: 2x + 5 = 15",
+          question_type: 'descriptive',
+          difficulty: 'easy',
+          max_marks: 3,
+          expected_answer: "x = 5"
+        }
+      ],
+      // Add more subjects as needed
+    };
+
+    let questions = [];
+
+    switch (mode) {
+      case 'random':
+        // Pure AI based on topic
+        questions = Array.from({ length: count }, (_, i) => ({
+          question_text: `Sample ${question_type.toUpperCase()} question #${i+1} on "${topic}" (${difficulty})`,
+          question_type,
+          difficulty,
+          max_marks: question_type === 'descriptive' ? 5 : 2,
+          source: 'ai_random'
+        }));
+        if (question_type === 'mcq') {
+          questions.forEach(q => {
+            q.option_text_a = 'Option A';
+            q.option_text_b = 'Option B';
+            q.option_text_c = 'Option C';
+            q.option_text_d = 'Option D';
+            q.correct_option = 'A';
+          });
+        }
+        break;
+
+      case 'guided':
+        // Use hints/structure
+        questions = Array.from({ length: count }, (_, i) => ({
+          question_text: `Guided question #${i+1}: ${topic} [Hints: ${hints.substring(0,50)}...]`,
+          question_type,
+          difficulty,
+          max_marks: 5,
+          expected_answer: hints.substring(0,100),
+          source: 'ai_guided'
+        }));
+        break;
+
+      case 'zero-shot':
+        // Subject-only
+        const subjectQuestions = sampleQuestions[subject_id.toLowerCase()] || sampleQuestions.physics;
+        questions = subjectQuestions.slice(0, count);
+        break;
+
+      default:
+        questions = sampleQuestions.physics.slice(0, count);
+    }
+
+    return questions;
+  }
 }
 
 module.exports = llmService
