@@ -1,4 +1,4 @@
-﻿﻿import React, { useState, useEffect } from 'react'
+﻿﻿﻿﻿import React, { useState, useEffect } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { getQuestionById, API } from '../../services/api'
 
@@ -20,8 +20,10 @@ const EditQuestion = () => {
     option_text_c: '',
     option_text_d: '',
     correct_option: '',
+    is_multiple_correct: false,
     expected_answer: '',
   })
+
 
   // Track multiple correct options as array
   const [selectedCorrectOptions, setSelectedCorrectOptions] = useState([])
@@ -40,6 +42,11 @@ const EditQuestion = () => {
           const options = q.correct_option.split(',').map((opt) => opt.trim().toUpperCase())
           setSelectedCorrectOptions(options)
         }
+        // Set is_multiple_correct from loaded question
+        if (q.is_multiple_correct !== undefined) {
+          setFormData((fd) => ({ ...fd, is_multiple_correct: q.is_multiple_correct }))
+        }
+
       })
       .catch((err) => {
         const msg = err.response?.data?.message || err.message || 'Failed to load question'
@@ -59,15 +66,17 @@ const EditQuestion = () => {
         ? prev.filter((o) => o !== opt)
         : [...prev, opt]
       
-      // Update formData with comma-separated string
+      // Update formData with comma-separated string and flag
       setFormData((fd) => ({
         ...fd,
         correct_option: newSelection.sort().join(','),
+        is_multiple_correct: newSelection.length > 1,
       }))
       
       return newSelection
     })
   }
+
 
   const handleSubmit = async (e) => {
     e.preventDefault()

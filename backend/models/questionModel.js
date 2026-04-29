@@ -7,21 +7,22 @@ const questionModel = {
       coaching_center_id, subject_id, course_id, question_text, question_type,
       difficulty, expected_answer, max_marks,
       option_text_a, option_text_b, option_text_c, option_text_d,
-      correct_option, created_by, source,
+      correct_option, is_multiple_correct, created_by, source,
     } = data;
     const result = await db.query(
       `INSERT INTO question_bank
        (coaching_center_id, subject_id, course_id, question_text, question_type, difficulty,
         expected_answer, max_marks, option_text_a, option_text_b,
-        option_text_c, option_text_d, correct_option, created_by, source)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
+        option_text_c, option_text_d, correct_option, is_multiple_correct, created_by, source)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
        RETURNING question_id`,
       [coaching_center_id, subject_id, course_id, question_text, question_type, difficulty,
        expected_answer, max_marks, option_text_a, option_text_b,
-       option_text_c, option_text_d, correct_option, created_by, source]
+       option_text_c, option_text_d, correct_option, is_multiple_correct || false, created_by, source]
     );
     return result.rows[0].question_id;
   },
+
 
 
   getAllQuestions: async (filters) => {
@@ -65,20 +66,21 @@ const questionModel = {
     const {
       question_text, question_type, difficulty, expected_answer,
       max_marks, option_text_a, option_text_b,
-      option_text_c, option_text_d, correct_option,
+      option_text_c, option_text_d, correct_option, is_multiple_correct,
     } = data;
     await db.query(
       `UPDATE question_bank
        SET question_text=$1, question_type=$2, difficulty=$3,
            expected_answer=$4, max_marks=$5, option_text_a=$6,
            option_text_b=$7, option_text_c=$8, option_text_d=$9,
-           correct_option=$10
-       WHERE question_id=$11`,
+           correct_option=$10, is_multiple_correct=$11
+       WHERE question_id=$12`,
       [question_text, question_type, difficulty, expected_answer,
        max_marks, option_text_a, option_text_b,
-       option_text_c, option_text_d, correct_option, id]
+       option_text_c, option_text_d, correct_option, is_multiple_correct || false, id]
     );
   },
+
 
   deleteQuestion: async (id) => {
     await db.query(

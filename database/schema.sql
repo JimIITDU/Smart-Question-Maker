@@ -255,7 +255,9 @@ CREATE TABLE question_bank (
   option_text_c   TEXT,
   option_text_d   TEXT,
   correct_option  TEXT,
+  is_multiple_correct BOOLEAN DEFAULT FALSE,
   created_by      INTEGER REFERENCES users(user_id),
+
   source          source_enum DEFAULT 'manual',
   created_at      TIMESTAMP DEFAULT NOW()
 );

@@ -28,8 +28,13 @@ const QuestionBank = () => {
     option_text_c: '',
     option_text_d: '',
     correct_option: 'A',
+    is_multiple_correct: false,
     expected_answer: '',
   })
+
+  // Track multiple correct options for inline form
+  const [selectedCorrectOptions, setSelectedCorrectOptions] = useState([])
+
 
   useEffect(() => {
     fetchQuestions()
@@ -53,6 +58,24 @@ const QuestionBank = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
+  // Handle multiple correct option selection in inline form
+  const toggleCorrectOption = (opt) => {
+    setSelectedCorrectOptions((prev) => {
+      const newSelection = prev.includes(opt)
+        ? prev.filter((o) => o !== opt)
+        : [...prev, opt]
+      
+      setFormData((fd) => ({
+        ...fd,
+        correct_option: newSelection.sort().join(','),
+        is_multiple_correct: newSelection.length > 1,
+      }))
+      
+      return newSelection
+    })
+  }
+
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
@@ -74,8 +97,11 @@ const QuestionBank = () => {
         option_text_c: '',
         option_text_d: '',
         correct_option: 'A',
+        is_multiple_correct: false,
         expected_answer: '',
       })
+      setSelectedCorrectOptions([])
+
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to create question')
     }
@@ -281,24 +307,33 @@ const QuestionBank = () => {
                     ))}
                   </div>
                   <div className="pt-2">
-                    <label className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2 block">Correct Option</label>
+                    <label className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2 block">
+                      Correct Option(s) <span className="text-indigo-400 normal-case font-normal text-xs">- Select all that apply</span>
+                    </label>
                     <div className="flex gap-2">
                       {['A', 'B', 'C', 'D'].map((opt) => (
                         <button
                           type="button"
                           key={opt}
-                          onClick={() => setFormData({...formData, correct_option: opt})}
-                          className={`flex-1 py-2 rounded-lg text-sm font-bold border transition-all ${
-                            formData.correct_option === opt 
-                              ? 'bg-indigo-600 border-indigo-500 text-white' 
+                          onClick={() => toggleCorrectOption(opt)}
+                          className={`flex-1 py-2 rounded-lg text-sm font-bold border transition-all flex items-center justify-center gap-1 ${
+                            selectedCorrectOptions.includes(opt)
+                              ? 'bg-emerald-600 border-emerald-500 text-white' 
                               : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10'
                           }`}
                         >
+                          {selectedCorrectOptions.includes(opt) && <span className="text-xs">✓</span>}
                           {opt}
                         </button>
                       ))}
                     </div>
+                    {selectedCorrectOptions.length > 1 && (
+                      <p className="text-xs text-emerald-400 mt-2">
+                        Multiple correct: {selectedCorrectOptions.sort().join(', ')}
+                      </p>
+                    )}
                   </div>
+
                 </div>
               )}
 
@@ -358,7 +393,13 @@ const QuestionBank = () => {
                     <span className="px-2.5 py-1 rounded-md text-xs font-medium bg-white/5 text-gray-400 border border-white/10">
                       {q.max_marks} Mark{q.max_marks > 1 ? 's' : ''}
                     </span>
+                    {q.is_multiple_correct && (
+                      <span className="px-2.5 py-1 rounded-md text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                        Multiple Correct
+                      </span>
+                    )}
                   </div>
+
 
                   {(user?.role_id === 2 || user?.role_id === 3) && (
                     <button
@@ -381,8 +422,10 @@ const QuestionBank = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {['a', 'b', 'c', 'd'].map((opt) => {
                       const optText = q[`option_text_${opt}`]
-                      const isCorrect = q.correct_option === opt.toUpperCase()
+                      const correctOptions = q.correct_option ? q.correct_option.split(',').map(o => o.trim().toUpperCase()) : []
+                      const isCorrect = correctOptions.includes(opt.toUpperCase())
                       if (!optText) return null
+
 
                       return (
                         <div

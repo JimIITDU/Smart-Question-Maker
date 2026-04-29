@@ -296,11 +296,12 @@ const TakeExam = () => {
                       </label>
                     )
                   })}
-                  {selectedOptions.length > 0 && (
+                  {currentAnswer?.selected_options?.length > 0 && (
                     <p className="text-xs text-indigo-400 mt-1">
-                      Selected: {selectedOptions.sort().join(', ')}
+                      Selected: {currentAnswer.selected_options.sort().join(', ')}
                     </p>
                   )}
+
                 </div>
               )}
 

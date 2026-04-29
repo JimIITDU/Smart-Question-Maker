@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react'
+﻿﻿import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { createQuestion } from '../../services/api'
 import toast from 'react-hot-toast'
@@ -19,9 +19,11 @@ const CreateQuestion = () => {
     option_text_c: '',
     option_text_d: '',
     correct_option: '', // Will store comma-separated values: "A,B"
+    is_multiple_correct: false,
     expected_answer: '',
     source: 'manual',
   })
+
 
   // Track multiple correct options as array
   const [selectedCorrectOptions, setSelectedCorrectOptions] = useState([])
@@ -37,15 +39,17 @@ const CreateQuestion = () => {
         ? prev.filter((o) => o !== opt)
         : [...prev, opt]
       
-      // Update formData with comma-separated string
+      // Update formData with comma-separated string and flag
       setFormData((fd) => ({
         ...fd,
         correct_option: newSelection.sort().join(','),
+        is_multiple_correct: newSelection.length > 1,
       }))
       
       return newSelection
     })
   }
+
 
   const handleSubmit = async (e) => {
     e.preventDefault()

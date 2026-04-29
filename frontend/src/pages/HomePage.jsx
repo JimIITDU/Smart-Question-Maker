@@ -34,7 +34,7 @@ const HomePage = () => {
               <FiCpu className="text-white text-lg" />
             </div>
             <span className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
-              Smart Coaching
+              ProshnoGhor
             </span>
           </div>
           <div className="hidden md:flex items-center space-x-6">

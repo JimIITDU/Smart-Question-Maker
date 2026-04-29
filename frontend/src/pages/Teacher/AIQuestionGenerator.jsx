@@ -1,4 +1,4 @@
-﻿﻿import React, { useState } from 'react'
+﻿﻿﻿﻿import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { aiGenerate, bulkCreateQuestions } from '../../services/api'
@@ -165,19 +165,26 @@ const AIQuestionGenerator = () => {
                 <div key={i} className="bg-white/5 border border-white/5 rounded-xl p-5">
                   <div className="flex justify-between items-start mb-3">
                     <span className="text-gray-500 font-mono text-sm">#{i + 1}</span>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 flex-wrap">
                       <span className="text-xs bg-purple-500/10 text-purple-400 px-2 py-0.5 rounded">{q.question_type || formData.question_type}</span>
                       <span className="text-xs bg-white/5 text-gray-400 px-2 py-0.5 rounded">{q.difficulty || formData.difficulty}</span>
+                      {q.is_multiple_correct && (
+                        <span className="text-xs bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/20">Multiple Correct</span>
+                      )}
                     </div>
                   </div>
                   <p className="text-gray-200 mb-3">{q.question_text}</p>
                   {q.option_text_a && (
                     <div className="grid grid-cols-2 gap-2">
-                      {['a', 'b', 'c', 'd'].map(opt => q[`option_text_${opt}`] && (
-                        <div key={opt} className={`text-xs p-2 rounded-lg border ${q.correct_option === opt.toUpperCase() ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-white/5 border-white/5 text-gray-400'}`}>
-                          <span className="font-bold uppercase mr-1">{opt}.</span>{q[`option_text_${opt}`]}
-                        </div>
-                      ))}
+                      {(() => {
+                        const correctOpts = q.correct_option ? q.correct_option.split(',').map(o => o.trim().toUpperCase()) : [];
+                        return ['a', 'b', 'c', 'd'].map(opt => q[`option_text_${opt}`] && (
+                          <div key={opt} className={`text-xs p-2 rounded-lg border ${correctOpts.includes(opt.toUpperCase()) ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-white/5 border-white/5 text-gray-400'}`}>
+                            <span className="font-bold uppercase mr-1">{opt}.</span>{q[`option_text_${opt}`]}
+                            {correctOpts.includes(opt.toUpperCase()) && <span className="ml-1 text-emerald-300">✓</span>}
+                          </div>
+                        ));
+                      })()}
                     </div>
                   )}
                 </div>
