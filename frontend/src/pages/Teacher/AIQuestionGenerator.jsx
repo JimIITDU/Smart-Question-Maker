@@ -49,7 +49,7 @@ const AIQuestionGenerator = () => {
 
       <nav className="fixed top-0 w-full z-50 border-b border-white/5 bg-[#030712]/70 backdrop-blur-xl">
         <div className="max-w-4xl mx-auto px-6 h-20 flex items-center gap-4">
-          <Link to="/questions" className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
+          <Link to="/dashboard" className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
             <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center"><FiArrowLeft /></div>
             <span className="text-sm">Question Bank</span>
           </Link>

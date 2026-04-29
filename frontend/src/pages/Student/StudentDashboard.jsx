@@ -5,7 +5,7 @@ import { getAllExams, getUnreadNotifications } from '../../services/api'
 import { FiBook, FiFileText, FiBarChart2, FiBell, FiUser, FiZap } from 'react-icons/fi'
 
 const StudentDashboard = () => {
-  const { user } = useAuth()
+  const { user, logoutUser } = useAuth() // Added logoutUser
   const [stats, setStats] = useState({ exams: 0, notifications: 0 })
 
   useEffect(() => {
@@ -42,7 +42,21 @@ const StudentDashboard = () => {
         <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-cyan-600/5 rounded-full blur-[120px]"></div>
       </div>
 
-      <main className="relative z-10 max-w-7xl mx-auto px-6 pt-10 pb-20">
+      {/* --- THE NAVBAR YOU REQUESTED --- */}
+      <nav className="fixed top-0 w-full z-50 border-b border-white/5 bg-[#030712]/70 backdrop-blur-xl">
+        <div className="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center font-bold text-white">SQ</div>
+            <div>
+              <p className="text-sm font-semibold text-white">{user?.name}</p>
+              <p className="text-xs text-gray-500">Student</p>
+            </div>
+          </div>
+          <button onClick={logoutUser} className="text-gray-500 hover:text-red-400 transition-colors text-sm">Logout</button>
+        </div>
+      </nav>
+
+      <main className="relative z-10 max-w-7xl mx-auto px-6 pt-20 pb-20">
         
         {/* Header */}
         <div className="mb-10 animate-fade-in-up">

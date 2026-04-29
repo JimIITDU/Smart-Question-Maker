@@ -15,7 +15,7 @@ const ParentDashboard = () => {
   }, [])
 
   const menuItems = [
-    { label: "Child's Results", path: '/parent/results', icon: FiBarChart2, color: 'from-blue-500 to-cyan-500', desc: 'View academic performance' },
+    { label: "Child's Results", path: '/parent/child-results', icon: FiBarChart2, color: 'from-blue-500 to-cyan-500', desc: 'View academic performance' },
     { label: 'Notifications', path: '/notifications', icon: FiBell, color: 'from-amber-500 to-orange-500', desc: `${notifications} unread` },
     { label: 'Profile', path: '/profile', icon: FiUser, color: 'from-gray-500 to-gray-600', desc: 'Manage your profile' },
   ]
