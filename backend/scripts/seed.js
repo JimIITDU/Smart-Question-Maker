@@ -213,30 +213,35 @@ async function seed() {
     // Questions
     console.log('❓ Creating questions...');
     await client.query(
-      `INSERT INTO question_bank (subject_id, course_id, question_text, question_type, difficulty, option_text_a, option_text_b, option_text_c, option_text_d, correct_option, max_marks, created_by, source)
-       VALUES ($1, $2, 'What is 2 + 2?', 'mcq', 'easy', '3', '4', '5', '6', 'B', 1, $3, 'manual')`,
-      [subject1Id, course1Id, teacherId]
+      `INSERT INTO question_bank (coaching_center_id, subject_id, course_id, question_text, question_type, difficulty, option_text_a, option_text_b, option_text_c, option_text_d, correct_option, max_marks, created_by, source)
+       VALUES ($1, $2, $3, 'What is 2 + 2?', 'mcq', 'easy', '3', '4', '5', '6', 'B', 1, $4, 'manual')`,
+      [centerId, subject1Id, course1Id, teacherId]
     );
+
     await client.query(
-      `INSERT INTO question_bank (subject_id, course_id, question_text, question_type, difficulty, option_text_a, option_text_b, option_text_c, option_text_d, correct_option, max_marks, created_by, source)
-       VALUES ($1, $2, 'What is the value of Pi (π) approximately?', 'mcq', 'easy', '2.14', '3.14', '4.14', '1.14', 'B', 1, $3, 'manual')`,
-      [subject1Id, course1Id, teacherId]
+      `INSERT INTO question_bank (coaching_center_id, subject_id, course_id, question_text, question_type, difficulty, option_text_a, option_text_b, option_text_c, option_text_d, correct_option, max_marks, created_by, source)
+       VALUES ($1, $2, $3, 'What is the value of Pi (π) approximately?', 'mcq', 'easy', '2.14', '3.14', '4.14', '1.14', 'B', 1, $4, 'manual')`,
+      [centerId, subject1Id, course1Id, teacherId]
     );
+
     await client.query(
-      `INSERT INTO question_bank (subject_id, course_id, question_text, question_type, difficulty, option_text_a, option_text_b, option_text_c, option_text_d, correct_option, max_marks, created_by, source)
-       VALUES ($1, $2, 'What is Newton''s First Law of Motion?', 'mcq', 'medium', 'Law of Acceleration', 'Law of Inertia', 'Law of Gravitation', 'Law of Energy', 'B', 2, $3, 'manual')`,
-      [subject2Id, course1Id, teacherId]
+      `INSERT INTO question_bank (coaching_center_id, subject_id, course_id, question_text, question_type, difficulty, option_text_a, option_text_b, option_text_c, option_text_d, correct_option, max_marks, created_by, source)
+       VALUES ($1, $2, $3, 'What is Newton''s First Law of Motion?', 'mcq', 'medium', 'Law of Acceleration', 'Law of Inertia', 'Law of Gravitation', 'Law of Energy', 'B', 2, $4, 'manual')`,
+      [centerId, subject2Id, course1Id, teacherId]
     );
+
     await client.query(
-      `INSERT INTO question_bank (subject_id, course_id, question_text, question_type, difficulty, expected_answer, max_marks, created_by, source)
-       VALUES ($1, $2, 'Explain the Pythagorean theorem and give an example.', 'descriptive', 'hard', 'The Pythagorean theorem states that in a right triangle, the square of the hypotenuse equals the sum of squares of the other two sides. Example: 3² + 4² = 5²', 5, $3, 'manual')`,
-      [subject1Id, course1Id, teacherId]
+      `INSERT INTO question_bank (coaching_center_id, subject_id, course_id, question_text, question_type, difficulty, expected_answer, max_marks, created_by, source)
+       VALUES ($1, $2, $3, 'Explain the Pythagorean theorem and give an example.', 'descriptive', 'hard', 'The Pythagorean theorem states that in a right triangle, the square of the hypotenuse equals the sum of squares of the other two sides. Example: 3² + 4² = 5²', 5, $4, 'manual')`,
+      [centerId, subject1Id, course1Id, teacherId]
     );
+
     await client.query(
-      `INSERT INTO question_bank (subject_id, course_id, question_text, question_type, difficulty, option_text_a, option_text_b, correct_option, max_marks, created_by, source)
-       VALUES ($1, $2, 'The speed of light is approximately 3 × 10⁸ m/s.', 'true_false', 'easy', 'True', 'False', 'A', 1, $3, 'manual')`,
-      [subject2Id, course1Id, teacherId]
+      `INSERT INTO question_bank (coaching_center_id, subject_id, course_id, question_text, question_type, difficulty, option_text_a, option_text_b, correct_option, max_marks, created_by, source)
+       VALUES ($1, $2, $3, 'The speed of light is approximately 3 × 10⁸ m/s.', 'true_false', 'easy', 'True', 'False', 'A', 1, $4, 'manual')`,
+      [centerId, subject2Id, course1Id, teacherId]
     );
+
 
     console.log('✅ Questions created!');
 

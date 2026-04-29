@@ -6,6 +6,7 @@ const questionController = {
     try {
       const questionId = await questionModel.createQuestion({
         ...req.body,
+        coaching_center_id: req.user.coaching_center_id,
         created_by: req.user.user_id,
         source: 'manual',
       });
@@ -27,6 +28,7 @@ const questionController = {
   getAllQuestions: async (req, res) => {
     try {
       const filters = {
+        coaching_center_id: req.user.coaching_center_id,
         subject_id: req.query.subject_id,
         course_id: req.query.course_id,
         difficulty: req.query.difficulty,
@@ -140,6 +142,7 @@ const questionController = {
 
       const questionsWithUser = questions.map((q) => ({
         ...q,
+        coaching_center_id: req.user.coaching_center_id,
         created_by: req.user.user_id,
         source: 'manual',
       }));
@@ -167,6 +170,7 @@ const questionController = {
       const { subject_id, difficulty, limit } = req.query;
 
       const questions = await questionModel.getRandomQuestions(
+        req.user.coaching_center_id,
         subject_id,
         difficulty,
         parseInt(limit) || 10

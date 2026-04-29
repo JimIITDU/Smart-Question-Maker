@@ -1,8 +1,9 @@
-﻿import React, { useState, useEffect } from 'react'
+﻿﻿import React, { useState, useEffect } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { getAllQuestions } from '../../services/api'
+import { getQuestionById, API } from '../../services/api'
+
 import toast from 'react-hot-toast'
-import { FiArrowLeft, FiSave } from 'react-icons/fi'
+import { FiArrowLeft, FiSave, FiCheckSquare } from 'react-icons/fi'
 
 const EditQuestion = () => {
   const { id } = useParams()
@@ -18,32 +19,69 @@ const EditQuestion = () => {
     option_text_b: '',
     option_text_c: '',
     option_text_d: '',
-    correct_option: 'A',
+    correct_option: '',
     expected_answer: '',
   })
 
+  // Track multiple correct options as array
+  const [selectedCorrectOptions, setSelectedCorrectOptions] = useState([])
+
   useEffect(() => {
-    getAllQuestions().then(r => {
-      const q = r.data.data.find(q => q.question_id === parseInt(id))
-      if (q) setFormData(q)
-    }).catch(() => toast.error('Failed to load question')).finally(() => setFetching(false))
+    getQuestionById(id)
+      .then((res) => {
+        const q = res.data.data
+        if (!q) {
+          toast.error('Question not found')
+          return
+        }
+        setFormData(q)
+        // Parse comma-separated correct_option into array
+        if (q.correct_option) {
+          const options = q.correct_option.split(',').map((opt) => opt.trim().toUpperCase())
+          setSelectedCorrectOptions(options)
+        }
+      })
+      .catch((err) => {
+        const msg = err.response?.data?.message || err.message || 'Failed to load question'
+        console.error('Error loading question:', err)
+        toast.error(msg)
+      })
+      .finally(() => setFetching(false))
   }, [id])
 
+
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value })
+
+  // Handle multiple correct option selection
+  const toggleCorrectOption = (opt) => {
+    setSelectedCorrectOptions((prev) => {
+      const newSelection = prev.includes(opt)
+        ? prev.filter((o) => o !== opt)
+        : [...prev, opt]
+      
+      // Update formData with comma-separated string
+      setFormData((fd) => ({
+        ...fd,
+        correct_option: newSelection.sort().join(','),
+      }))
+      
+      return newSelection
+    })
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
     try {
-      await fetch(`https://smart-question-maker-backend.onrender.com/api/questions/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` },
-        body: JSON.stringify(formData),
-      })
+      await API.put(`/questions/${id}`, formData)
       toast.success('Question updated!')
+
       navigate('/questions')
-    } catch {
-      toast.error('Failed to update question')
+    } catch (err) {
+      const msg = err.response?.data?.message || err.message || 'Failed to update question'
+      console.error('Error updating question:', err)
+      toast.error(msg)
+
     } finally {
       setLoading(false)
     }
@@ -104,9 +142,44 @@ const EditQuestion = () => {
                   </div>
                 ))}
               </div>
-              <div className="flex gap-2">
-                {['A', 'B', 'C', 'D'].map((opt) => (
-                  <button type="button" key={opt} onClick={() => setFormData({ ...formData, correct_option: opt })} className={`flex-1 py-2 rounded-xl font-bold border transition-all ${formData.correct_option === opt ? 'bg-blue-600 border-blue-500 text-white' : 'bg-white/5 border-white/10 text-gray-400'}`}>{opt}</button>
+              <div>
+                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-2">
+                  Correct Option(s) <span className="text-blue-400 normal-case font-normal">- Select all that apply</span>
+                </label>
+                <div className="flex gap-2">
+                  {['A', 'B', 'C', 'D'].map((opt) => (
+                    <button
+                      type="button"
+                      key={opt}
+                      onClick={() => toggleCorrectOption(opt)}
+                      className={`flex-1 py-2 rounded-xl font-bold border transition-all flex items-center justify-center gap-2 ${
+                        selectedCorrectOptions.includes(opt)
+                          ? 'bg-emerald-600 border-emerald-500 text-white'
+                          : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10'
+                      }`}
+                    >
+                      {selectedCorrectOptions.includes(opt) && <FiCheckSquare className="text-sm" />}
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+                {selectedCorrectOptions.length > 1 && (
+                  <p className="text-xs text-emerald-400 mt-2">
+                    Multiple correct answers selected: {selectedCorrectOptions.sort().join(', ')}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {formData.question_type === 'true_false' && (
+            <div>
+              <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-2">Correct Answer</label>
+              <div className="flex gap-4">
+                {['True', 'False'].map((opt) => (
+                  <button type="button" key={opt} onClick={() => setFormData({ ...formData, correct_option: opt })} className={`flex-1 py-3 rounded-xl font-bold border transition-all ${formData.correct_option === opt ? 'bg-blue-600 border-blue-500 text-white' : 'bg-white/5 border-white/10 text-gray-400'}`}>
+                    {opt}
+                  </button>
                 ))}
               </div>
             </div>

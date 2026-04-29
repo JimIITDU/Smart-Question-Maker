@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const API = axios.create({
+export const API = axios.create({
+
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
 });
 
@@ -39,7 +40,9 @@ export const getAllSubjects = () => API.get('/academic/subjects');
 // Questions
 export const createQuestion = (data) => API.post('/questions', data);
 export const getAllQuestions = (filters) => API.get('/questions', { params: filters });
+export const getQuestionById = (id) => API.get(`/questions/${id}`);
 export const deleteQuestion = (id) => API.delete(`/questions/${id}`);
+
 export const getRandomQuestions = (params) => API.get('/questions/random', { params });
 
 // Exams
@@ -50,7 +53,10 @@ export const getExamQuestions = (id) => API.get(`/exams/${id}/questions`);
 export const startExam = (id) => API.put(`/exams/${id}/start`);
 export const submitExam = (id, data) => API.post(`/exams/${id}/submit`, data);
 export const getResults = (id) => API.get(`/exams/${id}/results`);
+export const evaluateWritten = (id) => API.post(`/exams/${id}/evaluate-written`);
+export const getAllResults = (id) => API.get(`/exams/${id}/all-results`);
 export const joinExam = (data) => API.post('/exams/join', data);
+
 export const updateProfile = (data) => API.put('/auth/profile', data);
 export const changePassword = (data) => API.put('/auth/change-password', data);
 

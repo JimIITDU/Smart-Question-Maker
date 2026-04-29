@@ -151,7 +151,7 @@ const ManageBatches = () => {
                 <div className="w-full bg-white/10 rounded-full h-1.5 mb-4">
                   <div className="bg-purple-500 h-1.5 rounded-full transition-all" style={{ width: `${batch.max_students > 0 ? ((batch.current_students || 0) / batch.max_students) * 100 : 0}%` }}></div>
                 </div>
-                <Link to={`/admin/students`} className="w-full flex items-center justify-center gap-2 py-2 bg-purple-500/10 text-purple-400 border border-purple-500/20 rounded-xl text-sm font-semibold hover:bg-purple-500/20 transition-all">
+                <Link to={`/coaching-admin/students`} className="w-full flex items-center justify-center gap-2 py-2 bg-purple-500/10 text-purple-400 border border-purple-500/20 rounded-xl text-sm font-semibold hover:bg-purple-500/20 transition-all">
                   <FiUsers size={14} /> Manage Students
                 </Link>
               </div>

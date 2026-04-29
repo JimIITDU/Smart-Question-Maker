@@ -8,7 +8,9 @@ DROP TABLE IF EXISTS result_summary CASCADE;
 DROP TABLE IF EXISTS quiz_exam CASCADE;
 DROP TABLE IF EXISTS question_bank CASCADE;
 DROP TABLE IF EXISTS subjects CASCADE;
+DROP TABLE IF EXISTS batch_enrollment CASCADE;
 DROP TABLE IF EXISTS batch CASCADE;
+
 DROP TABLE IF EXISTS course CASCADE;
 DROP TABLE IF EXISTS subscription CASCADE;
 DROP TABLE IF EXISTS notification CASCADE;
@@ -239,7 +241,9 @@ CREATE TABLE subjects (
 -- ==================
 CREATE TABLE question_bank (
   question_id     SERIAL PRIMARY KEY,
+  coaching_center_id INTEGER REFERENCES coaching_center(coaching_center_id),
   subject_id      INTEGER REFERENCES subjects(subject_id),
+
   course_id       INTEGER REFERENCES course(course_id),
   question_text   TEXT NOT NULL,
   question_type   question_type_enum NOT NULL,
@@ -261,7 +265,9 @@ CREATE TABLE question_bank (
 -- ==================
 CREATE TABLE quiz_exam (
   exam_id         SERIAL PRIMARY KEY,
+  coaching_center_id INTEGER REFERENCES coaching_center(coaching_center_id),
   subject_id      INTEGER REFERENCES subjects(subject_id),
+
   batch_id        INTEGER REFERENCES batch(batch_id),
   exam_type       exam_type_enum NOT NULL,
   host_teacher_id INTEGER REFERENCES users(user_id),
@@ -290,7 +296,9 @@ CREATE TABLE exam_questions (
 -- ==================
 CREATE TABLE result_summary (
   result_id        SERIAL PRIMARY KEY,
+  coaching_center_id INTEGER REFERENCES coaching_center(coaching_center_id),
   exam_id          INTEGER REFERENCES quiz_exam(exam_id),
+
   student_id       INTEGER REFERENCES users(user_id),
   question_id      INTEGER REFERENCES question_bank(question_id),
   descriptive_answer TEXT,

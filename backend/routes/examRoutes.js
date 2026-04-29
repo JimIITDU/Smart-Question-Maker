@@ -3,11 +3,13 @@ const router = express.Router();
 const examController = require('../controllers/examController');
 const authMiddleware = require('../middleware/authMiddleware');
 const roleMiddleware = require('../middleware/roleMiddleware');
+const tenantMiddleware = require('../middleware/tenantMiddleware');
 
 // Teacher creates exam
 router.post(
   '/',
   authMiddleware,
+  tenantMiddleware,
   roleMiddleware(2, 3),
   examController.createExam
 );
@@ -16,6 +18,7 @@ router.post(
 router.get(
   '/',
   authMiddleware,
+  tenantMiddleware,
   roleMiddleware(2, 3, 5),
   examController.getAllExams
 );
@@ -24,6 +27,7 @@ router.get(
 router.get(
   '/:id',
   authMiddleware,
+  tenantMiddleware,
   examController.getExamById
 );
 
@@ -31,6 +35,7 @@ router.get(
 router.get(
   '/:id/questions',
   authMiddleware,
+  tenantMiddleware,
   examController.getExamQuestions
 );
 
@@ -38,6 +43,7 @@ router.get(
 router.put(
   '/:id/start',
   authMiddleware,
+  tenantMiddleware,
   roleMiddleware(2, 3),
   examController.startExam
 );
@@ -46,6 +52,7 @@ router.put(
 router.post(
   '/join',
   authMiddleware,
+  tenantMiddleware,
   roleMiddleware(5),
   examController.joinExam
 );
@@ -54,6 +61,7 @@ router.post(
 router.post(
   '/:id/submit',
   authMiddleware,
+  tenantMiddleware,
   roleMiddleware(5),
   examController.submitExam
 );
@@ -62,6 +70,7 @@ router.post(
 router.get(
   '/:id/results',
   authMiddleware,
+  tenantMiddleware,
   examController.getResults
 );
 
@@ -69,8 +78,27 @@ router.get(
 router.put(
   '/:id/end',
   authMiddleware,
+  tenantMiddleware,
   roleMiddleware(2, 3),
   examController.endExam
+);
+
+// Evaluate written answers with LLM (teacher)
+router.post(
+  '/:id/evaluate-written',
+  authMiddleware,
+  tenantMiddleware,
+  roleMiddleware(2, 3),
+  examController.evaluateWritten
+);
+
+// Get all results for an exam (teacher)
+router.get(
+  '/:id/all-results',
+  authMiddleware,
+  tenantMiddleware,
+  roleMiddleware(2, 3),
+  examController.getAllResults
 );
 
 module.exports = router;

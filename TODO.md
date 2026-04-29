@@ -1,37 +1,24 @@
-# Fix Exams and Notifications Loading Issues
+# Fix "Failed to load question" Error
 
-## Phase 1: Fix Backend SQL Queries
-- [x] `backend/models/examModel.js` - Add JOINs for subject_name, batch_name
-- [x] `backend/controllers/examController.js` - Add error logging, fix createExam
+## Root Cause
+Database schema mismatch: `question_bank` table missing `coaching_center_id` column
 
-## Phase 2: Fix Frontend Error Handling
-- [x] `frontend/src/pages/Student/Exams.jsx` - Add console.error logging
-- [x] `frontend/src/pages/Notifications.jsx` - Add console.error logging
+## Tasks
 
-## Phase 3: Fix Notification Controller
-- [x] `backend/controllers/notificationController.js` - Add error logging
+- [x] 1. Create migration script to add `coaching_center_id` column to `question_bank`
+- [x] 2. Fix `seed.js` to include `coaching_center_id` in question inserts
+- [x] 3. Add `getQuestionById` to `frontend/src/services/api.js`
+- [x] 4. Fix `EditQuestion.jsx` - use getQuestionById, fix hardcoded URL, improve error handling
+- [x] 5. Fix `QuestionBank.jsx` - show actual error messages
+- [ ] 6. Run migration script to fix local database
+- [ ] 7. Test the fix
 
-## Summary of Changes
 
-### `backend/models/examModel.js`
-- Added LEFT JOINs to `subjects` and `batch` tables in:
-  - `getAllExams()` 
-  - `getAllExamsForStudent()`
-  - `getExamById()`
-  - `getExamByAccessCode()`
-- Now returns `subject_name` and `batch_name` alongside exam data
+## Commands to Run After Fixes
+```bash
+# Add missing column to existing database
+node backend/scripts/migrateAddCenterId.js
 
-### `backend/controllers/examController.js`
-- Added `console.error()` in ALL catch blocks for better debugging
-- Fixed `createExam` to accept and pass `title` and `duration_minutes` from request body
-- Auto-generates title if not provided: `Exam ${subject_id || 'N/A'}`
-- Defaults duration to 60 minutes if not provided
-
-### `backend/controllers/notificationController.js`
-- Added `console.error()` in ALL catch blocks for better debugging
-
-### `frontend/src/pages/Student/Exams.jsx`
-- Added `console.error()` in `fetchExams`, `fetchQuestions`, `handleSubmit`, `handleStartExam` catch blocks
-
-### `frontend/src/pages/Notifications.jsx`
-- Added `console.error()` in `fetchNotifications` catch block
+# Or re-initialize completely (loses all data)
+node backend/scripts/initDb.js
+node backend/scripts/seed.js

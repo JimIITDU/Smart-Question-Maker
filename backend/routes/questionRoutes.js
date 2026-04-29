@@ -3,6 +3,7 @@ const router = express.Router();
 const questionController = require('../controllers/questionController');
 const authMiddleware = require('../middleware/authMiddleware');
 const roleMiddleware = require('../middleware/roleMiddleware');
+const tenantMiddleware = require('../middleware/tenantMiddleware');
 
 // Role IDs:
 // 1 = super_admin
@@ -15,6 +16,7 @@ const roleMiddleware = require('../middleware/roleMiddleware');
 router.post(
   '/',
   authMiddleware,
+  tenantMiddleware,
   roleMiddleware(2, 3, 5),
   questionController.createQuestion
 );
@@ -23,6 +25,7 @@ router.post(
 router.post(
   '/bulk',
   authMiddleware,
+  tenantMiddleware,
   roleMiddleware(2, 3, 5),
   questionController.bulkCreateQuestions
 );
@@ -31,6 +34,7 @@ router.post(
 router.get(
   '/random',
   authMiddleware,
+  tenantMiddleware,
   roleMiddleware(2, 3, 5),
   questionController.getRandomQuestions
 );
@@ -39,6 +43,7 @@ router.get(
 router.get(
   '/',
   authMiddleware,
+  tenantMiddleware,
   roleMiddleware(2, 3, 5),
   questionController.getAllQuestions
 );
@@ -47,6 +52,7 @@ router.get(
 router.get(
   '/:id',
   authMiddleware,
+  tenantMiddleware,
   questionController.getQuestionById
 );
 
@@ -54,6 +60,7 @@ router.get(
 router.put(
   '/:id',
   authMiddleware,
+  tenantMiddleware,
   roleMiddleware(2, 3, 5),
   questionController.updateQuestion
 );
@@ -62,6 +69,7 @@ router.put(
 router.delete(
   '/:id',
   authMiddleware,
+  tenantMiddleware,
   roleMiddleware(2, 3, 5),
   questionController.deleteQuestion
 );

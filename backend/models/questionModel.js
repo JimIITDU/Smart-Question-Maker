@@ -4,29 +4,34 @@ const questionModel = {
 
   createQuestion: async (data) => {
     const {
-      subject_id, course_id, question_text, question_type,
+      coaching_center_id, subject_id, course_id, question_text, question_type,
       difficulty, expected_answer, max_marks,
       option_text_a, option_text_b, option_text_c, option_text_d,
       correct_option, created_by, source,
     } = data;
     const result = await db.query(
       `INSERT INTO question_bank
-       (subject_id, course_id, question_text, question_type, difficulty,
+       (coaching_center_id, subject_id, course_id, question_text, question_type, difficulty,
         expected_answer, max_marks, option_text_a, option_text_b,
         option_text_c, option_text_d, correct_option, created_by, source)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
        RETURNING question_id`,
-      [subject_id, course_id, question_text, question_type, difficulty,
+      [coaching_center_id, subject_id, course_id, question_text, question_type, difficulty,
        expected_answer, max_marks, option_text_a, option_text_b,
        option_text_c, option_text_d, correct_option, created_by, source]
     );
     return result.rows[0].question_id;
   },
 
+
   getAllQuestions: async (filters) => {
     let query = 'SELECT * FROM question_bank WHERE 1=1';
     const values = [];
     let i = 1;
+    if (filters.coaching_center_id) {
+      query += ` AND coaching_center_id = $${i++}`;
+      values.push(filters.coaching_center_id);
+    }
     if (filters.subject_id) {
       query += ` AND subject_id = $${i++}`;
       values.push(filters.subject_id);
@@ -47,6 +52,7 @@ const questionModel = {
     const result = await db.query(query, values);
     return result.rows;
   },
+
 
   getQuestionById: async (id) => {
     const result = await db.query(
@@ -89,10 +95,14 @@ const questionModel = {
     return ids;
   },
 
-  getRandomQuestions: async (subject_id, difficulty, limit) => {
+  getRandomQuestions: async (coaching_center_id, subject_id, difficulty, limit) => {
     let query = 'SELECT * FROM question_bank WHERE 1=1';
     const values = [];
     let i = 1;
+    if (coaching_center_id) {
+      query += ` AND coaching_center_id = $${i++}`;
+      values.push(coaching_center_id);
+    }
     if (subject_id) {
       query += ` AND subject_id = $${i++}`;
       values.push(subject_id);
@@ -106,6 +116,7 @@ const questionModel = {
     const result = await db.query(query, values);
     return result.rows;
   },
+
 
 };
 

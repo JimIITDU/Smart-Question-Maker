@@ -93,10 +93,11 @@ const authController = {
 
       // Generate JWT token
       const token = jwt.sign(
-        { user_id: user.user_id, role_id: user.role_id, email: user.email },
+        { user_id: user.user_id, role_id: user.role_id, email: user.email, coaching_center_id: user.coaching_center_id },
         process.env.JWT_SECRET,
         { expiresIn: '7d' }
       );
+
 
       // Get full user with role_name
       const fullUser = await userModel.findById(user.user_id);

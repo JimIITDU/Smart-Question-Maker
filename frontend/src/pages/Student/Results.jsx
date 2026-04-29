@@ -23,6 +23,10 @@ const X = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg>
 )
 
+const Cpu = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M15 2v2"/><path d="M15 20v2"/><path d="M2 15h2"/><path d="M2 9h2"/><path d="M20 15h2"/><path d="M20 9h2"/><path d="M9 2v2"/><path d="M9 20v2"/></svg>
+)
+
 const Results = () => {
   const { id } = useParams()
   const location = useLocation()
@@ -147,6 +151,8 @@ const Results = () => {
 
             {results.results.map((r, index) => {
               const isCorrect = parseFloat(r.marks_obtained) > 0
+              const isDescriptive = r.question_type === 'descriptive'
+              const isLLM = r.evaluated_by === 'llm'
               
               return (
                 <div
@@ -160,11 +166,24 @@ const Results = () => {
                     
                     {/* Question Content */}
                     <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-3">
+                      <div className="flex items-center gap-3 mb-3 flex-wrap">
                         <span className="text-gray-500 font-mono text-sm">0{index + 1}</span>
                         <span className={`text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded ${isCorrect ? 'text-emerald-400 bg-emerald-500/10' : 'text-rose-400 bg-rose-500/10'}`}>
                            {isCorrect ? 'Correct' : 'Incorrect'}
                         </span>
+                        {isDescriptive && (
+                          <span className={`text-xs px-2 py-0.5 rounded flex items-center gap-1 ${
+                            isLLM ? 'bg-indigo-500/10 text-indigo-400' : 'bg-gray-500/10 text-gray-400'
+                          }`}>
+                            <Cpu />
+                            {isLLM ? 'AI Evaluated' : 'Pending'}
+                          </span>
+                        )}
+                        {isLLM && r.confidence_score && (
+                          <span className="text-xs text-gray-500">
+                            Confidence: {(r.confidence_score * 100).toFixed(0)}%
+                          </span>
+                        )}
                       </div>
                       
                       <h3 className="text-lg text-gray-200 font-medium mb-2 leading-relaxed">
@@ -173,8 +192,24 @@ const Results = () => {
                       
                       {r.question_type === 'mcq' && (
                         <div className="mt-3 flex items-center gap-2 text-sm bg-white/5 p-3 rounded-lg border border-white/5">
-                          <span className="text-gray-500 font-semibold">Answer:</span>
-                          <span className="text-indigo-400 font-mono">{r.correct_option}</span>
+                          <span className="text-gray-500 font-semibold">Correct:</span>
+                          <span className="text-emerald-400 font-mono">{r.correct_option}</span>
+                        </div>
+                      )}
+
+                      {isDescriptive && r.descriptive_answer && (
+                        <div className="mt-3 bg-white/5 p-3 rounded-lg border border-white/5">
+                          <p className="text-xs text-gray-500 uppercase mb-1">Your Answer</p>
+                          <p className="text-gray-300 text-sm">{r.descriptive_answer}</p>
+                        </div>
+                      )}
+
+                      {isDescriptive && r.feedback && (
+                        <div className="mt-3 bg-indigo-500/5 border border-indigo-500/10 p-3 rounded-lg">
+                          <p className="text-xs text-indigo-400 uppercase mb-1 flex items-center gap-1">
+                            <Cpu /> AI Feedback
+                          </p>
+                          <p className="text-gray-300 text-sm">{r.feedback}</p>
                         </div>
                       )}
                     </div>

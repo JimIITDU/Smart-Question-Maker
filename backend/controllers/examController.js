@@ -1,5 +1,7 @@
 const examModel = require('../models/examModel');
 const questionModel = require('../models/questionModel');
+const llmService = require('../services/llmService');
+
 
 const examController = {
   createExam: async (req, res) => {
@@ -31,6 +33,7 @@ const examController = {
 
       // 4. Create the Exam
       const examId = await examModel.createExam({
+        coaching_center_id: req.user.coaching_center_id,
         subject_id,
         batch_id,
         exam_type,
@@ -74,9 +77,9 @@ const examController = {
     try {
       let exams;
       if (req.user.role_id === 5) {
-        exams = await examModel.getAllExamsForStudent();
+        exams = await examModel.getAllExamsForStudent(req.user.coaching_center_id);
       } else {
-        exams = await examModel.getAllExams(req.user.user_id);
+        exams = await examModel.getAllExams(req.user.user_id, req.user.coaching_center_id);
       }
       res.status(200).json({
         success: true,
@@ -260,6 +263,7 @@ const examController = {
 
       let totalMarks = 0;
       let obtainedMarks = 0;
+      const descriptiveResults = [];
 
       for (const answer of answers) {
         const question = await questionModel.getQuestionById(
@@ -268,17 +272,33 @@ const examController = {
 
         let marks_obtained = 0;
 
-        // Auto grade MCQ
+        // Auto grade MCQ - support multiple correct answers
         if (question.question_type === 'mcq') {
-          if (answer.selected_option === question.correct_option) {
-            marks_obtained = question.max_marks;
+          const correctOptions = question.correct_option
+            ? question.correct_option.split(',').map((opt) => opt.trim().toUpperCase())
+            : [];
+          const selectedOptions = answer.selected_options
+            ? answer.selected_options.map((opt) => opt.trim().toUpperCase())
+            : [answer.selected_option?.trim().toUpperCase()].filter(Boolean);
+
+          if (selectedOptions.length > 0 && correctOptions.length > 0) {
+            // Check if all selected options are correct and no incorrect options selected
+            const allCorrect = selectedOptions.every((opt) => correctOptions.includes(opt));
+            const noExtra = selectedOptions.length === correctOptions.length;
+            if (allCorrect && noExtra) {
+              marks_obtained = question.max_marks;
+            } else if (allCorrect && selectedOptions.length < correctOptions.length) {
+              // Partial credit for partially correct
+              marks_obtained = (selectedOptions.length / correctOptions.length) * question.max_marks;
+            }
           }
         }
 
         totalMarks += question.max_marks;
         obtainedMarks += marks_obtained;
 
-        await examModel.submitAnswer({
+        const resultId = await examModel.submitAnswer({
+          coaching_center_id: req.user.coaching_center_id,
           exam_id,
           student_id: req.user.user_id,
           question_id: answer.question_id,
@@ -286,11 +306,48 @@ const examController = {
           marks_obtained,
           evaluated_by: question.question_type === 'mcq'
             ? 'teacher'
-            : 'llm',
+            : 'pending',
         });
+
+        // Track descriptive answers for LLM evaluation
+        if (question.question_type === 'descriptive') {
+          descriptiveResults.push({
+            result_id: resultId,
+            question_text: question.question_text,
+            student_answer: answer.descriptive_answer,
+            expected_answer: question.expected_answer,
+            max_marks: question.max_marks,
+          });
+        }
+      }
+
+      // Auto-evaluate descriptive answers with LLM
+      if (descriptiveResults.length > 0) {
+        try {
+          for (const desc of descriptiveResults) {
+            const evaluation = await llmService.evaluateWrittenAnswer(
+              desc.question_text,
+              desc.student_answer,
+              desc.expected_answer,
+              desc.max_marks
+            );
+            await examModel.evaluateResult(
+              desc.result_id,
+              evaluation.marks_obtained,
+              evaluation.feedback,
+              evaluation.confidence_score,
+              'llm'
+            );
+            obtainedMarks += evaluation.marks_obtained;
+          }
+        } catch (evalError) {
+          console.error('Auto LLM evaluation error:', evalError);
+          // Continue without failing the submission
+        }
       }
 
       const percentage = (obtainedMarks / totalMarks) * 100;
+
       const result_status = percentage >= 50 ? 'pass' : 'fail';
 
       res.status(200).json({
@@ -365,6 +422,86 @@ const examController = {
       });
     } catch (error) {
       console.error('endExam error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Server error',
+        error: error.message,
+      });
+    }
+  },
+
+  // Evaluate written answers with LLM (teacher endpoint)
+  evaluateWritten: async (req, res) => {
+    try {
+      const exam_id = req.params.id;
+
+      const exam = await examModel.getExamById(exam_id);
+      if (!exam) {
+        return res.status(404).json({
+          success: false,
+          message: 'Exam not found',
+        });
+      }
+
+      // Get un-evaluated descriptive results
+      const unevaluated = await examModel.getUnevaluatedResults(exam_id);
+
+      if (unevaluated.length === 0) {
+        return res.status(200).json({
+          success: true,
+          message: 'No pending descriptive answers to evaluate',
+          data: [],
+        });
+      }
+
+      const evaluated = [];
+      for (const result of unevaluated) {
+        const evaluation = await llmService.evaluateWrittenAnswer(
+          result.question_text,
+          result.descriptive_answer,
+          result.expected_answer,
+          result.max_marks
+        );
+        await examModel.evaluateResult(
+          result.result_id,
+          evaluation.marks_obtained,
+          evaluation.feedback,
+          evaluation.confidence_score,
+          'llm'
+        );
+        evaluated.push({
+          result_id: result.result_id,
+          student_id: result.student_id,
+          ...evaluation,
+        });
+      }
+
+      res.status(200).json({
+        success: true,
+        message: `${evaluated.length} answer(s) evaluated successfully`,
+        data: evaluated,
+      });
+    } catch (error) {
+      console.error('evaluateWritten error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Server error',
+        error: error.message,
+      });
+    }
+  },
+
+  // Get all results for an exam (teacher endpoint)
+  getAllResults: async (req, res) => {
+    try {
+      const results = await examModel.getAllResultsByExam(req.params.id);
+      res.status(200).json({
+        success: true,
+        count: results.length,
+        data: results,
+      });
+    } catch (error) {
+      console.error('getAllResults error:', error);
       res.status(500).json({
         success: false,
         message: 'Server error',

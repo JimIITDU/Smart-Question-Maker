@@ -11,6 +11,10 @@ const CheckCircle = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
 )
 
+const SquareCheck = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><polyline points="9 11 12 14 22 4"/></svg>
+)
+
 const TakeExam = () => {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -54,16 +58,37 @@ const TakeExam = () => {
     }
   }
 
-  const handleAnswer = (question_id, value, type) => {
+  // Handle single answer (true_false, descriptive)
+  const handleSingleAnswer = (question_id, value, type) => {
     setAnswers(prev => ({
       ...prev,
       [question_id]: {
         question_id,
-        ...(type === 'mcq' || type === 'true_false'
+        ...(type === 'true_false'
           ? { selected_option: value }
           : { descriptive_answer: value }),
       },
     }))
+  }
+
+  // Handle multiple MCQ selections
+  const handleMCQAnswer = (question_id, option) => {
+    setAnswers(prev => {
+      const current = prev[question_id] || { question_id, selected_options: [] }
+      const currentOptions = current.selected_options || []
+      
+      const newOptions = currentOptions.includes(option)
+        ? currentOptions.filter(o => o !== option)
+        : [...currentOptions, option]
+      
+      return {
+        ...prev,
+        [question_id]: {
+          question_id,
+          selected_options: newOptions,
+        },
+      }
+    })
   }
 
   const handleSubmit = async (isAuto = false) => {
@@ -104,6 +129,24 @@ const TakeExam = () => {
     }
   }
 
+  // Check if a question has been answered
+  const isQuestionAnswered = (q) => {
+    const answer = answers[q.question_id]
+    if (!answer) return false
+    if (q.question_type === 'mcq') {
+      return answer.selected_options && answer.selected_options.length > 0
+    }
+    if (q.question_type === 'true_false') {
+      return !!answer.selected_option
+    }
+    if (q.question_type === 'descriptive') {
+      return !!answer.descriptive_answer && answer.descriptive_answer.trim().length > 0
+    }
+    return false
+  }
+
+  const answeredCount = questions.filter(isQuestionAnswered).length
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#0B0C15] flex items-center justify-center">
@@ -128,7 +171,7 @@ const TakeExam = () => {
               {exam?.subject_name}
             </h1>
             <p className="text-xs text-gray-500 mt-1">
-              {questions.length} Questions • <span className="text-indigo-400 font-medium">{Object.keys(answers).length} Answered</span>
+              {questions.length} Questions • <span className="text-indigo-400 font-medium">{answeredCount} Answered</span>
             </p>
           </div>
 
@@ -156,7 +199,7 @@ const TakeExam = () => {
         <div className="w-full h-1 bg-white/5">
           <div 
             className="h-full bg-gradient-to-r from-indigo-500 to-cyan-500 transition-all duration-500"
-            style={{ width: `${(Object.keys(answers).length / questions.length) * 100}%` }}
+            style={{ width: `${(answeredCount / questions.length) * 100}%` }}
           ></div>
         </div>
       </header>
@@ -174,6 +217,7 @@ const TakeExam = () => {
         <div className="space-y-8">
           {questions.map((q, index) => {
             const currentAnswer = answers[q.question_id]
+            const isAnswered = isQuestionAnswered(q)
             
             return (
             <div
@@ -183,8 +227,12 @@ const TakeExam = () => {
               {/* Question Header */}
               <div className="flex items-start justify-between mb-6">
                 <div className="flex items-center gap-4">
-                  <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-500/10 text-indigo-400 font-bold text-sm border border-indigo-500/20">
-                    {index + 1}
+                  <span className={`flex items-center justify-center w-8 h-8 rounded-lg font-bold text-sm border ${
+                    isAnswered
+                      ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                      : 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20'
+                  }`}>
+                    {isAnswered ? <CheckCircle /> : index + 1}
                   </span>
                   <span className={`px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider border ${getDifficultyColor(q.difficulty)}`}>
                     {q.difficulty}
@@ -200,21 +248,22 @@ const TakeExam = () => {
                 {q.question_text}
               </h2>
 
-              {/* MCQ Options - FIXED FOR RELIABILITY */}
+              {/* MCQ Options - MULTI-SELECT SUPPORT */}
               {q.question_type === 'mcq' && (
                 <div className="space-y-3">
+                  <p className="text-xs text-gray-500 mb-2">Select all that apply:</p>
                   {['A', 'B', 'C', 'D'].map((opt) => {
                     const optionText = q[`option_text_${opt.toLowerCase()}`]
                     if (!optionText) return null
-                    const isSelected = currentAnswer?.selected_option === opt
+                    const selectedOptions = currentAnswer?.selected_options || []
+                    const isSelected = selectedOptions.includes(opt)
                     
                     return (
                       <label
                         key={opt}
                         onClick={(e) => {
-                          // Force the state update manually via onClick on the label
-                          e.preventDefault(); // Prevent default label behavior just in case
-                          handleAnswer(q.question_id, opt, 'mcq');
+                          e.preventDefault()
+                          handleMCQAnswer(q.question_id, opt)
                         }}
                         className={`group relative flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all duration-200 select-none ${
                           isSelected 
@@ -222,19 +271,16 @@ const TakeExam = () => {
                             : 'bg-[#0B0C15] border-white/5 hover:border-white/20 hover:bg-white/5 active:scale-[0.99]'
                         }`}
                       >
-                        {/* Hidden input for semantics, but we don't rely on its onChange */}
                         <input
-                          type="radio"
-                          name={`question_${q.question_id}`}
-                          value={opt}
+                          type="checkbox"
                           checked={isSelected}
                           className="hidden" 
                         />
                         
-                        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors shrink-0 pointer-events-none ${
+                        <div className={`w-6 h-6 rounded border-2 flex items-center justify-center transition-colors shrink-0 pointer-events-none ${
                           isSelected ? 'border-indigo-500 bg-indigo-500' : 'border-gray-600 group-hover:border-gray-400'
                         }`}>
-                          {isSelected && <span className="w-2 h-2 bg-white rounded-full"></span>}
+                          {isSelected && <span className="text-white text-xs">✓</span>}
                         </div>
                         <div className="flex-1 pointer-events-none">
                           <span className="text-xs font-bold text-gray-500 mb-0.5 block">Option {opt}</span>
@@ -244,16 +290,21 @@ const TakeExam = () => {
                         </div>
                         {isSelected && (
                           <div className="absolute right-4 text-indigo-400 pointer-events-none">
-                             <CheckCircle />
+                             <SquareCheck />
                           </div>
                         )}
                       </label>
                     )
                   })}
+                  {selectedOptions.length > 0 && (
+                    <p className="text-xs text-indigo-400 mt-1">
+                      Selected: {selectedOptions.sort().join(', ')}
+                    </p>
+                  )}
                 </div>
               )}
 
-              {/* True/False Options - FIXED */}
+              {/* True/False Options */}
               {q.question_type === 'true_false' && (
                 <div className="grid grid-cols-2 gap-4">
                   {['True', 'False'].map((opt) => {
@@ -262,8 +313,8 @@ const TakeExam = () => {
                       <label
                         key={opt}
                         onClick={(e) => {
-                            e.preventDefault();
-                            handleAnswer(q.question_id, opt, 'mcq');
+                            e.preventDefault()
+                            handleSingleAnswer(q.question_id, opt, 'true_false')
                         }}
                         className={`relative group flex items-center justify-center gap-3 p-6 rounded-xl border cursor-pointer transition-all duration-200 select-none ${
                           isSelected 
@@ -294,7 +345,7 @@ const TakeExam = () => {
                     placeholder="Type your detailed answer here..."
                     value={currentAnswer?.descriptive_answer || ''}
                     onChange={(e) =>
-                      handleAnswer(q.question_id, e.target.value, 'descriptive')
+                      handleSingleAnswer(q.question_id, e.target.value, 'descriptive')
                     }
                     className="w-full bg-[#0B0C15] border border-white/10 rounded-xl p-4 text-gray-300 focus:text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/50 transition-all resize-none"
                   ></textarea>

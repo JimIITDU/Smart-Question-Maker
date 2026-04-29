@@ -40,11 +40,14 @@ const QuestionBank = () => {
       const res = await getAllQuestions()
       setQuestions(res.data.data)
     } catch (err) {
-      setError('Failed to load questions')
+      const msg = err.response?.data?.message || err.response?.data?.error || err.message || 'Failed to load questions'
+      console.error('Error loading questions:', err)
+      setError(msg)
     } finally {
       setLoading(false)
     }
   }
+
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })

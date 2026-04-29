@@ -251,7 +251,6 @@ const Profile = () => {
                     <option value="" className="bg-[#0B0C15]">Select gender</option>
                     <option value="male" className="bg-[#0B0C15]">Male</option>
                     <option value="female" className="bg-[#0B0C15]">Female</option>
-                    <option value="other" className="bg-[#0B0C15]">Other</option>
                   </select>
                 </div>
                 <div className="space-y-2">

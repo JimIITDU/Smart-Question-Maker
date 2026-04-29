@@ -2,7 +2,7 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { createQuestion } from '../../services/api'
 import toast from 'react-hot-toast'
-import { FiArrowLeft, FiSave } from 'react-icons/fi'
+import { FiArrowLeft, FiSave, FiCheckSquare } from 'react-icons/fi'
 
 const CreateQuestion = () => {
   const navigate = useNavigate()
@@ -18,13 +18,33 @@ const CreateQuestion = () => {
     option_text_b: '',
     option_text_c: '',
     option_text_d: '',
-    correct_option: 'A',
+    correct_option: '', // Will store comma-separated values: "A,B"
     expected_answer: '',
     source: 'manual',
   })
 
+  // Track multiple correct options as array
+  const [selectedCorrectOptions, setSelectedCorrectOptions] = useState([])
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
+  }
+
+  // Handle multiple correct option selection
+  const toggleCorrectOption = (opt) => {
+    setSelectedCorrectOptions((prev) => {
+      const newSelection = prev.includes(opt)
+        ? prev.filter((o) => o !== opt)
+        : [...prev, opt]
+      
+      // Update formData with comma-separated string
+      setFormData((fd) => ({
+        ...fd,
+        correct_option: newSelection.sort().join(','),
+      }))
+      
+      return newSelection
+    })
   }
 
   const handleSubmit = async (e) => {
@@ -109,14 +129,31 @@ const CreateQuestion = () => {
                 ))}
               </div>
               <div>
-                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-2">Correct Option</label>
+                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-2">
+                  Correct Option(s) <span className="text-blue-400 normal-case font-normal">- Select all that apply</span>
+                </label>
                 <div className="flex gap-2">
                   {['A', 'B', 'C', 'D'].map((opt) => (
-                    <button type="button" key={opt} onClick={() => setFormData({ ...formData, correct_option: opt })} className={`flex-1 py-2 rounded-xl font-bold border transition-all ${formData.correct_option === opt ? 'bg-blue-600 border-blue-500 text-white' : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10'}`}>
+                    <button
+                      type="button"
+                      key={opt}
+                      onClick={() => toggleCorrectOption(opt)}
+                      className={`flex-1 py-2 rounded-xl font-bold border transition-all flex items-center justify-center gap-2 ${
+                        selectedCorrectOptions.includes(opt)
+                          ? 'bg-emerald-600 border-emerald-500 text-white'
+                          : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10'
+                      }`}
+                    >
+                      {selectedCorrectOptions.includes(opt) && <FiCheckSquare className="text-sm" />}
                       {opt}
                     </button>
                   ))}
                 </div>
+                {selectedCorrectOptions.length > 1 && (
+                  <p className="text-xs text-emerald-400 mt-2">
+                    Multiple correct answers selected: {selectedCorrectOptions.sort().join(', ')}
+                  </p>
+                )}
               </div>
             </div>
           )}
