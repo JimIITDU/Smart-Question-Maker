@@ -244,6 +244,83 @@ const centerController = {
     }
   },
 
+  // Get my subscription (coaching admin)
+  getMySubscription: async (req, res) => {
+    try {
+      const subscription = await centerModel.getCenterSubscription(
+        req.user.user_id
+      );
+      if (!subscription) {
+        return res.status(404).json({
+          success: false,
+          message: 'You do not have a center yet',
+        });
+      }
+      res.status(200).json({
+        success: true,
+        data: subscription,
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: 'Server error',
+        error: error.message,
+      });
+    }
+  },
+
+  // Upgrade subscription (coaching admin)
+  upgradeSubscription: async (req, res) => {
+    try {
+      const { plan_id } = req.body;
+
+      if (!plan_id) {
+        return res.status(400).json({
+          success: false,
+          message: 'Plan ID is required',
+        });
+      }
+
+      // Get the user's center
+      const center = await centerModel.getCenterByUserId(
+        req.user.user_id
+      );
+      if (!center) {
+        return res.status(404).json({
+          success: false,
+          message: 'You do not have a center yet',
+        });
+      }
+
+      // Check if center is active
+      if (center.status !== 'active') {
+        return res.status(400).json({
+          success: false,
+          message: 'Your center must be approved before upgrading subscription',
+        });
+      }
+
+      // Update the subscription
+      const updatedCenter = await centerModel.updateCenterSubscription(
+        center.coaching_center_id,
+        plan_id
+      );
+
+      res.status(200).json({
+        success: true,
+        message: 'Subscription upgraded successfully',
+        data: updatedCenter,
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: 'Server error',
+        error: error.message,
+      });
+    }
+  },
+
 };
+
 
 module.exports = centerController;

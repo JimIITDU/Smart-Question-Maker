@@ -56,11 +56,25 @@ const authController = {
         return res.status(400).json({ success: false, message: 'OTP has expired. Please register again.' });
       }
 
-      await userModel.verifyEmail(user.user_id);
+await userModel.verifyEmail(user.user_id);
+
+      // Generate JWT token (auto-login after OTP verification)
+      const token = jwt.sign(
+        { user_id: user.user_id, role_id: user.role_id, email: user.email, coaching_center_id: user.coaching_center_id },
+        process.env.JWT_SECRET,
+        { expiresIn: '7d' }
+      );
+
+      // Get full user with role_name
+      const fullUser = await userModel.findById(user.user_id);
+      delete fullUser.password_hash;
+      delete fullUser.otp;
+      delete fullUser.otp_expires_at;
 
       res.status(200).json({
         success: true,
-        message: 'Email verified successfully. You can now login.',
+        message: 'Email verified successfully',
+        data: { token, user: fullUser },
       });
 
     } catch (error) {
@@ -221,7 +235,7 @@ const authController = {
       if (!isMatch) {
         return res.status(400).json({ success: false, message: 'Current password is incorrect' });
       }
-
+c
       const salt = await bcrypt.genSalt(10);
       const password_hash = await bcrypt.hash(new_password, salt);
 

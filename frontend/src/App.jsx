@@ -133,9 +133,9 @@ function App() {
               <Route path="/teacher/questions/create" element={<CreateQuestion />} />
               <Route path="/teacher/questions/:id/edit" element={<EditQuestion />} />
               <Route path="/teacher/questions/ai-generate" element={<AIQuestionGenerator />} />
-              <Route path="/teacher/exams" element={<ManageExams />} />
+<Route path="/teacher/exams" element={<ManageExams />} />
               <Route path="/teacher/exams/create" element={<CreateExam />} />
-              <Route path="/teacher/exams/:id" element={<ExamDetails />} />
+              <Route path="/teacher/exams/:id/details" element={<ExamDetails />} />
               <Route path="/teacher/live-quiz" element={<LiveQuiz />} />
               <Route path="/teacher/analytics" element={<Analytics />} />
               <Route path="/teacher/upload-material" element={<UploadMaterial />} />

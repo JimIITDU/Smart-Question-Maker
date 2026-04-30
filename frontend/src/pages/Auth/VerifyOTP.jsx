@@ -23,16 +23,24 @@ const VerifyOTP = () => {
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const handleSubmit = async (e) => {
+const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
     setLoading(true)
 
     try {
-      await verifyOTP({ email, otp })
-      setSuccess('Email verified successfully!')
+      const response = await verifyOTP({ email, otp })
+      const { token, user } = response.data.data
+
+      // Auto-login: store token and user data
+      localStorage.setItem('token', token)
+      localStorage.setItem('user', JSON.stringify(user))
       localStorage.removeItem('verify_email')
-      setTimeout(() => navigate('/login'), 2000)
+
+      setSuccess('Email verified successfully!')
+      
+      // Redirect to dashboard immediately
+      setTimeout(() => navigate('/dashboard'), 1500)
     } catch (err) {
       setError(err.response?.data?.message || 'Invalid OTP')
     } finally {
@@ -84,7 +92,7 @@ const VerifyOTP = () => {
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
             </div>
             <p className="text-green-400 text-sm font-medium text-center">{success}</p>
-            <p className="text-gray-500 text-xs">Redirecting to login...</p>
+<p className="text-gray-500 text-xs">Redirecting to dashboard...</p>
           </div>
         )}
 

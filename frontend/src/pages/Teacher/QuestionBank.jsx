@@ -11,8 +11,8 @@ const PlusIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height
 
 // Class options
 const CLASS_OPTIONS = [
-  '1st', '2nd', '3rd', '4', '5', '6', '7', '8',
-  '9-10 (Secondary)', '11-12(Higher Secondary)',
+  '1', '2', '3', '4', '5', '6', '7', '8',
+  '9-10 (Secondary)', '11-12(Higher Secondary)', 'Bachelor(pass)',
   'Bachelor(hons)', 'Masters', 'MPhil', 'others'
 ]
 

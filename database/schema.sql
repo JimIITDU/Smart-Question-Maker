@@ -16,7 +16,9 @@ DROP TABLE IF EXISTS subscription CASCADE;
 DROP TABLE IF EXISTS notification CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
 DROP TABLE IF EXISTS coaching_center CASCADE;
+DROP TABLE IF EXISTS subscription_plans CASCADE;
 DROP TABLE IF EXISTS roles CASCADE;
+
 
 -- Drop ENUM types if they exist
 DROP TYPE IF EXISTS role_name_enum CASCADE;
@@ -85,8 +87,32 @@ INSERT INTO roles (role_name) VALUES
   ('parent');
 
 -- ==================
+-- Subscription Plans Table
+-- ==================
+CREATE TABLE subscription_plans (
+  plan_id          SERIAL PRIMARY KEY,
+  name             VARCHAR(100) NOT NULL,
+  price            DECIMAL(10,2) NOT NULL DEFAULT 0,
+  features         TEXT[],
+  max_students     INTEGER,
+  max_courses      INTEGER,
+  max_exams        INTEGER,
+  ai_questions_limit INTEGER,
+  support_level    VARCHAR(50),
+  is_active        BOOLEAN DEFAULT TRUE,
+  created_at       TIMESTAMP DEFAULT NOW(),
+  updated_at       TIMESTAMP DEFAULT NOW()
+);
+
+INSERT INTO subscription_plans (name, price, features, max_students, max_courses, max_exams, ai_questions_limit, support_level) VALUES
+  ('Free', 0, ARRAY['Up to 50 students', '5 courses', 'Basic exams', 'Email support'], 50, 5, 10, 0, 'Email'),
+  ('Basic', 999, ARRAY['Up to 200 students', '20 courses', 'All exam types', 'AI questions (50/mo)', 'Priority support'], 200, 20, 50, 50, 'Priority'),
+  ('Pro', 2999, ARRAY['Unlimited students', 'Unlimited courses', 'All exam types', 'AI questions unlimited', 'Analytics dashboard', '24/7 support'], NULL, NULL, NULL, NULL, '24/7');
+
+-- ==================
 -- Coaching Center Table
 -- ==================
+
 CREATE TABLE coaching_center (
   coaching_center_id SERIAL PRIMARY KEY,
   user_id            INTEGER,
@@ -97,8 +123,12 @@ CREATE TABLE coaching_center (
   established_date   DATE,
   access_type        access_type_enum  DEFAULT 'free',
   status             center_status_enum DEFAULT 'pending',
+  current_plan_id    INTEGER REFERENCES subscription_plans(plan_id) DEFAULT 1,
+  subscription_start TIMESTAMP,
+  subscription_end   TIMESTAMP,
   created_at         TIMESTAMP DEFAULT NOW()
 );
+
 
 -- ==================
 -- Users Table
@@ -157,6 +187,12 @@ CREATE TRIGGER update_users_updated_at
   BEFORE UPDATE ON users
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_subscription_plans_updated_at
+  BEFORE UPDATE ON subscription_plans
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
+
 
 -- ==================
 -- Subscription Table

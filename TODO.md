@@ -1,11 +1,12 @@
-# Implementation TODO - COMPLETED
+# Auto-Login After OTP Verification
 
-## Database & Backend
-- [x] Update `database/schema.sql` - Add class_name, subject_name, paper, chapter, chapter_name, topic columns
-- [x] Update `backend/models/questionModel.js` - Handle all new fields in create/read/update
-- [x] Update `backend/controllers/questionController.js` - Update filter handling for all new fields
+## Plan
+Modify registration flow so after OTP verification, user is automatically logged in and redirected to dashboard instead of login page.
 
-## Frontend
-- [x] Update `frontend/src/pages/Teacher/QuestionBank.jsx` - Dropdown filters for Class/Paper/Chapter, dynamic Subject/Course label, search functionality
-- [x] Update `frontend/src/pages/Teacher/CreateQuestion.jsx` - Dropdowns for Class/Paper/Chapter Number, dynamic Subject/Course label, Chapter Name field
-- [x] Update `frontend/src/pages/Teacher/EditQuestion.jsx` - Same as CreateQuestion with proper data loading
+## Tasks
+- [x] Step 1: Modify backend `authController.js` — `verifyOTP` endpoint to generate JWT token and return user data
+- [x] Step 2: Modify frontend `VerifyOTP.jsx` — use token from response, redirect to `/dashboard`
+
+## Files to Edit
+1. `backend/controllers/authController.js`
+2. `frontend/src/pages/Auth/VerifyOTP.jsx`

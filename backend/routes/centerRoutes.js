@@ -36,7 +36,24 @@ router.get(
   centerController.getMyCenter
 );
 
+// Get my subscription (coaching admin)
+router.get(
+  '/my-subscription',
+  authMiddleware,
+  roleMiddleware(2),
+  centerController.getMySubscription
+);
+
+// Upgrade subscription (coaching admin)
+router.post(
+  '/upgrade-subscription',
+  authMiddleware,
+  roleMiddleware(2),
+  centerController.upgradeSubscription
+);
+
 // Get center by ID
+
 router.get(
   '/:id',
   authMiddleware,

@@ -79,7 +79,7 @@ const ManageExams = () => {
                       <FiPlay /> Start
                     </button>
                   )}
-                  <Link to={`/exams/${exam.exam_id}/details`} className="flex-1 flex items-center justify-center gap-2 py-2 bg-white/5 text-gray-300 border border-white/10 rounded-xl text-sm font-semibold hover:bg-white/10 transition-all">
+                  <Link to={`/teacher/exams/${exam.exam_id}/details`} className="flex-1 flex items-center justify-center gap-2 py-2 bg-white/5 text-gray-300 border border-white/10 rounded-xl text-sm font-semibold hover:bg-white/10 transition-all">
                     <FiEye /> Details
                   </Link>
                 </div>

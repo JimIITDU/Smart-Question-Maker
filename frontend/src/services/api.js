@@ -61,6 +61,19 @@ export const approveCenter = (id) => API.put(`/center/approve/${id}`);
 export const rejectCenter = (id) => API.put(`/center/reject/${id}`);
 export const suspendCenter = (id) => API.put(`/center/suspend/${id}`);
 
+// Center Subscription
+export const getMySubscription = () => API.get('/center/my-subscription');
+export const upgradeSubscription = (planId) => API.post('/center/upgrade-subscription', { plan_id: planId });
+
+// Subscription Plans
+export const getSubscriptionPlans = () => API.get('/subscription-plans/active');
+export const getAllSubscriptionPlans = () => API.get('/subscription-plans/all');
+export const getSubscriptionPlanById = (id) => API.get(`/subscription-plans/${id}`);
+export const createSubscriptionPlan = (data) => API.post('/subscription-plans', data);
+export const updateSubscriptionPlan = (id, data) => API.put(`/subscription-plans/${id}`, data);
+export const deleteSubscriptionPlan = (id) => API.delete(`/subscription-plans/${id}`);
+export const toggleSubscriptionPlanStatus = (id, data) => API.put(`/subscription-plans/${id}/toggle`, data);
+
 // Academic
 export const createCourse = (data) => API.post('/academic/courses', data);
 export const getAllCourses = () => API.get('/academic/courses');
@@ -103,4 +116,3 @@ export const aiGenerate = (data) => API.post('/questions/ai-generate', data);
 export const bulkCreateQuestions = (data) => API.post('/questions/bulk', data);
 
 export default API;
-
