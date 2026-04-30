@@ -31,6 +31,12 @@ const questionController = {
         coaching_center_id: req.user.coaching_center_id,
         subject_id: req.query.subject_id,
         course_id: req.query.course_id,
+        class_name: req.query.class_name,
+        subject_name: req.query.subject_name,
+        paper: req.query.paper,
+        chapter: req.query.chapter,
+        chapter_name: req.query.chapter_name,
+        topic: req.query.topic,
         difficulty: req.query.difficulty,
         question_type: req.query.question_type,
       };

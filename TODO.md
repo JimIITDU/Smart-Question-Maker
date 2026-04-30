@@ -1,12 +1,11 @@
-# Profile Save Server Error Fix
+# Implementation TODO - COMPLETED
 
-## Issue
-Profile save fails with server error because `date_of_birth` empty string `""` is sent to PostgreSQL DATE column, which only accepts `NULL` or valid dates.
+## Database & Backend
+- [x] Update `database/schema.sql` - Add class_name, subject_name, paper, chapter, chapter_name, topic columns
+- [x] Update `backend/models/questionModel.js` - Handle all new fields in create/read/update
+- [x] Update `backend/controllers/questionController.js` - Update filter handling for all new fields
 
-## Steps
-- [ ] Fix `frontend/src/pages/Profile.jsx` — format date for input, convert empty string to null before sending
-- [ ] Fix `backend/controllers/authController.js` — sanitize empty `date_of_birth` to `null`
-
-## Root Cause
-- `Profile.jsx` initializes `date_of_birth: user?.date_of_birth || ''` → empty string on submit → PostgreSQL rejects `""` for DATE type.
-- API date strings (e.g. `"2024-01-15T00:00:00.000Z"`) are also not formatted to `"YYYY-MM-DD"` for HTML date input.
+## Frontend
+- [x] Update `frontend/src/pages/Teacher/QuestionBank.jsx` - Dropdown filters for Class/Paper/Chapter, dynamic Subject/Course label, search functionality
+- [x] Update `frontend/src/pages/Teacher/CreateQuestion.jsx` - Dropdowns for Class/Paper/Chapter Number, dynamic Subject/Course label, Chapter Name field
+- [x] Update `frontend/src/pages/Teacher/EditQuestion.jsx` - Same as CreateQuestion with proper data loading

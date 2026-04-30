@@ -53,7 +53,7 @@ const LiveQuiz = () => {
           <div className="text-center py-20 border border-dashed border-white/10 rounded-2xl">
             <FiZap className="text-4xl text-gray-600 mx-auto mb-4" />
             <p className="text-gray-500 text-lg mb-4">No live quizzes yet</p>
-            <Link to="/exams/create" className="text-emerald-400 hover:text-emerald-300 font-medium">Create a live quiz</Link>
+            <Link to="/teacher/exams/create" className="text-emerald-400 hover:text-emerald-300 font-medium">Create a live quiz</Link>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">

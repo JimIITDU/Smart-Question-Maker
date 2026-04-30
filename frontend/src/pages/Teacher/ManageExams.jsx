@@ -39,7 +39,7 @@ const ManageExams = () => {
             <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center"><FiArrowLeft /></div>
             <span className="text-sm">Dashboard</span>
           </Link>
-          <Link to="/exams/create" className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-semibold text-sm hover:shadow-lg transition-all">
+          <Link to="/teacher/exams/create" className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-semibold text-sm hover:shadow-lg transition-all">
             <FiPlus /> Create Exam
           </Link>
         </div>
@@ -58,7 +58,7 @@ const ManageExams = () => {
         ) : exams.length === 0 ? (
           <div className="text-center py-20 border border-dashed border-white/10 rounded-2xl">
             <p className="text-gray-500 text-lg mb-4">No exams yet</p>
-            <Link to="/exams/create" className="text-purple-400 hover:text-purple-300 font-medium">Create your first exam</Link>
+            <Link to="/teacher/exams/create" className="text-purple-400 hover:text-purple-300 font-medium">Create your first exam</Link>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">

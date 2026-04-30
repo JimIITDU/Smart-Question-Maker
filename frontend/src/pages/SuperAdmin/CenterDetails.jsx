@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react'
+ import React, { useState, useEffect } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { getCenterById, approveCenter, rejectCenter } from '../../services/api'
 import toast from 'react-hot-toast'

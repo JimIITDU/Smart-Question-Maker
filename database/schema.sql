@@ -245,7 +245,15 @@ CREATE TABLE question_bank (
   subject_id      INTEGER REFERENCES subjects(subject_id),
 
   course_id       INTEGER REFERENCES course(course_id),
+  class_name      VARCHAR(100),
+  subject_name    VARCHAR(255),
+  paper           VARCHAR(100),
+  chapter         VARCHAR(255),
+  chapter_name    VARCHAR(255),
+  topic           VARCHAR(255),
+
   question_text   TEXT NOT NULL,
+
   question_type   question_type_enum NOT NULL,
   difficulty      difficulty_enum NOT NULL,
   expected_answer TEXT,
