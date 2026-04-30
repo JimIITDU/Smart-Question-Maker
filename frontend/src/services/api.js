@@ -56,8 +56,10 @@ export const getMe = () => API.get('/auth/me');
 export const applyForCenter = (data) => API.post('/center/apply', data);
 export const getMyCenter = () => API.get('/center/my-center');
 export const getAllCenters = () => API.get('/center/all');
+export const getCenterById = (id) => API.get(`/center/${id}`);
 export const approveCenter = (id) => API.put(`/center/approve/${id}`);
 export const rejectCenter = (id) => API.put(`/center/reject/${id}`);
+export const suspendCenter = (id) => API.put(`/center/suspend/${id}`);
 
 // Academic
 export const createCourse = (data) => API.post('/academic/courses', data);

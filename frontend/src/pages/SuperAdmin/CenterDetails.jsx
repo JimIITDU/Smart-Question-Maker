@@ -1,6 +1,6 @@
 ﻿import React, { useState, useEffect } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { approveCenter, rejectCenter } from '../../services/api'
+import { getCenterById, approveCenter, rejectCenter } from '../../services/api'
 import toast from 'react-hot-toast'
 import { FiArrowLeft, FiCheck, FiX } from 'react-icons/fi'
 
@@ -10,11 +10,8 @@ const CenterDetails = () => {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch(`https://smart-question-maker-backend.onrender.com/api/center/${id}`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-    })
-      .then(r => r.json())
-      .then(d => setCenter(d.data))
+    getCenterById(id)
+      .then(r => setCenter(r.data.data))
       .catch(() => toast.error('Failed to load center'))
       .finally(() => setLoading(false))
   }, [id])

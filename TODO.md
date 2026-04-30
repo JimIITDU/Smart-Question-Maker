@@ -1,27 +1,12 @@
-# Fix Navbar - Add Return to Dashboard Option
+# Profile Save Server Error Fix
 
-## Task
-Fix the Navbar so that when user is in profile.jsx or notifications.jsx, they see the option to return to dashboard. Also remove duplicate navbars from pages that have them.
+## Issue
+Profile save fails with server error because `date_of_birth` empty string `""` is sent to PostgreSQL DATE column, which only accepts `NULL` or valid dates.
 
 ## Steps
+- [ ] Fix `frontend/src/pages/Profile.jsx` — format date for input, convert empty string to null before sending
+- [ ] Fix `backend/controllers/authController.js` — sanitize empty `date_of_birth` to `null`
 
-### Step 1: Update Navbar.jsx
-- [ ] Add conditional "Return to Dashboard" link that appears when on profile or notifications page
-- [ ] Use dashboard link based on user role (e.g., /super-admin, /teacher, /student, etc.)
-
-### Step 2: Remove Duplicate Navbar from Notifications.jsx
-- [ ] Remove hardcoded `<nav>` element from Notifications.jsx
-- [ ] Keep the page content as it's wrapped in Layout with Navbar
-
-### Step 3: Remove Duplicate Navbars from Other Pages
-- [ ] Remove duplicate navbar from QuestionBank.jsx
-- [ ] Remove duplicate navbar from Results.jsx
-- [ ] Remove duplicate navbar from JoinQuiz.jsx
-- [ ] Remove duplicate navbar from Exams.jsx
-
-### Step 4: Testing
-- [x] Test profile page shows "Return to Dashboard" link
-- [x] Test notifications page shows "Return to Dashboard" link
-- [x] Verify navigation works correctly for each role
-
-## COMPLETED ✅
+## Root Cause
+- `Profile.jsx` initializes `date_of_birth: user?.date_of_birth || ''` → empty string on submit → PostgreSQL rejects `""` for DATE type.
+- API date strings (e.g. `"2024-01-15T00:00:00.000Z"`) are also not formatted to `"YYYY-MM-DD"` for HTML date input.

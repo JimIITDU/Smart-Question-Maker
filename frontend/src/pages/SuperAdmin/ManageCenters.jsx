@@ -1,6 +1,6 @@
 ﻿import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { getAllCenters, approveCenter, rejectCenter } from '../../services/api'
+import { getAllCenters, approveCenter, rejectCenter, suspendCenter } from '../../services/api'
 import toast from 'react-hot-toast'
 import { FiArrowLeft, FiCheck, FiX, FiEye } from 'react-icons/fi'
 
@@ -43,10 +43,7 @@ const ManageCenters = () => {
   const handleSuspend = async (id) => {
     if (!window.confirm('Suspend this center?')) return
     try {
-      await fetch(`https://smart-question-maker-backend.onrender.com/api/center/suspend/${id}`, {
-        method: 'PUT',
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      })
+      await suspendCenter(id)
       toast.success('Center suspended')
       fetchCenters()
     } catch {
