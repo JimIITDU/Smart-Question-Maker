@@ -77,7 +77,7 @@ const centerModel = {
     return result.rows[0];
   },
 
-  // Update center subscription
+// Update center subscription
   updateCenterSubscription: async (centerId, planId) => {
     const result = await db.query(
       `UPDATE coaching_center 
@@ -90,6 +90,39 @@ const centerModel = {
       [planId, centerId]
     );
     return result.rows[0];
+  },
+
+  // Optimized count methods - using COUNT instead of SELECT * for better performance
+  getCourseCount: async (coaching_center_id) => {
+    const result = await db.query(
+      'SELECT COUNT(*) as count FROM course WHERE coaching_center_id = $1',
+      [coaching_center_id]
+    );
+    return parseInt(result.rows[0].count) || 0;
+  },
+
+  getBatchCount: async (coaching_center_id) => {
+    const result = await db.query(
+      'SELECT COUNT(*) as count FROM batch WHERE coaching_center_id = $1',
+      [coaching_center_id]
+    );
+    return parseInt(result.rows[0].count) || 0;
+  },
+
+  getSubjectCount: async (coaching_center_id) => {
+    const result = await db.query(
+      'SELECT COUNT(*) as count FROM subjects WHERE coaching_center_id = $1',
+      [coaching_center_id]
+    );
+    return parseInt(result.rows[0].count) || 0;
+  },
+
+getUnreadNotificationCount: async (user_id) => {
+    const result = await db.query(
+      'SELECT COUNT(*) as count FROM notification WHERE user_id = $1 AND status = $2',
+      [user_id, 'unread']
+    );
+    return parseInt(result.rows[0].count) || 0;
   },
 
 };

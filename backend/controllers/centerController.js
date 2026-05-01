@@ -269,7 +269,7 @@ const centerController = {
     }
   },
 
-  // Upgrade subscription (coaching admin)
+// Upgrade subscription (coaching admin)
   upgradeSubscription: async (req, res) => {
     try {
       const { plan_id } = req.body;
@@ -312,6 +312,64 @@ const centerController = {
         data: updatedCenter,
       });
     } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: 'Server error',
+        error: error.message,
+      });
+    }
+  },
+
+  // Get dashboard stats - truly parallel optimized endpoint
+  getDashboardStats: async (req, res) => {
+    try {
+      // Get center with full subscription data in a single query
+      const center = await centerModel.getCenterSubscription(
+        req.user.user_id
+      );
+
+      // If no center, return empty stats
+      if (!center) {
+        return res.status(200).json({
+          success: true,
+          data: {
+            center: null,
+            subscription: null,
+            stats: {
+              courses: 0,
+              batches: 0,
+              subjects: 0,
+              notifications: 0,
+            },
+          },
+        });
+      }
+
+      // Get all stats in optimized parallel queries
+
+      const [courses, batches, subjects, notifications] = await Promise.all([
+        centerModel.getCourseCount(center.coaching_center_id),
+        centerModel.getBatchCount(center.coaching_center_id),
+        centerModel.getSubjectCount(center.coaching_center_id),
+        centerModel.getUnreadNotificationCount(req.user.user_id),
+      ]);
+
+      res.status(200).json({
+        success: true,
+        data: {
+          center,
+          subscription: center, // subscription data is included in center object
+          stats: {
+            courses,
+            batches,
+            subjects,
+            notifications,
+          },
+        },
+      });
+
+    } catch (error) {
+      console.error('getDashboardStats error:', error);
       res.status(500).json({
         success: false,
         message: 'Server error',

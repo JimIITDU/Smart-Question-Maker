@@ -1,10 +1,23 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { getMyCenter, getMySubscription, getAllCourses, getAllBatches, getAllSubjects, getUnreadNotifications } from '../../services/api'
+import { getDashboardStats } from '../../services/api'
 import { FiHome, FiBook, FiUsers, FiLayers, FiBell, FiUser, FiDollarSign, FiCreditCard, FiUserPlus, FiClock, FiCheckCircle, FiTrendingUp } from 'react-icons/fi'
-import toast from 'react-hot-toast'
+
+
+// Simple in-memory cache for dashboard data
+const dashboardCache = {
+  data: null,
+  timestamp: null,
+  CACHE_DURATION: 5 * 60 * 1000, // 5 minutes
+}
+
+const isCacheValid = () => {
+  if (!dashboardCache.data || !dashboardCache.timestamp) return false
+  return Date.now() - dashboardCache.timestamp < dashboardCache.CACHE_DURATION
+}
 
 const CoachingAdminDashboard = () => {
+
   const [center, setCenter] = useState(null)
   const [subscription, setSubscription] = useState(null)
   const [stats, setStats] = useState({ courses: 0, batches: 0, subjects: 0, notifications: 0 })
@@ -12,46 +25,29 @@ const CoachingAdminDashboard = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      try {
-        // Try to get center first
-        let centerData = null
-        let subscriptionData = null
-        
-        try {
-          const centerRes = await getMyCenter()
-          centerData = centerRes.data.data
-          setCenter(centerData)
-          
-          // If center exists, try to get subscription details
-          if (centerData) {
-            try {
-              const subRes = await getMySubscription()
-              subscriptionData = subRes.data.data
-              setSubscription(subscriptionData)
-            } catch (subErr) {
-              // Subscription might not be available yet
-            }
-          }
-        } catch (centerErr) {
-          // No center yet - this is normal for new users
-        }
+      // Check cache first for instant loading when navigating back
+      if (isCacheValid()) {
+        const { center: centerData, subscription: subscriptionData, stats: statsData } = dashboardCache.data
+        setCenter(centerData)
+        setSubscription(subscriptionData)
+        setStats(statsData || { courses: 0, batches: 0, subjects: 0, notifications: 0 })
+        setLoading(false)
+        return
+      }
 
-        // Fetch stats regardless of center status
-        const [courses, batches, subjects, notifs] = await Promise.all([
-          getAllCourses().catch(() => ({ data: { data: [] } })),
-          getAllBatches().catch(() => ({ data: { data: [] } })),
-          getAllSubjects().catch(() => ({ data: { data: [] } })),
-          getUnreadNotifications().catch(() => ({ data: { data: [] } })),
-        ])
+      try {
+        const response = await getDashboardStats()
+        const { center: centerData, subscription: subscriptionData, stats: statsData } = response.data.data
         
-        setStats({
-          courses: courses.data.data.length,
-          batches: batches.data.data.length,
-          subjects: subjects.data.data.length,
-          notifications: notifs.data.data.length,
-        })
+        // Update cache
+        dashboardCache.data = response.data.data
+        dashboardCache.timestamp = Date.now()
+        
+        setCenter(centerData)
+        setSubscription(subscriptionData)
+        setStats(statsData || { courses: 0, batches: 0, subjects: 0, notifications: 0 })
       } catch (err) {
-        toast.error('Failed to load dashboard data')
+        console.error('Dashboard fetch error:', err)
       } finally {
         setLoading(false)
       }
@@ -59,8 +55,9 @@ const CoachingAdminDashboard = () => {
     fetchData()
   }, [])
 
-  // Menu items for different states
-  const getMenuItems = () => {
+
+  // Memoized menu items to prevent unnecessary re-renders
+  const menuItems = useMemo(() => {
     // If no center or pending, show limited menu
     if (!center || center.status === 'pending') {
       return [
@@ -83,9 +80,8 @@ const CoachingAdminDashboard = () => {
       { label: 'Notifications', path: '/notifications', icon: FiBell, color: 'from-yellow-500 to-amber-500', desc: `${stats.notifications} unread` },
       { label: 'Profile', path: '/profile', icon: FiUser, color: 'from-gray-500 to-gray-600', desc: 'Manage your profile' },
     ]
-  }
+  }, [center, subscription, stats])
 
-  const menuItems = getMenuItems()
 
   if (loading) {
     return (
@@ -263,4 +259,4 @@ const CoachingAdminDashboard = () => {
   )
 }
 
-export default CoachingAdminDashboard
+export default React.memo(CoachingAdminDashboard)

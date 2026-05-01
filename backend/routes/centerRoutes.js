@@ -44,6 +44,14 @@ router.get(
   centerController.getMySubscription
 );
 
+// Get dashboard stats - optimized endpoint (coaching admin)
+router.get(
+  '/dashboard-stats',
+  authMiddleware,
+  roleMiddleware(2),
+  centerController.getDashboardStats
+);
+
 // Upgrade subscription (coaching admin)
 router.post(
   '/upgrade-subscription',

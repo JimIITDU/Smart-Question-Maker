@@ -65,6 +65,9 @@ export const suspendCenter = (id) => API.put(`/center/suspend/${id}`);
 export const getMySubscription = () => API.get('/center/my-subscription');
 export const upgradeSubscription = (planId) => API.post('/center/upgrade-subscription', { plan_id: planId });
 
+// Dashboard Stats - Optimized endpoint
+export const getDashboardStats = () => API.get('/center/dashboard-stats');
+
 // Subscription Plans
 export const getSubscriptionPlans = () => API.get('/subscription-plans/active');
 export const getAllSubscriptionPlans = () => API.get('/subscription-plans/all');

@@ -133,9 +133,9 @@ const QuestionBank = () => {
             </h1>
             <p className="text-gray-400 text-sm">Search and manage your question database.</p>
           </div>
-          {(user?.role_id === 2 || user?.role_id === 3) && (
+{(user?.role_id === 2 || user?.role_id === 3) && (
             <Link
-              to="/create-question"
+              to="/teacher/questions/create"
               className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all duration-300 bg-gradient-to-r from-indigo-600 to-cyan-600 text-white shadow-lg shadow-indigo-900/40 hover:shadow-indigo-900/60 hover:scale-[1.02]"
             >
               <PlusIcon />
