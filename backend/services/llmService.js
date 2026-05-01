@@ -10,8 +10,8 @@ const getGeminiModel = () => {
     console.warn('[LLM] GEMINI_API_KEY not set. Using mock evaluation.');
     return null;
   }
-  const genAI = new GoogleGenerativeAI(apiKey);
-  return genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+const genAI = new GoogleGenerativeAI(apiKey);
+  return genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 };
 
 // Check if Gemini is available
@@ -80,7 +80,9 @@ Guidelines:
 - The feedback should help the student understand their mistakes and learn
 `;
 
+console.log('[LLM] Sending prompt to Gemini. Length:', prompt.length, 'chars');
       const result = await model.generateContent(prompt);
+      console.log('[LLM] Gemini responded successfully');
       const response = await result.response;
       const text = response.text();
 
@@ -204,12 +206,16 @@ Guidelines:
   generateQuestion: async (mode, params) => {
     const { topic = '', hints = '', subject_id = '', question_type = 'mcq', difficulty = 'medium', count = 5 } = params;
 
-    // Simulate LLM delay
-    await new Promise(resolve => setTimeout(resolve, 1500 + Math.random() * 1500));
 
+
+// Log API key status
+    console.log('[LLM] Calling Gemini with key:', process.env.GEMINI_API_KEY ? 'KEY EXISTS' : 'KEY MISSING');
+    console.log('[LLM] Mode:', mode, '| Topic:', topic, '| Count:', count);
+    
     const model = getGeminiModel();
     if (!model) {
-      return llmService.mockGenerateQuestion(mode, params);
+      // NO mock fallback - throw actual error so problem is exposed
+      throw new Error('GEMINI_API_KEY is not configured. Please set GEMINI_API_KEY environment variable.');
     }
 
     try {
@@ -521,12 +527,13 @@ IMPORTANT: Return ONLY the JSON array, no markdown, no explanations.
         questions = JSON.parse(JSON.stringify(subjectQuestions.slice(0, count)));
         break;
 
-      default:
+default:
         questions = JSON.parse(JSON.stringify(sampleQuestions.physics.slice(0, count)));
     }
 
     return questions;
   }
-
 };
+
+module.exports = llmService;
 

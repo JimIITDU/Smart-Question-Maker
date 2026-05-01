@@ -1,9 +1,23 @@
 const express = require('express');
 const router = express.Router();
+const multer = require('multer');
 const questionController = require('../controllers/questionController');
 const authMiddleware = require('../middleware/authMiddleware');
 const roleMiddleware = require('../middleware/roleMiddleware');
 const tenantMiddleware = require('../middleware/tenantMiddleware');
+
+// Configure multer for PDF uploads
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === 'application/pdf') {
+      cb(null, true);
+    } else {
+      cb(new Error('Only PDF files are allowed'), false);
+    }
+  }
+});
 
 // Role IDs:
 // 1 = super_admin
@@ -12,7 +26,7 @@ const tenantMiddleware = require('../middleware/tenantMiddleware');
 // 4 = staff
 // 5 = student
 
-// Create question (teacher only)
+// Create question (teacher, coaching_admin, student)
 router.post(
   '/',
   authMiddleware,
@@ -65,7 +79,7 @@ router.put(
   questionController.updateQuestion
 );
 
-// Delete question
+// Delete question (soft delete)
 router.delete(
   '/:id',
   authMiddleware,
@@ -74,13 +88,23 @@ router.delete(
   questionController.deleteQuestion
 );
 
-// AI Generate questions (teacher/coaching admin)
+// AI Generate questions (teacher/coaching admin) - with optional PDF upload
 router.post(
   '/ai-generate',
   authMiddleware,
   tenantMiddleware,
   roleMiddleware(2, 3),
+  upload.single('pdf'),
   questionController.aiGenerate
+);
+
+// Bulk update status (accept/reject AI questions)
+router.patch(
+  '/bulk-status',
+  authMiddleware,
+  tenantMiddleware,
+  roleMiddleware(2, 3),
+  questionController.bulkUpdateStatus
 );
 
 module.exports = router;

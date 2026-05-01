@@ -57,31 +57,43 @@ const Profile = () => {
     })
   }
 
+  // Helper: Validate profile fields
+  const validateProfile = () => {
+    if (!profileData.name.trim() || !profileData.phone.trim() || !profileData.gender || !profileData.date_of_birth || !profileData.address.trim()) {
+      setError('Please fill in all required fields (Name, Phone, Gender, DOB, Address).');
+      return false;
+    }
+    return true;
+  };
+
   const handleProfileSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
     setError('')
     setSuccess('')
+    if (!validateProfile()) return;
     setLoading(true)
     try {
       await updateProfile(profileData)
       setSuccess('Profile updated successfully!')
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to update profile')
+      setError(err.response?.data?.message || 'Failed to update profile. Please ensure all details are filled properly.')
     } finally {
       setLoading(false)
     }
   }
 
   const handlePasswordSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
     setError('')
     setSuccess('')
-
-    if (passwordData.new_password !== passwordData.confirm_password) {
-      setError('New passwords do not match!')
-      return
+    if (!passwordData.current_password || !passwordData.new_password || !passwordData.confirm_password) {
+      setError('Please fill in all password fields.');
+      return;
     }
-
+    if (passwordData.new_password !== passwordData.confirm_password) {
+      setError('New passwords do not match!');
+      return;
+    }
     setLoading(true)
     try {
       await changePassword({
@@ -95,7 +107,7 @@ const Profile = () => {
         confirm_password: '',
       })
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to change password')
+      setError(err.response?.data?.message || 'Failed to change password. Please check your current password and try again.')
     } finally {
       setLoading(false)
     }
@@ -230,7 +242,7 @@ const Profile = () => {
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Date of Birth</label>
+                  <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Date of Birth <span className='text-red-400'>*</span></label>
                   <div className="relative group">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-500 group-focus-within:text-indigo-400 transition-colors">
                       <CalendarIcon />
@@ -240,8 +252,18 @@ const Profile = () => {
                       name="date_of_birth"
                       value={profileData.date_of_birth}
                       onChange={handleProfileChange}
+                      max={new Date().toISOString().split('T')[0]}
                       className="w-full bg-[#0B0C15] border border-white/10 text-white text-sm rounded-xl pl-11 pr-4 py-3 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 [color-scheme:dark] transition-all"
                     />
+                    {profileData.date_of_birth && (
+                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-gray-400 bg-[#13151f] px-2 py-1 rounded-lg border border-white/10">
+                        {(() => {
+                          const dob = new Date(profileData.date_of_birth);
+                          const age = Math.floor((Date.now() - dob.getTime()) / (365.25 * 24 * 60 * 60 * 1000));
+                          return `${dob.toLocaleDateString()} (${age} yrs)`;
+                        })()}
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>

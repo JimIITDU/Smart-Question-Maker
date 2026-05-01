@@ -235,7 +235,7 @@ await userModel.verifyEmail(user.user_id);
       if (!isMatch) {
         return res.status(400).json({ success: false, message: 'Current password is incorrect' });
       }
-c
+
       const salt = await bcrypt.genSalt(10);
       const password_hash = await bcrypt.hash(new_password, salt);
 

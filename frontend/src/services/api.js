@@ -1,7 +1,8 @@
+
 import axios from 'axios';
 
 export const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
+  baseURL: import.meta.env.VITE_API_URL || '/api',
 });
 
 // Request interceptor - Automatically add JWT token
@@ -92,6 +93,8 @@ export const getQuestionById = (id) => API.get(`/questions/${id}`);
 export const deleteQuestion = (id) => API.delete(`/questions/${id}`);
 
 export const getRandomQuestions = (params) => API.get('/questions/random', { params });
+export const updateQuestion = (id, data) => API.put(`/questions/${id}`, data);
+export const bulkStatusUpdate = (data) => API.patch('/questions/bulk-status', data);
 
 // Exams
 export const createExam = (data) => API.post('/exams', data);
@@ -115,9 +118,42 @@ export const getNotifications = () => API.get('/notifications');
 export const getUnreadNotifications = () => API.get('/notifications/unread');
 export const markAsRead = (id) => API.put(`/notifications/${id}/read`);
 export const markAllAsRead = () => API.put('/notifications/read-all');
+// AI Question Generation - Enhanced with PDF support
+export const aiGenerate = async (data) => {
+  // Check if we have a PDF file to upload
+  if (data.pdf && data.pdf instanceof File) {
+    const formData = new FormData();
+    
+    // Add all regular fields to formData
+    Object.keys(data).forEach(key => {
+      if (key !== 'pdf' && data[key] !== undefined && data[key] !== null) {
+        if (Array.isArray(data[key])) {
+          formData.append(key, JSON.stringify(data[key]));
+        } else {
+          formData.append(key, data[key]);
+        }
+      }
+    });
+    
+    // Add the PDF file
+    formData.append('pdf', data.pdf);
+    
+    return API.post('/questions/ai-generate', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  }
+  
+  // No PDF, send as JSON
+  return API.post('/questions/ai-generate', data);
+};
 
-// AI Question Generation
-export const aiGenerate = (data) => API.post('/questions/ai-generate', data);
+// Regenerate rejected questions with same parameters
+export const regenerateQuestions = (data) => API.post('/questions/ai-generate', data);
+
+// Bulk create questions with metadata (for AI generated with filters)
+export const bulkCreateQuestionsWithMeta = (data) => API.post('/questions/bulk', data);
 export const bulkCreateQuestions = (data) => API.post('/questions/bulk', data);
 
 // Teacher Applications & Assignments

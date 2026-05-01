@@ -67,7 +67,7 @@ CREATE TYPE batch_status_enum AS ENUM (
 );
 CREATE TYPE question_type_enum AS ENUM ('mcq', 'descriptive', 'true_false');
 CREATE TYPE difficulty_enum AS ENUM ('easy', 'medium', 'hard');
-CREATE TYPE source_enum AS ENUM ('manual', 'llm');
+CREATE TYPE source_enum AS ENUM ('manual', 'llm', 'ai_generated');
 CREATE TYPE exam_type_enum AS ENUM ('regular', 'live_quiz');
 CREATE TYPE exam_status_enum AS ENUM ('scheduled', 'ongoing', 'completed');
 CREATE TYPE evaluated_by_enum AS ENUM ('llm', 'teacher');
@@ -365,6 +365,12 @@ CREATE TABLE question_bank (
   is_multiple_correct BOOLEAN DEFAULT FALSE,
   created_by      INTEGER REFERENCES users(user_id),
   source          source_enum DEFAULT 'manual',
+  status          VARCHAR(20) DEFAULT 'active',
+  negative_marks  DECIMAL(5,2) DEFAULT 0,
+  explanation     TEXT,
+  chapter_id      INTEGER,
+  options         JSONB,
+  correct_answers JSONB,
   created_at      TIMESTAMP DEFAULT NOW()
 );
 
