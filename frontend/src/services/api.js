@@ -104,8 +104,10 @@ export const getResults = (id) => API.get(`/exams/${id}/results`);
 export const evaluateWritten = (id) => API.post(`/exams/${id}/evaluate-written`);
 export const getAllResults = (id) => API.get(`/exams/${id}/all-results`);
 export const joinExam = (data) => API.post('/exams/join', data);
+export const exportExamPDF = (id, numSets = 2) => API.get(`/exams/${id}/export-pdf?numSets=${numSets}`, { responseType: 'blob' });
 
 export const updateProfile = (data) => API.put('/auth/profile', data);
+
 export const changePassword = (data) => API.put('/auth/change-password', data);
 
 // Notifications
@@ -117,5 +119,33 @@ export const markAllAsRead = () => API.put('/notifications/read-all');
 // AI Question Generation
 export const aiGenerate = (data) => API.post('/questions/ai-generate', data);
 export const bulkCreateQuestions = (data) => API.post('/questions/bulk', data);
+
+// Teacher Applications & Assignments
+export const applyToCenter = (data) => API.post('/teachers/apply', data);
+export const getMyApplications = () => API.get('/teachers/my-applications');
+export const getCenterApplications = () => API.get('/teachers/applications');
+export const approveApplication = (id) => API.put(`/teachers/applications/${id}/approve`);
+export const rejectApplication = (id, data) => API.put(`/teachers/applications/${id}/reject`, data);
+export const assignTeacherToCourse = (data) => API.post('/teachers/assignments', data);
+export const getMyAssignments = () => API.get('/teachers/my-assignments');
+export const getCourseAssignments = (courseId) => API.get(`/teachers/assignments/course/${courseId}`);
+export const removeAssignment = (id) => API.put(`/teachers/assignments/${id}/remove`);
+export const getAvailableTeachers = () => API.get('/teachers/available');
+
+// Course Enrollments & Payments
+export const enrollInCourse = (courseId) => API.post(`/enrollments/courses/${courseId}/enroll`);
+export const getPaymentDetails = (enrollmentId) => API.get(`/enrollments/payment/${enrollmentId}`);
+export const confirmPayment = (data) => API.post('/enrollments/confirm-payment', data);
+export const getMyEnrollments = () => API.get('/enrollments/my-enrollments');
+export const getMyActiveEnrollments = () => API.get('/enrollments/my-active-enrollments');
+export const getCourseStudents = (courseId) => API.get(`/enrollments/courses/${courseId}/students`);
+export const browseCourses = (coachingCenterId) => API.get('/enrollments/browse', { 
+  params: { coaching_center_id: coachingCenterId } 
+});
+
+// Academic Course Enhancements
+export const getActiveCourses = () => API.get('/academic/courses/active');
+export const getCoursesForTeacher = () => API.get('/academic/courses/teacher');
+export const getCourseWithDetails = (id) => API.get(`/academic/courses/${id}/details`);
 
 export default API;

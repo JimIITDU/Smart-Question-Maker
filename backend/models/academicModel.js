@@ -4,15 +4,21 @@ const academicModel = {
 
   // COURSES
   createCourse: async (data) => {
-    const { coaching_center_id, course_title, course_description, duration, fee } = data;
+    const {
+      coaching_center_id, course_title, course_description,
+      duration, fee, start_date, end_date, enrollment_type, status
+    } = data;
     const result = await db.query(
       `INSERT INTO course
-       (coaching_center_id, course_title, course_description, duration, fee)
-       VALUES ($1,$2,$3,$4,$5) RETURNING course_id`,
-      [coaching_center_id, course_title, course_description, duration, fee]
+       (coaching_center_id, course_title, course_description, duration, fee,
+        start_date, end_date, enrollment_type, status)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING course_id`,
+      [coaching_center_id, course_title, course_description, duration, fee,
+       start_date, end_date, enrollment_type || 'open', status || 'active']
     );
     return result.rows[0].course_id;
   },
+
 
   getAllCourses: async (coaching_center_id) => {
     const result = await db.query(
@@ -30,18 +36,98 @@ const academicModel = {
   },
 
   updateCourse: async (id, data) => {
-    const { course_title, course_description, duration, fee } = data;
+    const {
+      course_title, course_description, duration, fee,
+      start_date, end_date, enrollment_type, status
+    } = data;
     await db.query(
       `UPDATE course
-       SET course_title=$1, course_description=$2, duration=$3, fee=$4
-       WHERE course_id=$5`,
-      [course_title, course_description, duration, fee, id]
+       SET course_title=$1, course_description=$2, duration=$3, fee=$4,
+           start_date=$5, end_date=$6, enrollment_type=$7, status=$8
+       WHERE course_id=$9`,
+      [course_title, course_description, duration, fee,
+       start_date, end_date, enrollment_type, status, id]
     );
+  },
+
+
+  getCourseWithDetails: async (id) => {
+    const courseResult = await db.query(
+      `SELECT c.*, cc.center_name
+       FROM course c
+       JOIN coaching_center cc ON c.coaching_center_id = cc.coaching_center_id
+       WHERE c.course_id = $1`,
+      [id]
+    );
+    const course = courseResult.rows[0];
+    if (!course) return null;
+
+    const subjectsResult = await db.query(
+      `SELECT s.*, u.name as teacher_name
+       FROM subjects s
+       LEFT JOIN users u ON s.teacher_user_id = u.user_id
+       WHERE s.course_id = $1 AND s.is_active = TRUE`,
+      [id]
+    );
+
+    const teachersResult = await db.query(
+      `SELECT DISTINCT tca.teacher_id, u.name as teacher_name, u.email,
+        u.profile_image, u.subject_specialization
+       FROM teacher_course_assignments tca
+       JOIN users u ON tca.teacher_id = u.user_id
+       WHERE tca.course_id = $1 AND tca.status = 'active'`,
+      [id]
+    );
+
+    const enrollmentCountResult = await db.query(
+      `SELECT COUNT(*) as count FROM course_enrollments
+       WHERE course_id = $1 AND status = 'active'`,
+      [id]
+    );
+
+    return {
+      ...course,
+      subjects: subjectsResult.rows,
+      assigned_teachers: teachersResult.rows,
+      enrollment_count: parseInt(enrollmentCountResult.rows[0].count) || 0,
+    };
+  },
+
+  getCoursesForTeacher: async (teacher_id) => {
+    const result = await db.query(
+      `SELECT c.*, cc.center_name,
+        (SELECT COUNT(*) FROM course_enrollments ce
+         WHERE ce.course_id = c.course_id AND ce.status = 'active') as enrollment_count
+       FROM teacher_course_assignments tca
+       JOIN course c ON tca.course_id = c.course_id
+       JOIN coaching_center cc ON c.coaching_center_id = cc.coaching_center_id
+       WHERE tca.teacher_id = $1 AND tca.status = 'active'
+       AND c.status = 'active'
+       ORDER BY c.created_at DESC`,
+      [teacher_id]
+    );
+    return result.rows;
+  },
+
+  getActiveCourses: async (coaching_center_id) => {
+    const result = await db.query(
+      `SELECT c.*,
+        (SELECT COUNT(*) FROM course_enrollments ce
+         WHERE ce.course_id = c.course_id AND ce.status = 'active') as enrollment_count
+       FROM course c
+       WHERE c.coaching_center_id = $1
+       AND c.status = 'active'
+       AND (c.end_date IS NULL OR c.end_date >= CURRENT_DATE)
+       ORDER BY c.created_at DESC`,
+      [coaching_center_id]
+    );
+    return result.rows;
   },
 
   deleteCourse: async (id) => {
     await db.query('DELETE FROM course WHERE course_id = $1', [id]);
   },
+
 
   // BATCHES
   createBatch: async (data) => {

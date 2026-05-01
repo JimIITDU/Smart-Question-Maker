@@ -18,6 +18,8 @@ const questionRoutes = require('./routes/questionRoutes');
 const examRoutes = require('./routes/examRoutes'); 
 const notificationRoutes = require('./routes/notificationRoutes');
 const subscriptionPlanRoutes = require('./routes/subscriptionPlanRoutes');
+const teacherRoutes = require('./routes/teacherRoutes');
+const courseEnrollmentRoutes = require('./routes/courseEnrollmentRoutes');
 
 
 app.use('/api/auth', authRoutes);
@@ -27,6 +29,8 @@ app.use('/api/questions', questionRoutes);
 app.use('/api/exams', examRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/subscription-plans', subscriptionPlanRoutes);
+app.use('/api/teachers', teacherRoutes);
+app.use('/api/enrollments', courseEnrollmentRoutes);
 
 
 // Base route

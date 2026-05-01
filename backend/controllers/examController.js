@@ -1,6 +1,10 @@
 const examModel = require('../models/examModel');
 const questionModel = require('../models/questionModel');
 const llmService = require('../services/llmService');
+const centerModel = require('../models/centerModel');
+const pdfService = require('../services/pdfService');
+const archiver = require('archiver');
+
 
 
 const examController = {
@@ -507,6 +511,93 @@ const examController = {
         message: 'Server error',
         error: error.message,
       });
+    }
+  },
+
+  // Export exam as PDF sets with answer keys
+  exportExamPDF: async (req, res) => {
+    try {
+      const examId = req.params.id;
+      const numSets = parseInt(req.query.numSets) || 2;
+
+      // Validate numSets
+      if (numSets < 1 || numSets > 4) {
+        return res.status(400).json({
+          success: false,
+          message: 'Number of sets must be between 1 and 4',
+        });
+      }
+
+      // Get exam details
+      const exam = await examModel.getExamById(examId);
+      if (!exam) {
+        return res.status(404).json({
+          success: false,
+          message: 'Exam not found',
+        });
+      }
+
+      // Verify the exam belongs to the user's coaching center
+      if (exam.coaching_center_id !== req.user.coaching_center_id) {
+        return res.status(403).json({
+          success: false,
+          message: 'You do not have permission to export this exam',
+        });
+      }
+
+      // Get center details
+      const center = await centerModel.getCenterById(exam.coaching_center_id);
+
+      // Get exam questions
+      const questions = await examModel.getExamQuestions(examId);
+      if (!questions || questions.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'No questions found for this exam',
+        });
+      }
+
+      // Generate PDF sets
+      const sets = await pdfService.generateExamSets(exam, center, questions, numSets);
+
+      // Create ZIP archive
+      const archive = archiver('zip', { zlib: { level: 9 } });
+
+      res.setHeader('Content-Type', 'application/zip');
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename="${(exam.title || 'Exam').replace(/\s+/g, '_')}_Sets.zip"`
+      );
+
+      archive.on('error', (err) => {
+        console.error('Archive error:', err);
+        if (!res.headersSent) {
+          res.status(500).json({
+            success: false,
+            message: 'Failed to create ZIP archive',
+          });
+        }
+      });
+
+      archive.pipe(res);
+
+      // Add exam PDFs and answer keys to archive
+      sets.forEach((set) => {
+        archive.append(set.examPDF, { name: set.examFilename });
+        archive.append(set.answerKeyPDF, { name: set.answerKeyFilename });
+      });
+
+      await archive.finalize();
+
+    } catch (error) {
+      console.error('exportExamPDF error:', error);
+      if (!res.headersSent) {
+        res.status(500).json({
+          success: false,
+          message: 'Server error',
+          error: error.message,
+        });
+      }
     }
   },
 

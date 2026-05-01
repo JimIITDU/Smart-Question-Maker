@@ -11,6 +11,9 @@ DROP TABLE IF EXISTS subjects CASCADE;
 DROP TABLE IF EXISTS batch_enrollment CASCADE;
 DROP TABLE IF EXISTS batch CASCADE;
 
+DROP TABLE IF EXISTS course_enrollments CASCADE;
+DROP TABLE IF EXISTS teacher_course_assignments CASCADE;
+DROP TABLE IF EXISTS teacher_applications CASCADE;
 DROP TABLE IF EXISTS course CASCADE;
 DROP TABLE IF EXISTS subscription CASCADE;
 DROP TABLE IF EXISTS notification CASCADE;
@@ -41,6 +44,9 @@ DROP TYPE IF EXISTS answer_status_enum CASCADE;
 DROP TYPE IF EXISTS result_status_enum CASCADE;
 DROP TYPE IF EXISTS notification_type_enum CASCADE;
 DROP TYPE IF EXISTS notification_status_enum CASCADE;
+DROP TYPE IF EXISTS enrollment_type_enum CASCADE;
+DROP TYPE IF EXISTS teacher_application_status_enum CASCADE;
+DROP TYPE IF EXISTS course_enrollment_status_enum CASCADE;
 
 -- Create ENUM types
 CREATE TYPE role_name_enum AS ENUM (
@@ -69,6 +75,9 @@ CREATE TYPE answer_status_enum AS ENUM ('running', 'submitted', 'checked');
 CREATE TYPE result_status_enum AS ENUM ('pass', 'fail');
 CREATE TYPE notification_type_enum AS ENUM ('system', 'quiz', 'exam', 'fee');
 CREATE TYPE notification_status_enum AS ENUM ('read', 'unread');
+CREATE TYPE enrollment_type_enum AS ENUM ('open', 'restricted');
+CREATE TYPE teacher_application_status_enum AS ENUM ('pending', 'approved', 'rejected');
+CREATE TYPE course_enrollment_status_enum AS ENUM ('pending', 'active', 'completed', 'expired');
 
 -- ==================
 -- Roles Table
@@ -210,7 +219,7 @@ CREATE TABLE subscription (
 );
 
 -- ==================
--- Course Table
+-- Course Table (Enhanced)
 -- ==================
 CREATE TABLE course (
   course_id          SERIAL PRIMARY KEY,
@@ -218,9 +227,19 @@ CREATE TABLE course (
   course_title       VARCHAR(255) NOT NULL,
   course_description TEXT,
   duration           VARCHAR(100),
-  fee                DECIMAL(10,2),
-  created_at         TIMESTAMP DEFAULT NOW()
+  fee                DECIMAL(10,2) DEFAULT 0,
+  start_date         DATE,
+  end_date           DATE,
+  enrollment_type    enrollment_type_enum DEFAULT 'open',
+  status             VARCHAR(20) DEFAULT 'active',
+  created_at         TIMESTAMP DEFAULT NOW(),
+  updated_at         TIMESTAMP DEFAULT NOW()
 );
+
+CREATE TRIGGER update_course_updated_at
+  BEFORE UPDATE ON course
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
 
 -- ==================
 -- Batch Table
@@ -273,13 +292,59 @@ CREATE TABLE subjects (
 );
 
 -- ==================
+-- Teacher Applications Table
+-- ==================
+CREATE TABLE teacher_applications (
+  application_id          SERIAL PRIMARY KEY,
+  coaching_center_id      INTEGER NOT NULL REFERENCES coaching_center(coaching_center_id),
+  teacher_user_id         INTEGER NOT NULL REFERENCES users(user_id),
+  subjects_specialization TEXT,
+  experience_years        INTEGER,
+  bio                     TEXT,
+  expected_salary         DECIMAL(10,2),
+  status                  teacher_application_status_enum DEFAULT 'pending',
+  applied_at              TIMESTAMP DEFAULT NOW(),
+  reviewed_at             TIMESTAMP,
+  reviewed_by             INTEGER REFERENCES users(user_id),
+  UNIQUE(coaching_center_id, teacher_user_id)
+);
+
+-- ==================
+-- Teacher Course Assignments Table
+-- ==================
+CREATE TABLE teacher_course_assignments (
+  assignment_id   SERIAL PRIMARY KEY,
+  teacher_id      INTEGER NOT NULL REFERENCES users(user_id),
+  course_id       INTEGER NOT NULL REFERENCES course(course_id),
+  subject_id      INTEGER REFERENCES subjects(subject_id),
+  assigned_by     INTEGER REFERENCES users(user_id),
+  assigned_at     TIMESTAMP DEFAULT NOW(),
+  status          VARCHAR(20) DEFAULT 'active',
+  UNIQUE(teacher_id, course_id, subject_id)
+);
+
+-- ==================
+-- Course Enrollments Table
+-- ==================
+CREATE TABLE course_enrollments (
+  enrollment_id   SERIAL PRIMARY KEY,
+  course_id       INTEGER NOT NULL REFERENCES course(course_id),
+  student_id      INTEGER NOT NULL REFERENCES users(user_id),
+  status          course_enrollment_status_enum DEFAULT 'pending',
+  enrolled_at     TIMESTAMP DEFAULT NOW(),
+  paid_at         TIMESTAMP,
+  expires_at      TIMESTAMP,
+  amount_paid     DECIMAL(10,2),
+  UNIQUE(course_id, student_id)
+);
+
+-- ==================
 -- Question Bank Table
 -- ==================
 CREATE TABLE question_bank (
   question_id     SERIAL PRIMARY KEY,
   coaching_center_id INTEGER REFERENCES coaching_center(coaching_center_id),
   subject_id      INTEGER REFERENCES subjects(subject_id),
-
   course_id       INTEGER REFERENCES course(course_id),
   class_name      VARCHAR(100),
   subject_name    VARCHAR(255),
@@ -287,9 +352,7 @@ CREATE TABLE question_bank (
   chapter         VARCHAR(255),
   chapter_name    VARCHAR(255),
   topic           VARCHAR(255),
-
   question_text   TEXT NOT NULL,
-
   question_type   question_type_enum NOT NULL,
   difficulty      difficulty_enum NOT NULL,
   expected_answer TEXT,
@@ -301,7 +364,6 @@ CREATE TABLE question_bank (
   correct_option  TEXT,
   is_multiple_correct BOOLEAN DEFAULT FALSE,
   created_by      INTEGER REFERENCES users(user_id),
-
   source          source_enum DEFAULT 'manual',
   created_at      TIMESTAMP DEFAULT NOW()
 );
@@ -312,8 +374,8 @@ CREATE TABLE question_bank (
 CREATE TABLE quiz_exam (
   exam_id         SERIAL PRIMARY KEY,
   coaching_center_id INTEGER REFERENCES coaching_center(coaching_center_id),
+  course_id       INTEGER REFERENCES course(course_id),
   subject_id      INTEGER REFERENCES subjects(subject_id),
-
   batch_id        INTEGER REFERENCES batch(batch_id),
   exam_type       exam_type_enum NOT NULL,
   host_teacher_id INTEGER REFERENCES users(user_id),
@@ -344,7 +406,6 @@ CREATE TABLE result_summary (
   result_id        SERIAL PRIMARY KEY,
   coaching_center_id INTEGER REFERENCES coaching_center(coaching_center_id),
   exam_id          INTEGER REFERENCES quiz_exam(exam_id),
-
   student_id       INTEGER REFERENCES users(user_id),
   question_id      INTEGER REFERENCES question_bank(question_id),
   descriptive_answer TEXT,

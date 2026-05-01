@@ -101,4 +101,13 @@ router.get(
   examController.getAllResults
 );
 
+// Export exam as PDF sets with answer keys (teacher)
+router.get(
+  '/:id/export-pdf',
+  authMiddleware,
+  tenantMiddleware,
+  roleMiddleware(2, 3),
+  examController.exportExamPDF
+);
+
 module.exports = router;

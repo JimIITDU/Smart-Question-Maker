@@ -51,6 +51,7 @@ import ExamDetails from './pages/Teacher/ExamDetails.jsx'
 import LiveQuiz from './pages/Teacher/LiveQuiz.jsx'
 import Analytics from './pages/Teacher/Analytics.jsx'
 import UploadMaterial from './pages/Teacher/UploadMaterial.jsx'
+import ApplyToCenter from './pages/Teacher/ApplyToCenter.jsx'
 
 // Student pages (role_id = 5)
 import StudentDashboard from './pages/Student/StudentDashboard.jsx'
@@ -60,6 +61,13 @@ import Results from './pages/Student/Results.jsx'
 import MyResults from './pages/Student/MyResults.jsx'
 import StudyMaterials from './pages/Student/StudyMaterials.jsx'
 import JoinQuiz from './pages/Student/JoinQuiz.jsx'
+import BrowseCourses from './pages/Student/BrowseCourses.jsx'
+import MockPayment from './pages/Student/MockPayment.jsx'
+import MyCourses from './pages/Student/MyCourses.jsx'
+
+// CoachingAdmin pages (role_id = 2)
+import TeacherApplications from './pages/CoachingAdmin/TeacherApplications.jsx'
+import AssignTeachers from './pages/CoachingAdmin/AssignTeachers.jsx'
 
 // Parent pages (role_id = 6)
 import ParentDashboard from './pages/Parent/ParentDashboard.jsx'
@@ -111,7 +119,7 @@ function App() {
               <Route path="/super-admin/subscriptions" element={<ManageSubscriptionPlans />} />
             </Route>
 
-            {/* -------------------- COACHING ADMIN (role_id: 2) -------------------- */}
+{/* -------------------- COACHING ADMIN (role_id: 2) -------------------- */}
             <Route element={<RoleBasedRoute allowedRoles={[2]} />}>
               <Route path="/coaching-admin" element={<CoachingAdminDashboard />} />
               <Route path="/coaching-admin/apply" element={<ApplyForCenter />} />
@@ -124,22 +132,26 @@ function App() {
               <Route path="/coaching-admin/users" element={<ManageUsers />} />
               <Route path="/coaching-admin/fees" element={<FeeManagement />} />
               <Route path="/coaching-admin/subscription" element={<SubscriptionManagement />} />
+              <Route path="/coaching-admin/teacher-applications" element={<TeacherApplications />} />
+              <Route path="/coaching-admin/assign-teachers" element={<AssignTeachers />} />
             </Route>
 
-            {/* -------------------- TEACHER (role_id: 3) -------------------- */}
+{/* -------------------- TEACHER (role_id: 3) -------------------- */}
             <Route element={<RoleBasedRoute allowedRoles={[3]} />}>
               <Route path="/teacher" element={<TeacherDashboard />} />
               <Route path="/teacher/questions" element={<QuestionBank />} />
               <Route path="/teacher/questions/create" element={<CreateQuestion />} />
               <Route path="/teacher/questions/:id/edit" element={<EditQuestion />} />
               <Route path="/teacher/questions/ai-generate" element={<AIQuestionGenerator />} />
-<Route path="/teacher/exams" element={<ManageExams />} />
+              <Route path="/teacher/exams" element={<ManageExams />} />
               <Route path="/teacher/exams/create" element={<CreateExam />} />
               <Route path="/teacher/exams/:id/details" element={<ExamDetails />} />
               <Route path="/teacher/live-quiz" element={<LiveQuiz />} />
               <Route path="/teacher/analytics" element={<Analytics />} />
               <Route path="/teacher/upload-material" element={<UploadMaterial />} />
+              <Route path="/teacher/apply" element={<ApplyToCenter />} />
             </Route>
+
             {/* -------------------- STUDENT (role_id: 5) -------------------- */}
             <Route element={<RoleBasedRoute allowedRoles={[5]} />}>
               <Route path="/student" element={<StudentDashboard />} />
@@ -149,6 +161,9 @@ function App() {
               <Route path="/student/results/:id" element={<Results />} />
               <Route path="/student/study-materials" element={<StudyMaterials />} />
               <Route path="/student/join-quiz" element={<JoinQuiz />} />
+              <Route path="/student/browse-courses" element={<BrowseCourses />} />
+              <Route path="/student/payment/:enrollmentId" element={<MockPayment />} />
+              <Route path="/student/courses" element={<MyCourses />} />
             </Route>
 
 

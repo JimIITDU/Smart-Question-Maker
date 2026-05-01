@@ -1,8 +1,10 @@
-﻿import React, { useState, useEffect } from 'react'
+﻿﻿import React, { useState, useEffect } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { getExamById, getExamQuestions, getAllResults, evaluateWritten } from '../../services/api'
+import { getExamById, getExamQuestions, getAllResults, evaluateWritten, exportExamPDF } from '../../services/api'
+
 import toast from 'react-hot-toast'
-import { FiArrowLeft, FiCpu, FiCheckCircle, FiAlertCircle, FiRefreshCw } from 'react-icons/fi'
+import { FiArrowLeft, FiCpu, FiCheckCircle, FiAlertCircle, FiRefreshCw, FiDownload } from 'react-icons/fi'
+
 
 const ExamDetails = () => {
   const { id } = useParams()
@@ -11,6 +13,10 @@ const ExamDetails = () => {
   const [results, setResults] = useState([])
   const [loading, setLoading] = useState(true)
   const [evaluating, setEvaluating] = useState(false)
+  const [exporting, setExporting] = useState(false)
+  const [numSets, setNumSets] = useState(2)
+  const [showExportOptions, setShowExportOptions] = useState(false)
+
 
   useEffect(() => {
     fetchData()
@@ -48,6 +54,29 @@ const ExamDetails = () => {
       setEvaluating(false)
     }
   }
+
+  const handleExportPDF = async () => {
+    setExporting(true)
+    try {
+      const response = await exportExamPDF(id, numSets)
+      const blob = new Blob([response.data], { type: 'application/zip' })
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', `${exam?.title || 'Exam'}_Sets.zip`)
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      window.URL.revokeObjectURL(url)
+      toast.success(`${numSets} PDF set(s) exported successfully!`)
+      setShowExportOptions(false)
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to export PDF sets')
+    } finally {
+      setExporting(false)
+    }
+  }
+
 
   // Group results by student
   const groupedResults = results.reduce((acc, result) => {
@@ -91,20 +120,60 @@ const ExamDetails = () => {
           <div className="bg-white/5 border border-white/10 rounded-2xl p-8">
             <div className="flex justify-between items-start mb-4">
               <h2 className="text-2xl font-bold text-white">{exam.title || 'Untitled Exam'}</h2>
-              {pendingEvaluations > 0 && (
-                <button
-                  onClick={handleEvaluate}
-                  disabled={evaluating}
-                  className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-semibold text-sm hover:shadow-lg transition-all disabled:opacity-50"
-                >
-                  {evaluating ? (
-                    <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> Evaluating...</>
-                  ) : (
-                    <><FiCpu /> Evaluate Written ({pendingEvaluations})</>
-                  )}
-                </button>
-              )}
+              <div className="flex items-center gap-2">
+                {showExportOptions ? (
+                  <div className="flex items-center gap-2 bg-white/5 rounded-xl p-1 border border-white/10">
+                    <select
+                      value={numSets}
+                      onChange={(e) => setNumSets(parseInt(e.target.value))}
+                      className="bg-transparent text-white text-sm px-2 py-1 outline-none"
+                    >
+                      <option value={2} className="bg-[#1a1a2e]">2 Sets</option>
+                      <option value={3} className="bg-[#1a1a2e]">3 Sets</option>
+                      <option value={4} className="bg-[#1a1a2e]">4 Sets</option>
+                    </select>
+                    <button
+                      onClick={handleExportPDF}
+                      disabled={exporting}
+                      className="flex items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg font-semibold text-sm hover:shadow-lg transition-all disabled:opacity-50"
+                    >
+                      {exporting ? (
+                        <><div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div></>
+                      ) : (
+                        <><FiDownload size={14} /> Export</>
+                      )}
+                    </button>
+                    <button
+                      onClick={() => setShowExportOptions(false)}
+                      className="px-2 py-1.5 text-gray-400 hover:text-white text-sm"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setShowExportOptions(true)}
+                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl font-semibold text-sm hover:shadow-lg transition-all"
+                  >
+                    <FiDownload /> Export PDF Sets
+                  </button>
+                )}
+                {pendingEvaluations > 0 && (
+                  <button
+                    onClick={handleEvaluate}
+                    disabled={evaluating}
+                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-semibold text-sm hover:shadow-lg transition-all disabled:opacity-50"
+                  >
+                    {evaluating ? (
+                      <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> Evaluating...</>
+                    ) : (
+                      <><FiCpu /> Evaluate Written ({pendingEvaluations})</>
+                    )}
+                  </button>
+                )}
+              </div>
             </div>
+
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
                 { label: 'Status', value: exam.status },

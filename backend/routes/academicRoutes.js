@@ -34,6 +34,26 @@ router.get(
   academicController.getCourseById
 );
 
+router.get(
+  '/courses/active',
+  authMiddleware,
+  roleMiddleware(2, 3, 4),
+  academicController.getActiveCourses
+);
+
+router.get(
+  '/courses/teacher',
+  authMiddleware,
+  roleMiddleware(3),
+  academicController.getCoursesForTeacher
+);
+
+router.get(
+  '/courses/:id/details',
+  authMiddleware,
+  academicController.getCourseWithDetails
+);
+
 router.put(
   '/courses/:id',
   authMiddleware,

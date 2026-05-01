@@ -67,7 +67,63 @@ const academicController = {
     }
   },
 
+  getActiveCourses: async (req, res) => {
+    try {
+      const center = await centerModel.getCenterByUserId(
+        req.user.user_id
+      );
+      if (!center) {
+        return res.status(404).json({
+          success: false,
+          message: 'You do not have a coaching center',
+        });
+      }
+
+      const courses = await academicModel.getActiveCourses(
+        center.coaching_center_id
+      );
+
+      res.status(200).json({
+        success: true,
+        data: courses,
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: 'Server error',
+        error: error.message,
+      });
+    }
+  },
+
+  getCoursesForTeacher: async (req, res) => {
+    try {
+      if (req.user.role_id !== 3) {
+        return res.status(403).json({
+          success: false,
+          message: 'Access denied. Only teachers can view assigned courses.',
+        });
+      }
+
+      const courses = await academicModel.getCoursesForTeacher(
+        req.user.user_id
+      );
+
+      res.status(200).json({
+        success: true,
+        data: courses,
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: 'Server error',
+        error: error.message,
+      });
+    }
+  },
+
   getCourseById: async (req, res) => {
+
     try {
       const course = await academicModel.getCourseById(
         req.params.id
@@ -91,7 +147,33 @@ const academicController = {
     }
   },
 
+  getCourseWithDetails: async (req, res) => {
+    try {
+      const course = await academicModel.getCourseWithDetails(
+        req.params.id
+      );
+      if (!course) {
+        return res.status(404).json({
+          success: false,
+          message: 'Course not found',
+        });
+      }
+
+      res.status(200).json({
+        success: true,
+        data: course,
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: 'Server error',
+        error: error.message,
+      });
+    }
+  },
+
   updateCourse: async (req, res) => {
+
     try {
       const course = await academicModel.getCourseById(
         req.params.id
