@@ -168,14 +168,29 @@ export const getCourseAssignments = (courseId) => API.get(`/teachers/assignments
 export const removeAssignment = (id) => API.put(`/teachers/assignments/${id}/remove`);
 export const getAvailableTeachers = () => API.get('/teachers/available');
 
-// Course Enrollments & Payments
-export const enrollInCourse = (courseId) => API.post(`/enrollments/courses/${courseId}/enroll`);
+// Course Enrollments & Payments (NEW API at /api/courses)
+export const browseCourses = (filters) => API.get('/courses/browse', { params: filters });
+export const enrollInCourse = (courseId) => API.post(`/courses/${courseId}/enroll`);
+export const confirmPayment = (courseId, data) => API.post(`/courses/payment/${courseId}/confirm`, data);
+export const getMyCourses = () => API.get('/courses/my-courses');
+export const getCourseDetail = (courseId) => API.get(`/courses/${courseId}/details`);
+export const checkEnrollment = (courseId) => API.get(`/courses/${courseId}/check-enrollment`);
+export const getCourseExams = (courseId) => API.get(`/courses/${courseId}/exams`);
+
+// Admin courses (role_id = 2)
+export const getAdminCourses = () => API.get('/courses/admin/list');
+export const createCourseAdmin = (data) => API.post('/courses/admin/create', data);
+export const updateCourseAdmin = (courseId, data) => API.put(`/courses/admin/${courseId}`, data);
+export const getCourseStudentsAdmin = (courseId) => API.get(`/courses/admin/${courseId}/students`);
+
+// Legacy enrollments API (kept for backward compatibility)
+export const enrollInCourseLegacy = (courseId) => API.post(`/enrollments/courses/${courseId}/enroll`);
 export const getPaymentDetails = (enrollmentId) => API.get(`/enrollments/payment/${enrollmentId}`);
-export const confirmPayment = (data) => API.post('/enrollments/confirm-payment', data);
+export const confirmPaymentLegacy = (data) => API.post('/enrollments/confirm-payment', data);
 export const getMyEnrollments = () => API.get('/enrollments/my-enrollments');
 export const getMyActiveEnrollments = () => API.get('/enrollments/my-active-enrollments');
 export const getCourseStudents = (courseId) => API.get(`/enrollments/courses/${courseId}/students`);
-export const browseCourses = (coachingCenterId) => API.get('/enrollments/browse', { 
+export const browseCoursesLegacy = (coachingCenterId) => API.get('/enrollments/browse', { 
   params: { coaching_center_id: coachingCenterId } 
 });
 

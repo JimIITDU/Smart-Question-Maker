@@ -64,6 +64,7 @@ import JoinQuiz from './pages/Student/JoinQuiz.jsx'
 import BrowseCourses from './pages/Student/BrowseCourses.jsx'
 import MockPayment from './pages/Student/MockPayment.jsx'
 import MyCourses from './pages/Student/MyCourses.jsx'
+import CourseDetail from './pages/Student/CourseDetail.jsx'
 
 // CoachingAdmin pages (role_id = 2)
 import TeacherApplications from './pages/CoachingAdmin/TeacherApplications.jsx'
@@ -163,7 +164,8 @@ function App() {
               <Route path="/student/join-quiz" element={<JoinQuiz />} />
               <Route path="/student/browse-courses" element={<BrowseCourses />} />
               <Route path="/student/payment/:enrollmentId" element={<MockPayment />} />
-              <Route path="/student/courses" element={<MyCourses />} />
+<Route path="/student/courses" element={<MyCourses />} />
+              <Route path="/student/courses/:course_id" element={<CourseDetail />} />
             </Route>
 
 

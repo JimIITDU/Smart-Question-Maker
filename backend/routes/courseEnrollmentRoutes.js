@@ -6,13 +6,95 @@ const roleMiddleware = require('../middleware/roleMiddleware');
 
 // Role IDs: 1=super_admin, 2=coaching_admin, 3=teacher, 4=staff, 5=student
 
-// Student enrolls in a course
+// ==================== PUBLIC ROUTES ====================
+
+// Browse courses (public - no auth required)
+router.get('/browse', courseEnrollmentController.browseCourses);
+
+// ==================== STUDENT ROUTES (role_id = 5) ====================
+
+// Enroll in a course
 router.post(
-  '/courses/:courseId/enroll',
+  '/:course_id/enroll',
   authMiddleware,
   roleMiddleware(5),
   courseEnrollmentController.enrollInCourse
 );
+
+// Confirm payment
+router.post(
+  '/payment/:course_id/confirm',
+  authMiddleware,
+  roleMiddleware(5),
+  courseEnrollmentController.confirmPayment
+);
+
+// Get my courses
+router.get(
+  '/my-courses',
+  authMiddleware,
+  roleMiddleware(5),
+  courseEnrollmentController.getMyCourses
+);
+
+// Get course details
+router.get(
+  '/:course_id/details',
+  authMiddleware,
+  courseEnrollmentController.getCourseDetail
+);
+
+// Check enrollment status
+router.get(
+  '/:course_id/check-enrollment',
+  authMiddleware,
+  roleMiddleware(5),
+  courseEnrollmentController.checkEnrollment
+);
+
+// Get course exams
+router.get(
+  '/:course_id/exams',
+  authMiddleware,
+  roleMiddleware(5),
+  courseEnrollmentController.getCourseExams
+);
+
+// ==================== ADMIN ROUTES (role_id = 2) ====================
+
+// Get admin courses list
+router.get(
+  '/admin/list',
+  authMiddleware,
+  roleMiddleware(2),
+  courseEnrollmentController.getAdminCourses
+);
+
+// Create course
+router.post(
+  '/admin/create',
+  authMiddleware,
+  roleMiddleware(2),
+  courseEnrollmentController.createCourse
+);
+
+// Update course
+router.put(
+  '/admin/:course_id',
+  authMiddleware,
+  roleMiddleware(2),
+  courseEnrollmentController.updateCourse
+);
+
+// Get course students
+router.get(
+  '/admin/:course_id/students',
+  authMiddleware,
+  roleMiddleware(2),
+  courseEnrollmentController.getCourseStudents
+);
+
+// ==================== LEGACY ROUTES (for backward compatibility) ====================
 
 // Get payment details for an enrollment (before confirmation)
 router.get(
@@ -20,14 +102,6 @@ router.get(
   authMiddleware,
   roleMiddleware(5),
   courseEnrollmentController.getPaymentDetails
-);
-
-// Confirm mock payment and activate enrollment
-router.post(
-  '/confirm-payment',
-  authMiddleware,
-  roleMiddleware(5),
-  courseEnrollmentController.confirmPayment
 );
 
 // Student views all their enrollments
@@ -51,15 +125,7 @@ router.get(
   '/courses/:courseId/students',
   authMiddleware,
   roleMiddleware(2, 3),
-  courseEnrollmentController.getCourseStudents
-);
-
-// Student browses available courses
-router.get(
-  '/browse',
-  authMiddleware,
-  roleMiddleware(5),
-  courseEnrollmentController.browseCourses
+  courseEnrollmentController.getCourseStudentsLegacy
 );
 
 module.exports = router;

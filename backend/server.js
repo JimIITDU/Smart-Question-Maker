@@ -30,6 +30,11 @@ app.use('/api/exams', examRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/subscription-plans', subscriptionPlanRoutes);
 app.use('/api/teachers', teacherRoutes);
+
+// Course enrollment routes (mounted at /api/courses)
+app.use('/api/courses', courseEnrollmentRoutes);
+
+// Legacy enrollments route (kept for backward compatibility)
 app.use('/api/enrollments', courseEnrollmentRoutes);
 
 

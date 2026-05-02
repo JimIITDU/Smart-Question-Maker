@@ -1,18 +1,27 @@
 // LLM Service using Google Gemini API
 // Falls back to mock evaluation if GEMINI_API_KEY is not configured
 
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+const { GoogleGenerativeAI } = require('@google/generative-ai')
+const Groq = require('groq-sdk')
 
-// Initialize Gemini client
 const getGeminiModel = () => {
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY
   if (!apiKey) {
-    console.warn('[LLM] GEMINI_API_KEY not set. Using mock evaluation.');
-    return null;
+    console.warn('[LLM] GEMINI_API_KEY not set.')
+    return null
   }
-const genAI = new GoogleGenerativeAI(apiKey);
-  return genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-};
+  const genAI = new GoogleGenerativeAI(apiKey)
+  return genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
+}
+
+const getGroqClient = () => {
+  const apiKey = process.env.GROQ_API_KEY
+  if (!apiKey) {
+    console.warn('[LLM] GROQ_API_KEY not set.')
+    return null
+  }
+  return new Groq({ apiKey })
+}
 
 // Check if Gemini is available
 const isGeminiAvailable = () => !!process.env.GEMINI_API_KEY;
@@ -208,14 +217,12 @@ console.log('[LLM] Sending prompt to Gemini. Length:', prompt.length, 'chars');
 
 
 
-// Log API key status
-    console.log('[LLM] Calling Gemini with key:', process.env.GEMINI_API_KEY ? 'KEY EXISTS' : 'KEY MISSING');
+    console.log('[LLM] Calling Groq with key:', process.env.GROQ_API_KEY ? 'KEY EXISTS' : 'KEY MISSING');
     console.log('[LLM] Mode:', mode, '| Topic:', topic, '| Count:', count);
     
-    const model = getGeminiModel();
-    if (!model) {
-      // NO mock fallback - throw actual error so problem is exposed
-      throw new Error('GEMINI_API_KEY is not configured. Please set GEMINI_API_KEY environment variable.');
+    const groqClient = getGroqClient();
+    if (!groqClient) {
+      throw new Error('GROQ_API_KEY is not configured. Please set GROQ_API_KEY environment variable.');
     }
 
     try {
@@ -336,14 +343,20 @@ IMPORTANT: Return ONLY the JSON array, no markdown, no explanations.
           return llmService.mockGenerateQuestion(mode, params);
       }
 
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
+      console.log('[LLM] Sending prompt to Groq. Length:', prompt.length, 'chars');
+      const completion = await groqClient.chat.completions.create({
+        model: 'llama-3.3-70b-versatile',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.7,
+      });
+      console.log('[LLM] Groq responded successfully');
+      const rawText = completion.choices[0].message.content;
+      const text = rawText;
 
       // Extract JSON from response
       const jsonMatch = text.match(/\[[\s\S]*\]/);
       if (!jsonMatch) {
-        throw new Error('No JSON array found in Gemini response');
+        throw new Error('No JSON array found in Groq response');
       }
 
       const questions = JSON.parse(jsonMatch[0]);
@@ -365,7 +378,7 @@ IMPORTANT: Return ONLY the JSON array, no markdown, no explanations.
       }));
 
     } catch (error) {
-      console.error('[LLM] Gemini generation error:', error.message);
+      console.error('[LLM] Groq generation error:', error.message);
       // Fallback to mock generation
       return llmService.mockGenerateQuestion(mode, params);
     }

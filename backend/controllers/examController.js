@@ -1,3 +1,4 @@
+const db = require('../config/db');
 const examModel = require('../models/examModel');
 const questionModel = require('../models/questionModel');
 const llmService = require('../services/llmService');
@@ -8,6 +9,63 @@ const archiver = require('archiver');
 
 
 const examController = {
+
+  // ==============================
+  // ENROLLMENT CHECK MIDDLEWARE
+  // ==============================
+  // Check if student is enrolled in the course before accessing exam
+  checkEnrollmentForStudent: async (req, res, next) => {
+    try {
+      // Only check for student role (role_id = 5)
+      if (req.user.role_id !== 5) {
+        return next();
+      }
+
+      const examId = req.params.id;
+      
+      // Get exam details to find course_id
+      const exam = await examModel.getExamById(examId);
+      if (!exam) {
+        return res.status(404).json({
+          success: false,
+          message: 'Exam not found'
+        });
+      }
+
+      // Skip check if:
+      // 1. exam doesn't have a course_id (old exams)
+      // 2. exam_type = 'practice' AND is_public = true
+      if (!exam.course_id || (exam.exam_type === 'practice' && exam.is_public === true)) {
+        return next();
+      }
+
+      // Check enrollment in course_enrollments
+      const enrollmentResult = await db.query(
+        `SELECT * FROM course_enrollments
+         WHERE student_id = $1 AND course_id = $2
+         AND status = 'active'
+         AND (expires_at IS NULL OR expires_at > NOW())`,
+        [req.user.user_id, exam.course_id]
+      );
+
+      if (enrollmentResult.rows.length === 0) {
+        return res.status(403).json({
+          success: false,
+          message: 'Not enrolled or enrollment expired'
+        });
+      }
+
+      next();
+    } catch (error) {
+      console.error('checkEnrollmentForStudent error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Server error',
+        error: error.message
+      });
+    }
+  },
+
   createExam: async (req, res) => {
     try {
       const {
