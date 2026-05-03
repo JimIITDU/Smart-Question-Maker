@@ -159,7 +159,7 @@ const ForgotPassword = () => {
             <div className="mb-8 pt-6 pb-6 border-b border-white/5 w-full">
               <div className="flex items-center justify-between relative w-full">
                 {/* Connecting Line */}
-                <div className="mt-12 flex justify-between items-center relative w-full max-w-[280px]"></div>
+                <div className="absolute top-1/2 left-0 w-full h-0.5 bg-white/10 -translate-y-1/2 z-0"></div>
                 
                 {[1, 2, 3].map((s) => (
                   <div key={s} className="relative z-10 flex flex-col items-center gap-2">

@@ -7,7 +7,8 @@ if (process.env.DATABASE_URL) {
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false },
   });
-} else {
+} else if (process.env.NODE_ENV !== 'production') {
+  // Local development fallback
   const a = String.fromCharCode(64);
   const p1 = "postgresql://neondb_owner:npg_u9brOpC2xBdo";
   const p2 =
@@ -16,6 +17,8 @@ if (process.env.DATABASE_URL) {
     connectionString: p1 + a + p2,
     ssl: { rejectUnauthorized: false },
   });
+} else {
+  throw new Error("DATABASE_URL is required in production!");
 }
 
 module.exports = pool;

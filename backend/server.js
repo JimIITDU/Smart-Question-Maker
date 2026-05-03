@@ -1,10 +1,26 @@
 const express = require("express");
 const cors = require("cors");
-const dotenv = require("dotenv");
 const path = require('path');
 const fs = require('fs');
 
-dotenv.config();
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config();
+}
+
+// Warn if required env variables are missing
+const requiredEnvs = [
+  'DATABASE_URL',
+  'GROQ_API_KEY',
+  'EMAIL_HOST',
+  'EMAIL_PORT',
+  'EMAIL_HOST_USER',
+  'EMAIL_HOST_PASSWORD'
+];
+requiredEnvs.forEach((key) => {
+  if (!process.env[key]) {
+    console.warn(`[ENV WARNING] ${key} is not set!`);
+  }
+});
 
 const app = express();
 
