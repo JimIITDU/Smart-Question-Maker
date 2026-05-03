@@ -3,6 +3,7 @@ const router = express.Router();
 const centerController = require("../controllers/centerController");
 const authMiddleware = require("../middleware/authMiddleware");
 const roleMiddleware = require("../middleware/roleMiddleware");
+const { centerUpload } = require("../config/multerConfig");
 
 // Role IDs from database:
 // 1 = super_admin
@@ -17,7 +18,20 @@ router.post(
   "/apply",
   authMiddleware,
   roleMiddleware(2),
+  centerUpload.fields([
+    { name: 'owner_photo', maxCount: 1 },
+    { name: 'nid_front', maxCount: 1 },
+    { name: 'nid_back', maxCount: 1 }
+  ]),
   centerController.applyForCenter,
+);
+
+// Get my application (coaching admin)
+router.get(
+  "/my-application",
+  authMiddleware,
+  roleMiddleware(2),
+  centerController.getMyApplication,
 );
 
 // Super admin gets all centers

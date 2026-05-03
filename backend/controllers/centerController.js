@@ -1,36 +1,99 @@
 const centerModel = require("../models/centerModel");
 
 const centerController = {
-  // Apply for coaching center
+// Apply for coaching center - multipart form
   applyForCenter: async (req, res) => {
     try {
-      const { center_name, location, contact_number, email, established_date } =
-        req.body;
+      const {
+        center_name,
+        center_type,
+        established_year,
+        address_division,
+        address_district,
+        address_upazila,
+        address_full,
+        center_phone,
+        center_email,
+        website,
+        description,
+        owner_name,
+        owner_nid,
+        owner_phone,
+      } = req.body;
 
-      // Check if user already has a center
-      const existingCenter = await centerModel.getCenterByUserId(
-        req.user.user_id,
-      );
-      if (existingCenter) {
+      const user_id = req.user.user_id;
+      const coaching_admin_id = user_id;
+
+      // Check if user already has pending/active application
+      const existingApp = await centerModel.checkExistingApplication(user_id);
+      if (existingApp) {
         return res.status(400).json({
           success: false,
-          message: "You already have a coaching center application",
+          message: "You already have a pending or active application",
         });
       }
 
-      const centerId = await centerModel.createCenter({
-        user_id: req.user.user_id,
+      const owner_photo = req.files?.owner_photo?.[0]?.path;
+      const nid_front = req.files?.nid_front?.[0]?.path;
+      const nid_back = req.files?.nid_back?.[0]?.path;
+
+      if (!owner_photo || !nid_front || !nid_back) {
+        return res.status(400).json({
+          success: false,
+          message: "All three photos are required",
+        });
+      }
+
+      const centerId = await centerModel.createApplication({
+        user_id,
+        coaching_admin_id,
         center_name,
-        location,
-        contact_number,
-        email,
-        established_date,
+        center_type,
+        established_year,
+        address_division,
+        address_district,
+        address_upazila,
+        address_full,
+        center_phone,
+        center_email,
+        website,
+        description,
+        owner_name,
+        owner_nid,
+        owner_phone,
+        owner_photo,
+        nid_front,
+        nid_back,
       });
 
       res.status(201).json({
         success: true,
         message: "Center application submitted successfully",
         data: { coaching_center_id: centerId },
+      });
+    } catch (error) {
+      console.error('Apply center error:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message.includes('photo') ? error.message : "Server error",
+        error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+      });
+    }
+  },
+
+  // Get my application (coaching admin)
+  getMyApplication: async (req, res) => {
+    try {
+      const app = await centerModel.getMyApplicationByUserId(req.user.user_id);
+      if (!app) {
+        return res.status(404).json({
+          success: false,
+          message: "No application found",
+        });
+      }
+      res.status(200).json({
+        success: true,
+        data: app,
       });
     } catch (error) {
       res.status(500).json({
@@ -294,7 +357,7 @@ const centerController = {
   updateCenterStatus: async (req, res) => {
     try {
       const centerId = req.params.id;
-      const { status, reason } = req.body;
+      const { status, rejection_reason } = req.body;
       const center = await centerModel.getCenterById(centerId);
 
       if (!center) {
@@ -304,7 +367,7 @@ const centerController = {
         });
       }
 
-      await centerModel.updateCenterStatus(centerId, status);
+      await centerModel.updateCenterStatus(centerId, status, rejection_reason);
       console.log('Center status updated:', status); // Debug log
 
       res.status(200).json({

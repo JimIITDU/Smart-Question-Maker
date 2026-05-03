@@ -27,26 +27,40 @@ const adminController = {
         paramIndex++;
       }
 
-      const countResult = await db.query(`SELECT COUNT(*) as total FROM users u ${whereClause}`, params);
+      const countResult = await db.query(
+        `SELECT COUNT(*) as total FROM users u ${whereClause}`,
+        params
+      );
       const total = parseInt(countResult.rows[0].total);
-      
+
       const usersResult = await db.query(`
-        SELECT u.*, 
-               COALESCE(r.role_name, 'Unknown') as role_name,
-               cc.center_name,
-               u.created_at as joined_date
+        SELECT 
+          u.user_id,
+          u.name,
+          u.email,
+          u.role_id,
+          u.status,
+          u.created_at as joined_date,
+          u.coaching_center_id,
+          COALESCE(r.role_name::text, 'user') as role_name,
+          cc.center_name
         FROM users u 
         LEFT JOIN roles r ON u.role_id = r.role_id
         LEFT JOIN coaching_center cc ON u.coaching_center_id = cc.coaching_center_id
         ${whereClause}
         ORDER BY u.created_at DESC 
-        LIMIT $${paramIndex} OFFSET $${++paramIndex}
+        LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
       `, [...params, limit, offset]);
 
       res.json({
         success: true,
         data: usersResult.rows,
-        pagination: { page, limit, total, pages: Math.ceil(total / limit) }
+        pagination: {
+          page: parseInt(page),
+          limit,
+          total,
+          pages: Math.ceil(total / limit)
+        }
       });
     } catch (error) {
       console.error('Get users error:', error);
@@ -57,9 +71,13 @@ const adminController = {
   // GET /api/admin/centers/stats
   async getCentersStats(req, res) {
     try {
-      const activeResult = await db.query("SELECT COUNT(*) as count FROM coaching_center WHERE status = 'active'");
-      const pendingResult = await db.query("SELECT COUNT(*) as count FROM coaching_center WHERE status = 'pending'");
-      
+      const activeResult = await db.query(
+        "SELECT COUNT(*) as count FROM coaching_center WHERE status = 'active'"
+      );
+      const pendingResult = await db.query(
+        "SELECT COUNT(*) as count FROM coaching_center WHERE status = 'pending'"
+      );
+
       res.json({
         success: true,
         data: {
@@ -73,12 +91,12 @@ const adminController = {
     }
   },
 
-  // GET /api/admin/users/stats  
+  // GET /api/admin/users/stats
   async getUsersStats(req, res) {
     try {
       const result = await db.query('SELECT COUNT(*) as count FROM users');
       res.json({
-        success: true, 
+        success: true,
         data: { total: parseInt(result.rows[0].count) }
       });
     } catch (error) {
@@ -93,15 +111,22 @@ const adminController = {
       const { id } = req.params;
       const { status } = req.body;
 
-      const newStatus = status === false || status === 'inactive' ? false : true;
+      const newStatus = (status === false || status === 'inactive') ? false : true;
 
-      const result = await db.query('UPDATE users SET is_active = $1 WHERE user_id = $2 RETURNING *', [newStatus, id]);
-      
+      const result = await db.query(
+        'UPDATE users SET is_active = $1 WHERE user_id = $2 RETURNING *',
+        [newStatus, id]
+      );
+
       if (result.rowCount === 0) {
         return res.status(404).json({ success: false, message: 'User not found' });
       }
 
-      res.json({ success: true, message: 'User status updated', data: result.rows[0] });
+      res.json({
+        success: true,
+        message: 'User status updated',
+        data: result.rows[0]
+      });
     } catch (error) {
       console.error('Update user status error:', error);
       res.status(500).json({ success: false, message: 'Server error: ' + error.message });
@@ -112,19 +137,21 @@ const adminController = {
   async resetUserPassword(req, res) {
     try {
       const { id } = req.params;
-      
-      // Generate temp pwd 10 chars
+
       const tempPwd = crypto.randomBytes(5).toString('hex');
       const hash = await bcrypt.hash(tempPwd, 12);
 
-      const result = await db.query('UPDATE users SET password_hash = $1 WHERE user_id = $2 RETURNING user_id', [hash, id]);
-      
+      const result = await db.query(
+        'UPDATE users SET password_hash = $1 WHERE user_id = $2 RETURNING user_id',
+        [hash, id]
+      );
+
       if (result.rowCount === 0) {
         return res.status(404).json({ success: false, message: 'User not found' });
       }
 
-      res.json({ 
-        success: true, 
+      res.json({
+        success: true,
         message: 'Password reset successful',
         data: { temporary_password: tempPwd }
       });
@@ -136,4 +163,3 @@ const adminController = {
 };
 
 module.exports = adminController;
-

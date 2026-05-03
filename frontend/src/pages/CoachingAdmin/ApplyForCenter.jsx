@@ -1,6 +1,6 @@
 ﻿import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { applyForCenter } from "../../services/api";
+import { applyForCenterMultipart } from "../../services/api";
 import toast from "react-hot-toast";
 import { FiArrowLeft, FiSave } from "react-icons/fi";
 
@@ -22,7 +22,7 @@ const ApplyForCenter = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      await applyForCenter(formData);
+      await applyForCenterMultipart(formData);
       toast.success("Application submitted! Waiting for approval.");
       navigate("/coaching-admin");
     } catch (err) {

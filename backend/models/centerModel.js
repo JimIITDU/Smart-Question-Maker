@@ -1,23 +1,56 @@
 const db = require("../config/db");
 
 const centerModel = {
-  createCenter: async (data) => {
+  createApplication: async (data) => {
     const {
       user_id,
       center_name,
-      location,
-      contact_number,
-      email,
-      established_date,
+      center_type,
+      established_year,
+      address_division,
+      address_district,
+      address_upazila,
+      address_full,
+      center_phone,
+      center_email,
+      website,
+      description,
+      owner_name,
+      owner_nid,
+      owner_phone,
+      owner_photo,
+      nid_front,
+      nid_back,
     } = data;
     const result = await db.query(
       `INSERT INTO coaching_center
-       (user_id, center_name, location, contact_number, email, established_date)
-       VALUES ($1,$2,$3,$4,$5,$6)
+       (user_id, coaching_admin_id, center_name, center_type, established_year, address_division, address_district, address_upazila, address_full, center_phone, center_email, website, description, owner_name, owner_nid, owner_phone, owner_photo, nid_front, nid_back, status, submitted_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, 'pending', NOW())
        RETURNING coaching_center_id`,
-      [user_id, center_name, location, contact_number, email, established_date],
+      [user_id, data.coaching_admin_id, center_name, center_type, established_year, address_division, address_district, address_upazila, address_full, center_phone, center_email, website, description, owner_name, owner_nid, owner_phone, owner_photo, nid_front, nid_back],
     );
     return result.rows[0].coaching_center_id;
+  },
+
+  checkExistingApplication: async (user_id) => {
+    const result = await db.query(
+      `SELECT coaching_center_id FROM coaching_center WHERE user_id = $1 AND status IN ('pending', 'active')`,
+      [user_id],
+    );
+    return result.rows[0];
+  },
+
+  getMyApplicationByUserId: async (user_id) => {
+    const result = await db.query(
+      `SELECT cc.*, sp.name as plan_name, sp.price as plan_price, sp.features as plan_features
+       FROM coaching_center cc
+       LEFT JOIN subscription_plans sp ON cc.current_plan_id = sp.plan_id
+       WHERE cc.user_id = $1 AND cc.status IN ('pending', 'rejected', 'active')
+       ORDER BY cc.submitted_at DESC
+       LIMIT 1`,
+      [user_id],
+    );
+    return result.rows[0];
   },
 
   getAllCenters: async () => {
@@ -46,17 +79,16 @@ const centerModel = {
       `SELECT cc.*, sp.name as plan_name, sp.price as plan_price, sp.features as plan_features
        FROM coaching_center cc
        LEFT JOIN subscription_plans sp ON cc.current_plan_id = sp.plan_id
-       WHERE cc.user_id = $1`,
+       WHERE cc.user_id = $1 AND cc.status = 'active'`,
       [user_id],
     );
     return result.rows[0];
   },
 
-  updateCenterStatus: async (id, status) => {
-    await db.query(
-      "UPDATE coaching_center SET status = $1 WHERE coaching_center_id = $2",
-      [status, id],
-    );
+  updateCenterStatus: async (id, status, rejection_reason) => {
+    const query = `UPDATE coaching_center SET status = $1${rejection_reason ? ', rejection_reason = $2' : ''} WHERE coaching_center_id = $2`;
+    const params = rejection_reason ? [status, rejection_reason, id] : [status, id];
+    await db.query(query, params);
   },
 
   updateCenter: async (id, data) => {

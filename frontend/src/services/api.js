@@ -62,8 +62,12 @@ export const resetPassword = (data) => API.post("/auth/reset-password", data);
 export const getMe = () => API.get("/auth/me");
 
 // Center
-export const applyForCenter = (data) => API.post("/center/apply", data);
+export const applyForCenterMultipart = (formData) => {
+  const config = { headers: { 'Content-Type': 'multipart/form-data' } };
+  return API.post("/center/apply", formData, config);
+};
 export const getMyCenter = () => API.get("/center/my-center");
+export const getMyApplication = () => API.get("/center/my-application");
 export const getAllCenters = () => API.get("/center/all");
 export const getCenterById = (id) => API.get(`/center/${id}`);
 export const approveCenter = (id) => API.put(`/center/approve/${id}`);
@@ -251,4 +255,3 @@ export const getCourseWithDetails = (id) =>
   API.get(`/academic/courses/${id}/details`);
 
 export default API;
-

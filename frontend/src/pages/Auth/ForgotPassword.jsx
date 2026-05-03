@@ -1,7 +1,6 @@
 ﻿import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FiMail, FiArrowLeft, FiArrowRight, FiShield, FiCheckCircle, FiLock, FiEye, FiEyeOff, FiAlertCircle, FiCpu } from "react-icons/fi";
-import toast from "react-hot-toast";
+import { FiMail, FiArrowLeft, FiArrowRight, FiShield, FiCheckCircle, FiLock, FiEye, FiEyeOff, FiAlertCircle } from "react-icons/fi";
 import { forgotPassword, resetPassword } from "../../services/api";
 
 const ForgotPassword = () => {
@@ -14,25 +13,22 @@ const ForgotPassword = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
 
   const handleEmailSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError(null);
+    setMessage("");
     try {
       const response = await forgotPassword({ email });
       if (response.data.success) {
-        toast.success("OTP sent to your email!");
+        setMessage("OTP sent to your email!");
         setStep(2);
       } else {
-        toast.error(response.data.message || "Failed to send OTP");
-        setError(response.data.message || "Failed to send OTP");
+        setMessage(response.data.message || "Failed to send OTP");
       }
     } catch (error) {
-      const errMsg = error.response?.data?.message || "Failed to send OTP";
-      toast.error(errMsg);
-      setError(errMsg);
+      setMessage(error.response?.data?.message || "Failed to send OTP");
     } finally {
       setLoading(false);
     }
@@ -40,37 +36,30 @@ const ForgotPassword = () => {
 
   const handleOtpSubmit = async (e) => {
     e.preventDefault();
-    if (otp.length !== 6) {
-      toast.error("Please enter a valid 6-digit OTP");
-      return;
-    }
+    setMessage("");
+    if (otp.length !== 6) return setMessage("Please enter a valid 6-digit OTP");
     setStep(3);
   };
 
   const handleResetSubmit = async (e) => {
     e.preventDefault();
+    setMessage("");
     
     // Frontend validation
-    if (newPassword !== confirmPassword) {
-      toast.error("Passwords do not match");
-      return;
-    }
-    if (newPassword.length < 6) {
-      toast.error("Password must be at least 6 characters");
-      return;
-    }
+    if (newPassword !== confirmPassword) return setMessage("Passwords do not match");
+    if (newPassword.length < 6) return setMessage("Password must be at least 6 characters");
     
     setLoading(true);
     try {
       const response = await resetPassword({ email, otp, new_password: newPassword });
       if (response.data.success) {
-        toast.success("Password reset successfully!");
+        setMessage("Password reset successfully!");
         setTimeout(() => navigate("/login"), 2000);
       } else {
-        toast.error(response.data.message || "Reset failed");
+        setMessage(response.data.message || "Reset failed");
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || "Reset failed");
+      setMessage(error.response?.data?.message || "Reset failed");
     } finally {
       setLoading(false);
     }
@@ -86,11 +75,11 @@ const ForgotPassword = () => {
       <div className="fixed top-[-10%] left-[-10%] w-[500px] h-[500px] bg-purple-600/20 rounded-full blur-[120px] -z-10 animate-pulse"></div>
       <div className="fixed bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-pink-600/10 rounded-full blur-[120px] -z-10"></div>
 
-      {/* --- LEFT SIDE: Illustration & Progress --- */}
-      <div className="hidden lg:flex lg:w-1/2 relative items-center justify-center p-12 overflow-hidden">
+      {/* --- LEFT SIDE: Illustration --- */}
+      <div className="hidden lg:flex lg:w-1/2 items-center justify-center p-12 overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-purple-900/20 to-transparent z-0"></div>
         
-        <div className="relative z-10 w-full max-w-lg animate-fade-in-left">
+        <div className="relative z-10 w-full max-w-lg animate-fade-in-left flex flex-col items-center">
           {/* Branding */}
           <div className="flex items-center gap-3 mb-8">
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-500/30">
@@ -106,18 +95,18 @@ const ForgotPassword = () => {
             </div>
           </div>
 
-          <h1 className="text-4xl lg:text-5xl font-extrabold text-white mb-6 leading-tight">
+          <h1 className="text-4xl lg:text-5xl font-extrabold text-white mb-6 leading-tight text-center">
             Secure <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
               Account Recovery
             </span>
           </h1>
-          <p className="text-gray-400 text-lg mb-12 max-w-sm leading-relaxed">
+          <p className="text-gray-400 text-lg mb-12 max-w-sm leading-relaxed text-center">
             Follow the steps to securely reset your password and regain access to your dashboard.
           </p>
 
           {/* --- CSS Illustration: Secure Shield --- */}
-          <div className="relative w-full aspect-square max-w-[350px] mx-auto flex items-center justify-center">
+          <div className="relative w-full aspect-square max-w-[350px] flex items-center justify-center">
              {/* Rotating Rings */}
              <div className="absolute inset-0 border-2 border-white/5 rounded-full animate-spin-slow"></div>
              <div className="absolute inset-8 border border-purple-500/20 rounded-full animate-spin-reverse-slow"></div>
@@ -140,31 +129,6 @@ const ForgotPassword = () => {
                  <p className="text-sm font-bold text-white">Protected</p>
                </div>
             </div>
-          </div>
-
-          {/* Progress Steps */}
-          <div className="mt-12 flex justify-between items-center gap-2 relative">
-            {/* Connecting Line */}
-            <div className="absolute top-1/2 left-0 w-full h-0.5 bg-white/10 -translate-y-1/2 z-0"></div>
-            
-            {[1, 2, 3].map((s) => (
-              <div key={s} className="relative z-10 flex flex-col items-center gap-2">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold border-2 transition-all duration-500 ${
-                  step > s 
-                    ? 'bg-green-500 border-green-500 text-white' 
-                    : step === s 
-                      ? 'bg-purple-600 border-purple-400 text-white shadow-[0_0_15px_rgba(147,51,234,0.5)]' 
-                      : 'bg-[#0F172A] border-gray-700 text-gray-500'
-                }`}>
-                  {step > s ? <FiCheckCircle className="w-5 h-5" /> : s}
-                </div>
-                <span className={`text-xs font-medium uppercase tracking-wider transition-colors ${
-                  step >= s ? 'text-white' : 'text-gray-600'
-                }`}>
-                  {s === 1 ? 'Email' : s === 2 ? 'OTP' : 'Reset'}
-                </span>
-              </div>
-            ))}
           </div>
         </div>
       </div>
@@ -189,210 +153,224 @@ const ForgotPassword = () => {
           </div>
 
           {/* Form Card */}
-          <div className="bg-[#0F172A]/60 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl animate-fade-in-up">
+          <div className="bg-[#0F172A]/60 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl animate-fade-in-up w-full flex flex-col">
             
-            {/* STEP 1: EMAIL */}
-            {step === 1 && (
-              <>
-                <div className="mb-8">
-                  <h2 className="text-2xl font-bold text-white mb-2">Enter Email</h2>
-                  <p className="text-gray-400 text-sm">
-                    We'll send an OTP to your registered email address.
-                  </p>
-                </div>
+            {/* --- PROGRESS STEPS (Moved to Right Side) --- */}
+            <div className="mb-8 pt-6 pb-6 border-b border-white/5 w-full">
+              <div className="flex items-center justify-between relative w-full">
+                {/* Connecting Line */}
+                <div className="mt-12 flex justify-between items-center relative w-full max-w-[280px]"></div>
+                
+                {[1, 2, 3].map((s) => (
+                  <div key={s} className="relative z-10 flex flex-col items-center gap-2">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border-2 transition-all duration-500 ${
+                      step > s 
+                        ? 'bg-green-500 border-green-500 text-white' 
+                        : step === s 
+                          ? 'bg-purple-600 border-purple-400 text-white shadow-[0_0_15px_rgba(147,51,234,0.5)]' 
+                          : 'bg-[#0F172A] border-gray-700 text-gray-500'
+                    }`}>
+                      {step > s ? <FiCheckCircle className="w-4 h-4" /> : s}
+                    </div>
+                    <span className={`text-[10px] font-medium uppercase tracking-wider transition-colors ${
+                      step >= s ? 'text-white' : 'text-gray-600'
+                    }`}>
+                      {s === 1 ? 'Email' : s === 2 ? 'OTP' : 'Reset'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
 
-                <form onSubmit={handleEmailSubmit} className="space-y-6">
-                  <div className="space-y-2">
-                    <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider ml-1">
-                      Email Address
-                    </label>
-                    <div className="relative group">
-                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-500 group-focus-within:text-purple-400 transition-colors">
-                        <FiMail className="text-lg" />
+            {/* --- FORM CONTENT --- */}
+            <div className="p-8 pt-2">
+              {/* STEP 1: EMAIL */}
+              {step === 1 && (
+                <>
+                  <h2 className="text-xl font-bold text-white mb-6 text-center">Enter Email Address</h2>
+                  <form onSubmit={handleEmailSubmit} className="space-y-6">
+                    <div className="space-y-2">
+                      <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider ml-1">
+                        Email Address
+                      </label>
+                      <div className="relative group">
+                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-500 group-focus-within:text-purple-400 transition-colors">
+                          <FiMail className="text-lg" />
+                        </div>
+                        <input
+                          type="email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          required
+                          placeholder="name@proshnoghor.com"
+                          className="w-full bg-[#030712]/50 border border-white/10 text-white text-sm rounded-xl pl-11 pr-4 py-3.5 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 placeholder-gray-600 transition-all"
+                        />
                       </div>
-                      <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                        placeholder="name@proshnoghor.com"
-                        className="w-full bg-[#030712]/50 border border-white/10 text-white text-sm rounded-xl pl-11 pr-4 py-3.5 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 placeholder-gray-600 transition-all"
-                      />
                     </div>
-                  </div>
 
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full relative group overflow-hidden bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3.5 rounded-xl font-bold shadow-lg shadow-purple-900/40 hover:shadow-purple-900/60 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                  >
-                    {loading ? (
-                      <span className="flex items-center gap-2">
-                        <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        Sending...
-                      </span>
-                    ) : (
-                      <span className="relative z-10">Send OTP</span>
-                    )}
-                    <FiArrowRight className="group-hover:translate-x-1 transition-transform relative z-10" />
-                    <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-pink-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
-                  </button>
-                </form>
-              </>
-            )}
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="w-full relative group overflow-hidden bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3.5 rounded-xl font-bold shadow-lg shadow-purple-900/40 hover:shadow-purple-900/60 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-2"
+                    >
+                      {loading ? (
+                        <span className="flex items-center gap-2">
+                          <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Sending...
+                        </span>
+                      ) : (
+                        <span className="relative z-10">Send OTP</span>
+                      )}
+                      <FiArrowRight className="group-hover:translate-x-1 transition-transform relative z-10" />
+                      <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-pink-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+                    </button>
+                  </form>
+                </>
+              )}
 
-            {/* STEP 2: OTP */}
-            {step === 2 && (
-              <>
-                <div className="mb-8 text-center">
-                  <h2 className="text-2xl font-bold text-white mb-2">Verify Identity</h2>
-                  <p className="text-gray-400 text-sm">
-                    Enter the 6-digit code sent to {email}
-                  </p>
-                </div>
-
-                <form onSubmit={handleOtpSubmit} className="space-y-6">
-                  <div className="space-y-2">
-                    <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider ml-1 text-center">
-                      One-Time Password
-                    </label>
-                    <div className="relative group">
-                      <input
-                        type="text"
-                        value={otp}
-                        onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, ""))}
-                        required
-                        placeholder="• • • • • • •"
-                        maxLength={6}
-                        inputMode="numeric"
-                        className="w-full bg-[#030712]/50 border border-white/10 text-white text-4xl tracking-[0.5em] text-center font-mono rounded-xl py-4 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 placeholder-gray-600 transition-all"
-                      />
-                    </div>
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full relative group overflow-hidden bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3.5 rounded-xl font-bold shadow-lg shadow-purple-900/40 hover:shadow-purple-900/60 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                  >
-                    <span className="relative z-10">Verify Code</span>
-                    <FiArrowRight className="group-hover:translate-x-1 transition-transform relative z-10" />
-                    <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-pink-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
-                  </button>
-                </form>
-              </>
-            )}
-
-            {/* STEP 3: RESET PASSWORD */}
-            {step === 3 && (
-              <>
-                <div className="mb-8">
-                  <h2 className="text-2xl font-bold text-white mb-2">New Password</h2>
-                  <p className="text-gray-400 text-sm">
-                    Create a strong password to secure your account.
-                  </p>
-                </div>
-
-                <form onSubmit={handleResetSubmit} className="space-y-4">
-                  {/* New Password */}
-                  <div className="space-y-2">
-                    <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider ml-1">
-                      New Password
-                    </label>
-                    <div className="relative group">
-                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-500 group-focus-within:text-purple-400 transition-colors">
-                        <FiLock className="text-lg" />
+              {/* STEP 2: OTP */}
+              {step === 2 && (
+                <>
+                  <h2 className="text-xl font-bold text-white mb-2 text-center">Verify Identity</h2>
+                  <p className="text-gray-400 text-sm text-center mb-6">{email}</p>
+                  {message && <p className="text-green-400 text-sm text-center mb-6">{message}</p>}
+                  <form onSubmit={handleOtpSubmit} className="space-y-6">
+                    <div className="space-y-2">
+                      <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider ml-1 text-center">
+                        Enter One-Time Password
+                      </label>
+                      <div className="relative group">
+                        <input
+                          type="text"
+                          value={otp}
+                          onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, ""))}
+                          required
+                          placeholder="• • • • • • •"
+                          maxLength={6}
+                          inputMode="numeric"
+                          className="w-full bg-[#030712]/50 border border-white/10 text-white text-4xl tracking-[0.5em] text-center font-mono rounded-xl py-4 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 placeholder-gray-600 transition-all"
+                        />
                       </div>
-                      <input
-                        type={showPassword ? "text" : "password"}
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                        required
-                        placeholder="Enter new password"
-                        className="w-full bg-[#030712]/50 border border-white/10 text-white text-sm rounded-xl pl-11 pr-12 py-3.5 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 placeholder-gray-600 transition-all"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute inset-y-0 right-4 flex items-center text-gray-500 hover:text-white transition-colors"
-                      >
-                        {showPassword ? <FiEyeOff /> : <FiEye />}
-                      </button>
                     </div>
-                  </div>
 
-                  {/* Confirm Password */}
-                  <div className="space-y-2">
-                    <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider ml-1">
-                      Confirm Password
-                    </label>
-                    <div className="relative group">
-                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-colors duration-300">
-                        <FiLock className={`text-lg ${isPasswordMatch ? 'text-green-500' : isPasswordMismatch ? 'text-red-500' : 'text-gray-500'}`} />
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="w-full relative group overflow-hidden bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3.5 rounded-xl font-bold shadow-lg shadow-purple-900/40 hover:shadow-purple-900/60 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-2"
+                    >
+                      <span className="relative z-10">Verify Code</span>
+                      <FiArrowRight className="group-hover:translate-x-1 transition-transform relative z-10" />
+                      <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-pink-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+                    </button>
+                  </form>
+                </>
+              )}
+
+              {/* STEP 3: RESET PASSWORD */}
+              {step === 3 && (
+                <>
+                  <h2 className="text-xl font-bold text-white mb-6 text-center">Create New Password</h2>
+                  <form onSubmit={handleResetSubmit} className="space-y-4">
+                    {/* New Password */}
+                    <div className="space-y-2">
+                      <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider ml-1">
+                        New Password
+                      </label>
+                      <div className="relative group">
+                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-500 group-focus-within:text-purple-400 transition-colors">
+                          <FiLock className="text-lg" />
+                        </div>
+                        <input
+                          type={showPassword ? "text" : "password"}
+                          value={newPassword}
+                          onChange={(e) => setNewPassword(e.target.value)}
+                          required
+                          placeholder="Enter new password"
+                          className="w-full bg-[#030712]/50 border border-white/10 text-white text-sm rounded-xl pl-11 pr-12 py-3.5 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 placeholder-gray-600 transition-all"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute inset-y-0 right-4 flex items-center text-gray-500 hover:text-white transition-colors"
+                        >
+                          {showPassword ? <FiEyeOff /> : <FiEye />}
+                        </button>
                       </div>
-                      <input
-                        type={showConfirmPassword ? "text" : "password"}
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        required
-                        placeholder="Confirm new password"
-                        className={`w-full bg-[#030712]/50 text-white text-sm rounded-xl pl-11 pr-12 py-3.5 focus:outline-none focus:ring-2 placeholder-gray-600 transition-all duration-300 ${
-                          isPasswordMismatch 
-                            ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' 
-                            : isPasswordMatch 
-                              ? 'border-green-500 focus:border-green-500 focus:ring-green-500/20' 
-                              : 'border-white/10 focus:border-purple-500 focus:ring-purple-500/20'
-                        }`}
-                      />
-                       <button
-                        type="button"
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute inset-y-0 right-4 flex items-center text-gray-500 hover:text-white transition-colors"
-                      >
-                        {showConfirmPassword ? <FiEyeOff /> : <FiEye />}
-                      </button>
                     </div>
-                    {isPasswordMismatch && (
-                      <p className="text-[10px] text-red-400 ml-1 animate-fade-in-down">Passwords do not match</p>
-                    )}
-                  </div>
 
-                  {/* Error Message */}
-                  {error && (
-                    <div className="flex items-center gap-2 p-3 rounded-lg bg-red-500/10 border border-red-500/20">
-                       <FiAlertCircle className="text-red-400 text-sm" />
-                       <p className="text-red-400 text-xs">{error}</p>
+                    {/* Confirm Password */}
+                    <div className="space-y-2">
+                      <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider ml-1">
+                        Confirm Password
+                      </label>
+                      <div className="relative group">
+                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-colors duration-300">
+                          <FiLock className={`text-lg ${isPasswordMatch ? 'text-green-500' : isPasswordMismatch ? 'text-red-500' : 'text-gray-500'}`} />
+                        </div>
+                        <input
+                          type={showConfirmPassword ? "text" : "password"}
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          required
+                          placeholder="Confirm new password"
+                          className={`w-full bg-[#030712]/50 text-white text-sm rounded-xl pl-11 pr-12 py-3.5 focus:outline-none focus:ring-2 placeholder-gray-600 transition-all duration-300 ${
+                            isPasswordMismatch 
+                              ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' 
+                              : isPasswordMatch 
+                                ? 'border-green-500 focus:border-green-500 focus:ring-green-500/20' 
+                                : 'border-white/10 focus:border-purple-500 focus:ring-purple-500/20'
+                          }`}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          className="absolute inset-y-0 right-4 flex items-center text-gray-500 hover:text-white transition-colors"
+                        >
+                          {showConfirmPassword ? <FiEyeOff /> : <FiEye />}
+                        </button>
+                      </div>
+                      {isPasswordMismatch && (
+                        <p className="text-[10px] text-red-400 ml-1 animate-fade-in-down">Passwords do not match</p>
+                      )}
                     </div>
-                  )}
 
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full relative group overflow-hidden bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3.5 rounded-xl font-bold shadow-lg shadow-purple-900/40 hover:shadow-purple-900/60 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-2"
-                  >
-                    {loading ? (
-                      <span className="flex items-center gap-2">
-                        <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        Resetting...
-                      </span>
-                    ) : (
-                      <span className="relative z-10">Reset Password</span>
+                    {/* Error Message */}
+                    {message && (
+                      <div className="flex items-center gap-2 p-3 rounded-lg bg-red-500/10 border border-red-500/20">
+                           <FiAlertCircle className="text-red-400 text-sm" />
+                           <p className="text-red-400 text-xs">{message}</p>
+                      </div>
                     )}
-                    <FiArrowRight className="group-hover:translate-x-1 transition-transform relative z-10" />
-                    <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-pink-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
-                  </button>
-                </form>
-              </>
-            )}
-            
+
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="w-full relative group overflow-hidden bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3.5 rounded-xl font-bold shadow-lg shadow-purple-900/40 hover:shadow-purple-900/60 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-2"
+                    >
+                      {loading ? (
+                        <span className="flex items-center gap-2">
+                          <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Resetting...
+                        </span>
+                      ) : (
+                        <span className="relative z-10">Reset Password</span>
+                      )}
+                      <FiArrowRight className="group-hover:translate-x-1 transition-transform relative z-10" />
+                      <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-pink-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+                    </button>
+                  </form>
+                </>
+              )}
+            </div>
+
             {/* Back Link */}
-            <div className="mt-6 text-center">
+            <div className="mt-6 text-center border-t border-white/5 pt-4">
               <Link
                 to="/login"
                 className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-purple-400 transition-colors"
