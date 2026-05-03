@@ -46,8 +46,11 @@ const Layout = ({ children }) => {
 
       {/* Main Content */}
       <main
-        className={`transition-all duration-300 pt-20 min-h-[calc(100vh-5rem)] 
-                   ${collapsed ? "lg:ml-20" : "lg:ml-64"} p-6 lg:p-8 overflow-auto`}
+        className={`transition-all duration-300 pt-20 lg:pt-20 min-h-[calc(100vh-5rem)] ${
+          collapsed ? "lg:ml-20" : "lg:ml-64"
+        } p-6 lg:p-8 overflow-auto z-0`}
+
+
       >
         {children}
       </main>

@@ -115,29 +115,19 @@ const Sidebar = ({ collapsed, mobileOpen, onClose }) => {
       `}
     >
       {/* Mobile Header */}
-      {mobileOpen && (
+{mobileOpen && (
         <div className="lg:hidden p-4 border-b border-white/10 flex justify-between items-center">
-          <Link to="/" className="flex items-center gap-2">
-            <h2 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
-              ProshnoGhor
-            </h2>
-          </Link>
+          <span className="text-lg font-bold text-white">Menu</span>
           <button onClick={onClose} className="text-gray-400 hover:text-white p-1">
             <FiX className="w-6 h-6" />
           </button>
         </div>
       )}
 
-      {/* Desktop Logo */}
-      {!mobileOpen && !collapsed && (
-        <div className="p-4 border-b border-white/10">
-          <Link to="/" className="flex items-center gap-2 group">
-            <h2 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent group-hover:opacity-80">
-              ProshnoGhor
-            </h2>
-          </Link>
-        </div>
-      )}
+
+
+      {/* Desktop Logo - Removed as per feedback */}
+
 
       <div className="pt-6 px-3 pb-6">
         <nav className="space-y-1">
@@ -175,35 +165,11 @@ const Sidebar = ({ collapsed, mobileOpen, onClose }) => {
         </nav>
       </div>
 
-      {/* Bottom User Section */}
-      <div className="absolute bottom-6 left-0 right-0 px-4 border-t border-white/10 pt-4">
-        {!collapsed && (
-          <div className="mb-3 p-3 bg-white/5 rounded-xl">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
-                {(user?.name || 'U').split(' ').map(n => n[0]).slice(0,2).join('').toUpperCase()}
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium text-white truncate">
-                  {user?.name || 'User'}
-                </p>
-                <p className="text-xs text-blue-400 font-semibold uppercase tracking-wider truncate">
-                  {user?.role_name || getRoleName(user?.role_id)}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-        <button
-          onClick={handleLogout}
-          className={`w-full flex items-center gap-3 px-4 py-3.5 text-red-400 hover:bg-red-500/10 rounded-2xl transition-all font-medium ${
-            collapsed ? "justify-center" : "justify-start"
-          }`}
-        >
-          <FiLogOut className="text-xl flex-shrink-0" />
-          {!collapsed && <span>Logout</span>}
-        </button>
-      </div>
+
+
+      {/* No logout - navbar only */}
+
+
     </aside>
   );
 };

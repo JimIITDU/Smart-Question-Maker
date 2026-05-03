@@ -8,7 +8,7 @@ const Navbar = ({ collapsed, toggleCollapse, toggleMobile }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
-  const unreadCount = 3; // Static fallback
+  const unreadCount = 0; // Unread notifications (non-red)
 
   const getRoleName = (roleId) => {
     const id = roleId || user?.role_id || user?.role;
@@ -80,7 +80,7 @@ const Navbar = ({ collapsed, toggleCollapse, toggleMobile }) => {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 h-20 border-b border-white/10 bg-[#030712]/95 backdrop-blur-xl">
+    <nav className="fixed top-0 left-0 right-0 z-40 h-20 border-b border-white/10 bg-[#030712]/95 backdrop-blur-xl">
       <div className="max-w-[1600px] mx-auto px-4 h-full flex items-center justify-between">
         
         {/* LEFT SECTION */}
