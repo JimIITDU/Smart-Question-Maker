@@ -72,7 +72,8 @@ const AIQuestionGenerator = () => {
   const [mode, setMode] = useState(null); // 'manual' | 'previous' | 'pdf_text' | 'filters_only'
 
   // ── Step 3: Question types
-  const [selectedTypes, setSelectedTypes] = useState([]);
+const [selectedTypes, setSelectedTypes] = useState([]);
+  const [typeCounts, setTypeCounts] = useState({mcq: 0, true_false: 0, descriptive: 0});
 
   // ── Step 4: Generation inputs per mode
   const [count, setCount] = useState(5);
@@ -97,11 +98,17 @@ const AIQuestionGenerator = () => {
     setFilters((f) => ({ ...f, [e.target.name]: e.target.value }));
   };
 
-  const toggleType = (t) => {
+const toggleType = (t) => {
     setSelectedTypes((prev) =>
       prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]
     );
   };
+
+  const handleTypeCountChange = (type, value) => {
+    setTypeCounts((prev) => ({ ...prev, [type]: parseInt(value) || 0 }));
+  };
+
+  const totalCount = Object.values(typeCounts).reduce((sum, count) => sum + count, 0);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -131,11 +138,12 @@ const AIQuestionGenerator = () => {
 
   // ─── Generate ──────────────────────────────────────────────────────────
 
-  const buildPayload = () => {
+const buildPayload = () => {
     const base = {
       ...filters,
       question_types: selectedTypes,
-      count,
+      type_counts: typeCounts,
+      count: totalCount,
       source_type:
         mode === 'previous'
           ? 'previous'
@@ -152,15 +160,15 @@ const AIQuestionGenerator = () => {
     }
 
     if (mode === 'filters_only') {
-      base.difficulty = difficulty;
+      base.difficulty = difficulty === 'all' ? 'mixed difficulty levels' : difficulty;
     }
 
     return base;
   };
 
-  const handleGenerate = async () => {
-    if (selectedTypes.length === 0) {
-      toast.error('Select at least one question type');
+const handleGenerate = async () => {
+    if (selectedTypes.length === 0 || totalCount === 0) {
+      toast.error('Select types and set counts for at least one type');
       return;
     }
     if ((mode === 'previous' || mode === 'pdf_text') && !hints && !pdfFile) {
@@ -177,8 +185,8 @@ const AIQuestionGenerator = () => {
         generated.map((q, idx) => ({
           ...q,
           _id: q.question_id || `temp-${idx}`,
-          _status: 'pending', // pending | accepted | rejected
-          _difficultyOverride: null, // null means Auto (keep AI)
+          _status: 'pending',
+          _difficultyOverride: null,
         }))
       );
       setStep(4);
@@ -351,17 +359,28 @@ const AIQuestionGenerator = () => {
 
       {/* Nav */}
       <nav className="fixed top-0 w-full z-50 border-b border-white/5 bg-[#030712]/70 backdrop-blur-xl">
-        <div className="max-w-5xl mx-auto px-6 h-20 flex items-center gap-4">
-          <Link
-            to="/teacher/questions"
-            className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
-          >
-            <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
-              <FiArrowLeft />
-            </div>
-            <span className="text-sm">Question Bank</span>
-          </Link>
+<div className="max-w-5xl mx-auto px-6 h-20 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Link to="/teacher" className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors text-sm">
+              ← Dashboard
+            </Link>
+            <Link
+              to="/teacher/questions"
+              className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+            >
+              <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
+                <FiArrowLeft />
+              </div>
+              <span className="text-sm">Question Bank</span>
+            </Link>
+          </div>
           <h1 className="text-lg font-bold text-white">AI Question Generator</h1>
+          <Link
+            to="/teacher/questions/create"
+            className="px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-xl font-semibold text-sm hover:shadow-lg transition-all flex items-center gap-2"
+          >
+            ✎ Create Manually
+          </Link>
         </div>
       </nav>
 
@@ -623,33 +642,35 @@ const AIQuestionGenerator = () => {
               </h3>
             </div>
 
-            {/* Question type selector */}
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-              <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-4">
-                Question Types <span className="text-gray-500 normal-case font-normal">(select multiple)</span>
-              </label>
-              <div className="flex gap-3 flex-wrap">
-                {[
-                  { key: 'descriptive', label: 'Descriptive / Written', icon: FiPenTool },
-                  { key: 'mcq', label: 'MCQ', icon: FiCheckCircle },
-                  { key: 'true_false', label: 'True / False', icon: FiCpu },
-                ].map((t) => {
-                  const active = selectedTypes.includes(t.key);
-                  return (
-                    <button
-                      key={t.key}
-                      onClick={() => toggleType(t.key)}
-                      className={`flex items-center gap-2 px-5 py-3 rounded-xl border font-semibold transition-all ${
-                        active
-                          ? 'bg-purple-500/20 border-purple-500/40 text-purple-300'
-                          : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10'
-                      }`}
-                    >
-                      <t.icon className="text-sm" />
-                      {t.label}
-                    </button>
-                  );
-                })}
+  {/* Question type selector */}
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+              {[
+                { key: 'descriptive', label: 'Descriptive', countKey: 'descriptive' },
+                { key: 'mcq', label: 'MCQ', countKey: 'mcq' },
+                { key: 'true_false', label: 'True/False', countKey: 'true_false' },
+              ].map((t) => (
+                <div key={t.key} className="space-y-2">
+                  <label className="flex items-center gap-2 text-sm font-semibold text-gray-300 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={selectedTypes.includes(t.key)}
+                      onChange={() => toggleType(t.key)}
+                      className="w-4 h-4 text-purple-600 bg-white/10 border-white/20 rounded focus:ring-purple-500"
+                    />
+                    {t.label}
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={typeCounts[t.countKey]}
+                    onChange={(e) => handleTypeCountChange(t.countKey, e.target.value)}
+                    placeholder="0"
+                    className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-3 py-2 focus:border-purple-500 focus:ring-1 focus:ring-purple-500/20 text-sm"
+                  />
+                </div>
+              ))}
+              <div className="md:col-span-3 pt-2">
+                <p className="text-sm text-gray-400">Total: <span className="font-bold text-white">{totalCount}</span></p>
               </div>
             </div>
 
@@ -702,7 +723,7 @@ const AIQuestionGenerator = () => {
               )}
 
               {/* Filters-only mode: difficulty selector */}
-              {mode === 'filters_only' && (
+{mode === 'filters_only' && (
                 <div>
                   <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-2">
                     Difficulty
@@ -712,6 +733,7 @@ const AIQuestionGenerator = () => {
                     onChange={(e) => setDifficulty(e.target.value)}
                     className="w-full bg-[#0B1120] border border-white/10 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-purple-500 appearance-none"
                   >
+                    <option value="all">All (Mixed)</option>
                     <option value="easy">Easy</option>
                     <option value="medium">Medium</option>
                     <option value="hard">Hard</option>

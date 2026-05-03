@@ -43,6 +43,10 @@ app.get('/', (req, res) => {
   res.json({ message: 'Smart Question Maker API is running' });
 });
 
+// require('dotenv').config({ 
+//   path: process.env.NODE_ENV === 'production' ? '.env' : '.env.local' 
+// })
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

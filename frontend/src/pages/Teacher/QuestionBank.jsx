@@ -1,7 +1,9 @@
+
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { getAllQuestions, deleteQuestion } from '../../services/api.js'
 import { useAuth } from '../../context/AuthContext.jsx'
+import { FiCpu } from 'react-icons/fi'
 
 // --- Icons ---
 const SearchIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
@@ -17,14 +19,14 @@ const CLASS_OPTIONS = [
 ]
 
 // Paper options
-const PAPER_OPTIONS = ['1st', '2nd', '3rd']
+const PAPER_OPTIONS = ['1st', '2nd']
 
 // Chapter number options (1-50)
 const CHAPTER_OPTIONS = Array.from({ length: 50 }, (_, i) => (i + 1).toString())
 
 // School level classes (1-12) - for Subject/Course label logic
 const SCHOOL_CLASSES = [
-  '1st', '2nd', '3rd', '4', '5', '6', '7', '8',
+  '1', '2', '3', '4', '5', '6', '7', '8',
   '9-10 (Secondary)', '11-12(Higher Secondary)'
 ]
 
@@ -117,16 +119,31 @@ const QuestionBank = () => {
   const subjectCourseLabel = isSchoolClass(filters.class_name) ? 'Subject' : 'Course'
 
   return (
-    <div className="min-h-screen bg-[#0B0C15] pb-20">
+<div className="min-h-screen bg-[#0B0C15] pb-20">
       
-      {/* --- Ambient Background --- */}
+      {/* Fixed Navbar */}
+      <nav className="fixed top-0 w-full z-50 border-b border-white/5 bg-[#030712]/70 backdrop-blur-xl">
+        <div className="max-w-6xl mx-auto px-6 h-20 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Link to="/teacher" className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors text-sm">
+              ← Dashboard
+            </Link>
+            <Link to="/teacher/questions" className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors text-sm">
+              Question Bank
+            </Link>
+          </div>
+          <h1 className="text-lg font-bold text-white">Question Bank</h1>
+        </div>
+      </nav>
+      
+      {/* Fixed Background Blobs */}
       <div className="fixed top-[-10%] left-[-10%] w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none"></div>
       <div className="fixed bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-cyan-600/10 rounded-full blur-[120px] pointer-events-none"></div>
 
-      <main className="relative z-10 max-w-6xl mx-auto px-6 pt-8">
+      <main className="pt-28 pb-20">
 
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div>
             <h1 className="text-3xl font-bold text-white mb-2">
               Question <span className="text-indigo-400">Bank</span>
@@ -134,6 +151,7 @@ const QuestionBank = () => {
             <p className="text-gray-400 text-sm">Search and manage your question database.</p>
           </div>
 {(user?.role_id === 2 || user?.role_id === 3) && (
+          <div className="flex flex-col sm:flex-row gap-3">
             <Link
               to="/teacher/questions/create"
               className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all duration-300 bg-gradient-to-r from-indigo-600 to-cyan-600 text-white shadow-lg shadow-indigo-900/40 hover:shadow-indigo-900/60 hover:scale-[1.02]"
@@ -141,7 +159,37 @@ const QuestionBank = () => {
               <PlusIcon />
               Create Question
             </Link>
-          )}
+            <Link
+              to="/teacher/questions/ai-generate"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg hover:scale-[1.02] transition-all"
+            >
+              <FiCpu />
+              AI Generate
+            </Link>
+          </div>
+        )}
+        </div>
+
+        {/* Stats Summary Bar */}
+<div className="flex flex-wrap gap-3 mb-10 bg-[#13151f]/50 border border-white/5 rounded-2xl p-4 backdrop-blur-sm">
+          <div className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-xl text-sm font-medium text-gray-300">
+            Total: {questions.length}
+          </div>
+          <div className="px-3 py-1.5 bg-indigo-500/10 border border-indigo-500/20 text-sm font-medium text-indigo-400 rounded-xl">
+            Manual: {questions.filter(q => q.source === 'manual').length}
+          </div>
+          <div className="px-3 py-1.5 bg-purple-500/10 border border-purple-500/20 text-sm font-medium text-purple-400 rounded-xl">
+            AI Generated: {questions.filter(q => q.source === 'ai_generated').length}
+          </div>
+          <div className="px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/20 text-sm font-medium text-emerald-400 rounded-xl">
+            Easy: {questions.filter(q => q.difficulty === 'easy').length}
+          </div>
+          <div className="px-3 py-1.5 bg-amber-500/10 border border-amber-500/20 text-sm font-medium text-amber-400 rounded-xl">
+            Medium: {questions.filter(q => q.difficulty === 'medium').length}
+          </div>
+          <div className="px-3 py-1.5 bg-rose-500/10 border border-rose-500/20 text-sm font-medium text-rose-400 rounded-xl">
+            Hard: {questions.filter(q => q.difficulty === 'hard').length}
+          </div>
         </div>
 
         {/* Messages */}
@@ -188,20 +236,22 @@ const QuestionBank = () => {
                   className="w-full bg-[#0B0C15] border border-white/10 text-white text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
                 />
               </div>
-              <div className="space-y-2">
-                <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Paper</label>
-                <select
-                  name="paper"
-                  value={filters.paper}
-                  onChange={handleFilterChange}
-                  className="w-full bg-[#0B0C15] border border-white/10 text-white text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 appearance-none"
-                >
-                  <option value="" className="bg-[#0B0C15]">All Papers</option>
-                  {PAPER_OPTIONS.map((p) => (
-                    <option key={p} value={p} className="bg-[#0B0C15]">{p}</option>
-                  ))}
-                </select>
-              </div>
+              {(filters.class_name === '9-10 (Secondary)' || filters.class_name === '11-12(Higher Secondary)') && (
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Paper</label>
+                  <select
+                    name="paper"
+                    value={filters.paper}
+                    onChange={handleFilterChange}
+                    className="w-full bg-[#0B0C15] border border-white/10 text-white text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 appearance-none"
+                  >
+                    <option value="" className="bg-[#0B0C15]">All Papers</option>
+                    {PAPER_OPTIONS.map((p) => (
+                      <option key={p} value={p} className="bg-[#0B0C15]">{p}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
               <div className="space-y-2">
                 <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Chapter</label>
                 <select
@@ -255,8 +305,8 @@ const QuestionBank = () => {
                 Clear
               </button>
             </div>
-          </form>
-        </div>
+        </form>
+      </div>
 
         {/* Questions List */}
         {loading ? (

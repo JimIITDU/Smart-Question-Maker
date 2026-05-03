@@ -53,7 +53,7 @@ CREATE TYPE role_name_enum AS ENUM (
   'super_admin', 'coaching_admin', 'teacher', 'staff', 'student', 'parent'
 );
 CREATE TYPE access_type_enum AS ENUM ('free', 'paid');
-CREATE TYPE center_status_enum AS ENUM ('pending', 'active', 'inactive');
+CREATE TYPE center_status_enum AS ENUM ('pending', 'active', 'inactive', 'rejected');
 CREATE TYPE user_status_enum AS ENUM ('active', 'inactive', 'suspended');
 CREATE TYPE employment_status_enum AS ENUM ('full_time', 'part_time');
 CREATE TYPE payment_for_enum AS ENUM (
@@ -72,7 +72,7 @@ CREATE TYPE exam_type_enum AS ENUM ('regular', 'live_quiz');
 CREATE TYPE exam_status_enum AS ENUM ('scheduled', 'ongoing', 'completed');
 CREATE TYPE evaluated_by_enum AS ENUM ('llm', 'teacher');
 CREATE TYPE answer_status_enum AS ENUM ('running', 'submitted', 'checked');
-CREATE TYPE result_status_enum AS ENUM ('pass', 'fail');
+CREATE TYPE result_status_enum AS ENUM ('pass', 'fail', 'pending');
 CREATE TYPE notification_type_enum AS ENUM ('system', 'quiz', 'exam', 'fee');
 CREATE TYPE notification_status_enum AS ENUM ('read', 'unread');
 CREATE TYPE enrollment_type_enum AS ENUM ('open', 'restricted');
