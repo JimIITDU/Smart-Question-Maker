@@ -1,87 +1,201 @@
-import React, { useEffect, useState, useMemo } from 'react'
-import { Link } from 'react-router-dom'
-import { getDashboardStats } from '../../services/api'
-import { FiHome, FiBook, FiUsers, FiLayers, FiBell, FiUser, FiDollarSign, FiCreditCard, FiUserPlus, FiClock, FiCheckCircle, FiTrendingUp } from 'react-icons/fi'
-
+import React, { useEffect, useState, useMemo } from "react";
+import { Link } from "react-router-dom";
+import { getDashboardStats } from "../../services/api";
+import {
+  FiHome,
+  FiBook,
+  FiUsers,
+  FiLayers,
+  FiBell,
+  FiUser,
+  FiDollarSign,
+  FiCreditCard,
+  FiUserPlus,
+  FiClock,
+  FiCheckCircle,
+  FiTrendingUp,
+} from "react-icons/fi";
 
 // Simple in-memory cache for dashboard data
 const dashboardCache = {
   data: null,
   timestamp: null,
   CACHE_DURATION: 5 * 60 * 1000, // 5 minutes
-}
+};
 
 const isCacheValid = () => {
-  if (!dashboardCache.data || !dashboardCache.timestamp) return false
-  return Date.now() - dashboardCache.timestamp < dashboardCache.CACHE_DURATION
-}
+  if (!dashboardCache.data || !dashboardCache.timestamp) return false;
+  return Date.now() - dashboardCache.timestamp < dashboardCache.CACHE_DURATION;
+};
 
 const CoachingAdminDashboard = () => {
-
-  const [center, setCenter] = useState(null)
-  const [subscription, setSubscription] = useState(null)
-  const [stats, setStats] = useState({ courses: 0, batches: 0, subjects: 0, notifications: 0 })
-  const [loading, setLoading] = useState(true)
+  const [center, setCenter] = useState(null);
+  const [subscription, setSubscription] = useState(null);
+  const [stats, setStats] = useState({
+    courses: 0,
+    batches: 0,
+    subjects: 0,
+    notifications: 0,
+  });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       // Check cache first for instant loading when navigating back
       if (isCacheValid()) {
-        const { center: centerData, subscription: subscriptionData, stats: statsData } = dashboardCache.data
-        setCenter(centerData)
-        setSubscription(subscriptionData)
-        setStats(statsData || { courses: 0, batches: 0, subjects: 0, notifications: 0 })
-        setLoading(false)
-        return
+        const {
+          center: centerData,
+          subscription: subscriptionData,
+          stats: statsData,
+        } = dashboardCache.data;
+        setCenter(centerData);
+        setSubscription(subscriptionData);
+        setStats(
+          statsData || {
+            courses: 0,
+            batches: 0,
+            subjects: 0,
+            notifications: 0,
+          },
+        );
+        setLoading(false);
+        return;
       }
 
       try {
-        const response = await getDashboardStats()
-        const { center: centerData, subscription: subscriptionData, stats: statsData } = response.data.data
-        
-        // Update cache
-        dashboardCache.data = response.data.data
-        dashboardCache.timestamp = Date.now()
-        
-        setCenter(centerData)
-        setSubscription(subscriptionData)
-        setStats(statsData || { courses: 0, batches: 0, subjects: 0, notifications: 0 })
-      } catch (err) {
-        console.error('Dashboard fetch error:', err)
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchData()
-  }, [])
+        const response = await getDashboardStats();
+        const {
+          center: centerData,
+          subscription: subscriptionData,
+          stats: statsData,
+        } = response.data.data;
 
+        // Update cache
+        dashboardCache.data = response.data.data;
+        dashboardCache.timestamp = Date.now();
+
+        setCenter(centerData);
+        setSubscription(subscriptionData);
+        setStats(
+          statsData || {
+            courses: 0,
+            batches: 0,
+            subjects: 0,
+            notifications: 0,
+          },
+        );
+      } catch (err) {
+        console.error("Dashboard fetch error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
 
   // Memoized menu items to prevent unnecessary re-renders
   const menuItems = useMemo(() => {
     // If no center or pending, show limited menu
-    if (!center || center.status === 'pending') {
+    if (!center || center.status === "pending") {
       return [
-        { label: 'Apply for Center', path: '/coaching-admin/apply', icon: FiHome, color: 'from-blue-500 to-cyan-500', desc: 'Register your coaching center' },
-        { label: 'Notifications', path: '/notifications', icon: FiBell, color: 'from-yellow-500 to-amber-500', desc: `${stats.notifications} unread` },
-        { label: 'Profile', path: '/profile', icon: FiUser, color: 'from-gray-500 to-gray-600', desc: 'Manage your profile' },
-      ]
+        {
+          label: "Apply for Center",
+          path: "/coachingadmin/apply-for-center",
+          icon: FiHome,
+          color: "from-blue-500 to-cyan-500",
+          desc: "Register your coaching center",
+        },
+        {
+          label: "Notifications",
+          path: "/notifications",
+          icon: FiBell,
+          color: "from-yellow-500 to-amber-500",
+          desc: `${stats.notifications} unread`,
+        },
+        {
+          label: "Profile",
+          path: "/profile",
+          icon: FiUser,
+          color: "from-gray-500 to-gray-600",
+          desc: "Manage your profile",
+        },
+      ];
     }
 
     // Active center - show full menu without "Apply for Center"
     return [
-      { label: 'Manage Courses', path: '/coaching-admin/courses', icon: FiBook, color: 'from-indigo-500 to-blue-500', desc: `${stats.courses} courses` },
-      { label: 'Manage Batches', path: '/coaching-admin/batches', icon: FiLayers, color: 'from-purple-500 to-indigo-500', desc: `${stats.batches} batches` },
-      { label: 'Manage Subjects', path: '/coaching-admin/subjects', icon: FiBook, color: 'from-violet-500 to-purple-500', desc: `${stats.subjects} subjects` },
-      { label: 'Manage Students', path: '/coaching-admin/students', icon: FiUsers, color: 'from-emerald-500 to-teal-500', desc: 'Student enrollment' },
-      { label: 'Manage Teachers', path: '/coaching-admin/teachers', icon: FiUserPlus, color: 'from-amber-500 to-orange-500', desc: 'Teacher accounts' },
-      { label: 'Manage Staff', path: '/coaching-admin/staff', icon: FiUsers, color: 'from-rose-500 to-pink-500', desc: 'Staff accounts' },
-      { label: 'Fee Management', path: '/coaching-admin/fees', icon: FiDollarSign, color: 'from-cyan-500 to-blue-500', desc: 'Student fee tracking' },
-      { label: 'Subscription', path: '/coaching-admin/subscription', icon: FiCreditCard, color: 'from-teal-500 to-emerald-500', desc: subscription?.plan_name || 'Free plan' },
-      { label: 'Notifications', path: '/notifications', icon: FiBell, color: 'from-yellow-500 to-amber-500', desc: `${stats.notifications} unread` },
-      { label: 'Profile', path: '/profile', icon: FiUser, color: 'from-gray-500 to-gray-600', desc: 'Manage your profile' },
-    ]
-  }, [center, subscription, stats])
-
+      {
+        label: "Manage Courses",
+        path: "/coachingadmin/manage-courses",
+        icon: FiBook,
+        color: "from-indigo-500 to-blue-500",
+        desc: `${stats.courses} courses`,
+      },
+      {
+        label: "Manage Batches",
+        path: "/coachingadmin/manage-batches",
+        icon: FiLayers,
+        color: "from-purple-500 to-indigo-500",
+        desc: `${stats.batches} batches`,
+      },
+      {
+        label: "Manage Subjects",
+        path: "/coachingadmin/manage-subjects",
+        icon: FiBook,
+        color: "from-violet-500 to-purple-500",
+        desc: `${stats.subjects} subjects`,
+      },
+      {
+        label: "Manage Students",
+        path: "/coachingadmin/manage-students",
+        icon: FiUsers,
+        color: "from-emerald-500 to-teal-500",
+        desc: "Student enrollment",
+      },
+      {
+        label: "Manage Teachers",
+        path: "/coachingadmin/manage-teachers",
+        icon: FiUserPlus,
+        color: "from-amber-500 to-orange-500",
+        desc: "Teacher accounts",
+      },
+      {
+        label: "Manage Staff",
+        path: "/coachingadmin/manage-staff",
+        icon: FiUsers,
+        color: "from-rose-500 to-pink-500",
+        desc: "Staff accounts",
+      },
+      {
+        label: "Fee Management",
+        path: "/coachingadmin/fee-management",
+        icon: FiDollarSign,
+        color: "from-cyan-500 to-blue-500",
+        desc: "Student fee tracking",
+      },
+      {
+        label: "Subscription",
+        path: "/coachingadmin/subscription-management",
+        icon: FiCreditCard,
+        color: "from-teal-500 to-emerald-500",
+        desc: subscription?.plan_name || "Free plan",
+      },
+      {
+        label: "Notifications",
+        path: "/notifications",
+        icon: FiBell,
+        color: "from-yellow-500 to-amber-500",
+        desc: `${stats.notifications} unread`,
+      },
+      {
+        label: "Profile",
+        path: "/profile",
+        icon: FiUser,
+        color: "from-gray-500 to-gray-600",
+        desc: "Manage your profile",
+      },
+    ];
+  }, [center, subscription, stats]);
 
   if (loading) {
     return (
@@ -90,7 +204,7 @@ const CoachingAdminDashboard = () => {
           <div className="w-12 h-12 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin"></div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -107,7 +221,7 @@ const CoachingAdminDashboard = () => {
       {/* Center Status Section */}
       {center ? (
         <>
-          {center.status === 'pending' ? (
+          {center.status === "pending" ? (
             // Pending State
             <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-6 mb-8">
               <div className="flex items-center justify-between">
@@ -116,8 +230,13 @@ const CoachingAdminDashboard = () => {
                     <FiClock className="text-amber-400 text-xl" />
                   </div>
                   <div>
-                    <p className="text-amber-400 font-bold mb-1">Application Pending</p>
-                    <p className="text-gray-400 text-sm">Your coaching center application is under review. You'll be notified once approved.</p>
+                    <p className="text-amber-400 font-bold mb-1">
+                      Application Pending
+                    </p>
+                    <p className="text-gray-400 text-sm">
+                      Your coaching center application is under review. You'll
+                      be notified once approved.
+                    </p>
                   </div>
                 </div>
                 <span className="px-4 py-2 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-full text-sm font-bold">
@@ -125,36 +244,43 @@ const CoachingAdminDashboard = () => {
                 </span>
               </div>
             </div>
-          ) : center.status === 'active' ? (
+          ) : center.status === "active" ? (
             // Active State - Show center info with subscription
             <div className="bg-gradient-to-r from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 rounded-2xl p-6 mb-8">
               <div className="flex items-start justify-between flex-wrap gap-4">
                 <div>
                   <div className="flex items-center gap-3 mb-2">
-                    <p className="text-xs text-gray-500 uppercase tracking-wider">Your Center</p>
+                    <p className="text-xs text-gray-500 uppercase tracking-wider">
+                      Your Center
+                    </p>
                     <span className="px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full text-xs font-bold">
                       Active
                     </span>
                   </div>
-                  <h2 className="text-xl font-bold text-white">{center.center_name}</h2>
+                  <h2 className="text-xl font-bold text-white">
+                    {center.center_name}
+                  </h2>
                   <p className="text-gray-400 text-sm">{center.location}</p>
-                  
+
                   {/* Current Plan Badge */}
                   <div className="flex items-center gap-2 mt-3">
                     <span className="px-3 py-1 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-full text-xs font-bold">
-                      Current Plan: {subscription?.plan_name || 'Free'}
+                      Current Plan: {subscription?.plan_name || "Free"}
                     </span>
                     {subscription?.subscription_end && (
                       <span className="px-3 py-1 bg-gray-500/10 text-gray-400 border border-gray-500/20 rounded-full text-xs">
-                        Expires: {new Date(subscription.subscription_end).toLocaleDateString()}
+                        Expires:{" "}
+                        {new Date(
+                          subscription.subscription_end,
+                        ).toLocaleDateString()}
                       </span>
                     )}
                   </div>
                 </div>
-                
+
                 <div className="flex flex-col gap-2">
-                  <Link 
-                    to="/coaching-admin/subscription" 
+                  <Link
+                    to="/coaching-admin/subscription"
                     className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-teal-600 to-emerald-600 text-white rounded-xl font-semibold text-sm hover:shadow-lg transition-all"
                   >
                     <FiTrendingUp /> Buy Subscription Plan
@@ -176,7 +302,9 @@ const CoachingAdminDashboard = () => {
                 </div>
                 <div>
                   <p className="text-red-400 font-bold mb-1">Center Inactive</p>
-                  <p className="text-gray-400 text-sm">Your center is currently inactive. Please contact support.</p>
+                  <p className="text-gray-400 text-sm">
+                    Your center is currently inactive. Please contact support.
+                  </p>
                 </div>
               </div>
             </div>
@@ -191,12 +319,17 @@ const CoachingAdminDashboard = () => {
                 <FiHome className="text-blue-400 text-xl" />
               </div>
               <div>
-                <p className="text-blue-400 font-bold mb-1">No Coaching Center Yet</p>
-                <p className="text-gray-400 text-sm">Apply for a coaching center to unlock all features and start managing your institution.</p>
+                <p className="text-blue-400 font-bold mb-1">
+                  No Coaching Center Yet
+                </p>
+                <p className="text-gray-400 text-sm">
+                  Apply for a coaching center to unlock all features and start
+                  managing your institution.
+                </p>
               </div>
             </div>
-            <Link 
-              to="/coaching-admin/apply" 
+            <Link
+              to="/coaching-admin/apply"
               className="px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-xl font-bold hover:shadow-lg transition-all flex items-center gap-2"
             >
               <FiHome /> Apply for Centre
@@ -206,15 +339,34 @@ const CoachingAdminDashboard = () => {
       )}
 
       {/* Stats Section - Only show for active centers */}
-      {center?.status === 'active' && (
+      {center?.status === "active" && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           {[
-            { label: 'Courses', value: stats.courses, color: 'text-indigo-400' },
-            { label: 'Batches', value: stats.batches, color: 'text-purple-400' },
-            { label: 'Subjects', value: stats.subjects, color: 'text-violet-400' },
-            { label: 'Notifications', value: stats.notifications, color: 'text-amber-400' },
+            {
+              label: "Courses",
+              value: stats.courses,
+              color: "text-indigo-400",
+            },
+            {
+              label: "Batches",
+              value: stats.batches,
+              color: "text-purple-400",
+            },
+            {
+              label: "Subjects",
+              value: stats.subjects,
+              color: "text-violet-400",
+            },
+            {
+              label: "Notifications",
+              value: stats.notifications,
+              color: "text-amber-400",
+            },
           ].map((s, i) => (
-            <div key={i} className="bg-white/5 border border-white/10 rounded-2xl p-5 text-center">
+            <div
+              key={i}
+              className="bg-white/5 border border-white/10 rounded-2xl p-5 text-center"
+            >
               <p className={`text-3xl font-bold ${s.color}`}>{s.value}</p>
               <p className="text-gray-400 text-sm mt-1">{s.label}</p>
             </div>
@@ -225,8 +377,14 @@ const CoachingAdminDashboard = () => {
       {/* Menu Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {menuItems.map((item, i) => (
-          <Link key={i} to={item.path} className="group bg-white/5 border border-white/5 hover:border-white/10 rounded-2xl p-6 transition-all hover:-translate-y-1 hover:bg-white/[0.07]">
-            <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${item.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
+          <Link
+            key={i}
+            to={item.path}
+            className="group bg-white/5 border border-white/5 hover:border-white/10 rounded-2xl p-6 transition-all hover:-translate-y-1 hover:bg-white/[0.07]"
+          >
+            <div
+              className={`w-12 h-12 rounded-xl bg-gradient-to-br ${item.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}
+            >
               <item.icon className="text-white text-xl" />
             </div>
             <h3 className="text-white font-bold mb-1">{item.label}</h3>
@@ -236,27 +394,33 @@ const CoachingAdminDashboard = () => {
       </div>
 
       {/* Quick Info for Pending/No Center */}
-      {(!center || center.status === 'pending') && (
+      {(!center || center.status === "pending") && (
         <div className="mt-8 bg-white/5 border border-white/10 rounded-2xl p-6">
           <h3 className="text-white font-bold mb-3">What's Next?</h3>
           <ul className="space-y-2 text-gray-400 text-sm">
             <li className="flex items-center gap-2">
-              <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center text-xs text-blue-400">1</div>
+              <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center text-xs text-blue-400">
+                1
+              </div>
               Submit your coaching center application
             </li>
             <li className="flex items-center gap-2">
-              <div className="w-5 h-5 rounded-full bg-amber-500/20 flex items-center justify-center text-xs text-amber-400">2</div>
+              <div className="w-5 h-5 rounded-full bg-amber-500/20 flex items-center justify-center text-xs text-amber-400">
+                2
+              </div>
               Wait for Super Admin approval
             </li>
             <li className="flex items-center gap-2">
-              <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center text-xs text-emerald-400">3</div>
+              <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center text-xs text-emerald-400">
+                3
+              </div>
               Start managing your coaching center
             </li>
           </ul>
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default React.memo(CoachingAdminDashboard)
+export default React.memo(CoachingAdminDashboard);

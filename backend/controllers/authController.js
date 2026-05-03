@@ -1,9 +1,8 @@
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const userModel = require('../models/userModel');
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const userModel = require("../models/userModel");
 
 const authController = {
-
   // Register new user
   register: async (req, res) => {
     try {
@@ -13,7 +12,7 @@ const authController = {
       if (existingUser) {
         return res.status(400).json({
           success: false,
-          message: 'Email already registered',
+          message: "Email already registered",
         });
       }
 
@@ -24,17 +23,28 @@ const authController = {
       const otp_expires_at = new Date(Date.now() + 10 * 60 * 1000);
 
       const userId = await userModel.createUser({
-        name, email, password_hash, phone, role_id, otp, otp_expires_at,
+        name,
+        email,
+        password_hash,
+        phone,
+        role_id,
+        otp,
+        otp_expires_at,
       });
 
       res.status(201).json({
         success: true,
-        message: 'Registration successful. Please verify your email with OTP.',
+        message: "Registration successful. Please verify your email with OTP.",
         data: { user_id: userId, email, otp },
       });
-
     } catch (error) {
-      res.status(500).json({ success: false, message: 'Server error', error: error.message });
+      res
+        .status(500)
+        .json({
+          success: false,
+          message: "Server error",
+          error: error.message,
+        });
     }
   },
 
@@ -45,24 +55,36 @@ const authController = {
 
       const user = await userModel.findByEmail(email);
       if (!user) {
-        return res.status(404).json({ success: false, message: 'User not found' });
+        return res
+          .status(404)
+          .json({ success: false, message: "User not found" });
       }
 
       if (user.otp !== otp) {
-        return res.status(400).json({ success: false, message: 'Invalid OTP' });
+        return res.status(400).json({ success: false, message: "Invalid OTP" });
       }
 
       if (Date.now() > new Date(user.otp_expires_at).getTime()) {
-        return res.status(400).json({ success: false, message: 'OTP has expired. Please register again.' });
+        return res
+          .status(400)
+          .json({
+            success: false,
+            message: "OTP has expired. Please register again.",
+          });
       }
 
-await userModel.verifyEmail(user.user_id);
+      await userModel.verifyEmail(user.user_id);
 
       // Generate JWT token (auto-login after OTP verification)
       const token = jwt.sign(
-        { user_id: user.user_id, role_id: user.role_id, email: user.email, coaching_center_id: user.coaching_center_id },
+        {
+          user_id: user.user_id,
+          role_id: user.role_id,
+          email: user.email,
+          coaching_center_id: user.coaching_center_id,
+        },
         process.env.JWT_SECRET,
-        { expiresIn: '7d' }
+        { expiresIn: "7d" },
       );
 
       // Get full user with role_name
@@ -73,12 +95,17 @@ await userModel.verifyEmail(user.user_id);
 
       res.status(200).json({
         success: true,
-        message: 'Email verified successfully',
+        message: "Email verified successfully",
         data: { token, user: fullUser },
       });
-
     } catch (error) {
-      res.status(500).json({ success: false, message: 'Server error', error: error.message });
+      res
+        .status(500)
+        .json({
+          success: false,
+          message: "Server error",
+          error: error.message,
+        });
     }
   },
 
@@ -89,29 +116,41 @@ await userModel.verifyEmail(user.user_id);
 
       const user = await userModel.findByEmail(email);
       if (!user) {
-        return res.status(404).json({ success: false, message: 'Invalid email or password' });
+        return res
+          .status(404)
+          .json({ success: false, message: "Invalid email or password" });
       }
 
       if (!user.is_email_verified) {
-        return res.status(400).json({ success: false, message: 'Please verify your email first' });
+        return res
+          .status(400)
+          .json({ success: false, message: "Please verify your email first" });
       }
 
-      if (user.status !== 'active') {
-        return res.status(400).json({ success: false, message: 'Your account has been suspended' });
+      if (user.status !== "active") {
+        return res
+          .status(400)
+          .json({ success: false, message: "Your account has been suspended" });
       }
 
       const isMatch = await bcrypt.compare(password, user.password_hash);
       if (!isMatch) {
-        return res.status(400).json({ success: false, message: 'Invalid email or password' });
+        return res
+          .status(400)
+          .json({ success: false, message: "Invalid email or password" });
       }
 
       // Generate JWT token
       const token = jwt.sign(
-        { user_id: user.user_id, role_id: user.role_id, email: user.email, coaching_center_id: user.coaching_center_id },
+        {
+          user_id: user.user_id,
+          role_id: user.role_id,
+          email: user.email,
+          coaching_center_id: user.coaching_center_id,
+        },
         process.env.JWT_SECRET,
-        { expiresIn: '7d' }
+        { expiresIn: "7d" },
       );
-
 
       // Get full user with role_name
       const fullUser = await userModel.findById(user.user_id);
@@ -121,12 +160,17 @@ await userModel.verifyEmail(user.user_id);
 
       res.status(200).json({
         success: true,
-        message: 'Login successful',
+        message: "Login successful",
         data: { token, user: fullUser },
       });
-
     } catch (error) {
-      res.status(500).json({ success: false, message: 'Server error', error: error.message });
+      res
+        .status(500)
+        .json({
+          success: false,
+          message: "Server error",
+          error: error.message,
+        });
     }
   },
 
@@ -135,7 +179,9 @@ await userModel.verifyEmail(user.user_id);
     try {
       const user = await userModel.findById(req.user.user_id);
       if (!user) {
-        return res.status(404).json({ success: false, message: 'User not found' });
+        return res
+          .status(404)
+          .json({ success: false, message: "User not found" });
       }
 
       delete user.password_hash;
@@ -143,9 +189,14 @@ await userModel.verifyEmail(user.user_id);
       delete user.otp_expires_at;
 
       res.status(200).json({ success: true, data: user });
-
     } catch (error) {
-      res.status(500).json({ success: false, message: 'Server error', error: error.message });
+      res
+        .status(500)
+        .json({
+          success: false,
+          message: "Server error",
+          error: error.message,
+        });
     }
   },
 
@@ -156,7 +207,9 @@ await userModel.verifyEmail(user.user_id);
 
       const user = await userModel.findByEmail(email);
       if (!user) {
-        return res.status(404).json({ success: false, message: 'Email not found' });
+        return res
+          .status(404)
+          .json({ success: false, message: "Email not found" });
       }
 
       const otp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -166,12 +219,17 @@ await userModel.verifyEmail(user.user_id);
 
       res.status(200).json({
         success: true,
-        message: 'OTP sent to your email',
+        message: "OTP sent to your email",
         data: { otp },
       });
-
     } catch (error) {
-      res.status(500).json({ success: false, message: 'Server error', error: error.message });
+      res
+        .status(500)
+        .json({
+          success: false,
+          message: "Server error",
+          error: error.message,
+        });
     }
   },
 
@@ -182,15 +240,19 @@ await userModel.verifyEmail(user.user_id);
 
       const user = await userModel.findByEmail(email);
       if (!user) {
-        return res.status(404).json({ success: false, message: 'User not found' });
+        return res
+          .status(404)
+          .json({ success: false, message: "User not found" });
       }
 
       if (user.otp !== otp) {
-        return res.status(400).json({ success: false, message: 'Invalid OTP' });
+        return res.status(400).json({ success: false, message: "Invalid OTP" });
       }
 
       if (Date.now() > new Date(user.otp_expires_at).getTime()) {
-        return res.status(400).json({ success: false, message: 'OTP has expired' });
+        return res
+          .status(400)
+          .json({ success: false, message: "OTP has expired" });
       }
 
       const salt = await bcrypt.genSalt(10);
@@ -200,11 +262,16 @@ await userModel.verifyEmail(user.user_id);
 
       res.status(200).json({
         success: true,
-        message: 'Password reset successful. Please login.',
+        message: "Password reset successful. Please login.",
       });
-
     } catch (error) {
-      res.status(500).json({ success: false, message: 'Server error', error: error.message });
+      res
+        .status(500)
+        .json({
+          success: false,
+          message: "Server error",
+          error: error.message,
+        });
     }
   },
 
@@ -214,13 +281,25 @@ await userModel.verifyEmail(user.user_id);
       const { name, phone, gender, date_of_birth, address, bio } = req.body;
 
       await userModel.updateProfile(req.user.user_id, {
-        name, phone, gender, date_of_birth, address, bio,
+        name,
+        phone,
+        gender,
+        date_of_birth,
+        address,
+        bio,
       });
 
-      res.status(200).json({ success: true, message: 'Profile updated successfully' });
-
+      res
+        .status(200)
+        .json({ success: true, message: "Profile updated successfully" });
     } catch (error) {
-      res.status(500).json({ success: false, message: 'Server error', error: error.message });
+      res
+        .status(500)
+        .json({
+          success: false,
+          message: "Server error",
+          error: error.message,
+        });
     }
   },
 
@@ -231,9 +310,14 @@ await userModel.verifyEmail(user.user_id);
 
       const user = await userModel.findById(req.user.user_id);
 
-      const isMatch = await bcrypt.compare(current_password, user.password_hash);
+      const isMatch = await bcrypt.compare(
+        current_password,
+        user.password_hash,
+      );
       if (!isMatch) {
-        return res.status(400).json({ success: false, message: 'Current password is incorrect' });
+        return res
+          .status(400)
+          .json({ success: false, message: "Current password is incorrect" });
       }
 
       const salt = await bcrypt.genSalt(10);
@@ -241,13 +325,19 @@ await userModel.verifyEmail(user.user_id);
 
       await userModel.updatePassword(req.user.user_id, password_hash);
 
-      res.status(200).json({ success: true, message: 'Password changed successfully' });
-
+      res
+        .status(200)
+        .json({ success: true, message: "Password changed successfully" });
     } catch (error) {
-      res.status(500).json({ success: false, message: 'Server error', error: error.message });
+      res
+        .status(500)
+        .json({
+          success: false,
+          message: "Server error",
+          error: error.message,
+        });
     }
   },
-
 };
 
 module.exports = authController;

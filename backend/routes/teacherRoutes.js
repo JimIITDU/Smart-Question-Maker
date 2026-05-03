@@ -1,89 +1,89 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const teacherController = require('../controllers/teacherController');
-const authMiddleware = require('../middleware/authMiddleware');
-const roleMiddleware = require('../middleware/roleMiddleware');
+const teacherController = require("../controllers/teacherController");
+const authMiddleware = require("../middleware/authMiddleware");
+const roleMiddleware = require("../middleware/roleMiddleware");
 
 // Role IDs: 1=super_admin, 2=coaching_admin, 3=teacher, 4=staff, 5=student
 
 // Teacher applies to a coaching center
 router.post(
-  '/apply',
+  "/apply",
   authMiddleware,
   roleMiddleware(3),
-  teacherController.applyToCenter
+  teacherController.applyToCenter,
 );
 
 // Teacher views their own applications
 router.get(
-  '/my-applications',
+  "/my-applications",
   authMiddleware,
   roleMiddleware(3),
-  teacherController.getMyApplications
+  teacherController.getMyApplications,
 );
 
 // Coaching admin views applications for their center
 router.get(
-  '/applications',
+  "/applications",
   authMiddleware,
   roleMiddleware(2),
-  teacherController.getCenterApplications
+  teacherController.getCenterApplications,
 );
 
 // Coaching admin approves application
 router.put(
-  '/applications/:id/approve',
+  "/applications/:id/approve",
   authMiddleware,
   roleMiddleware(2),
-  teacherController.approveApplication
+  teacherController.approveApplication,
 );
 
 // Coaching admin rejects application
 router.put(
-  '/applications/:id/reject',
+  "/applications/:id/reject",
   authMiddleware,
   roleMiddleware(2),
-  teacherController.rejectApplication
+  teacherController.rejectApplication,
 );
 
 // Coaching admin assigns teacher to a course
 router.post(
-  '/assignments',
+  "/assignments",
   authMiddleware,
   roleMiddleware(2),
-  teacherController.assignTeacherToCourse
+  teacherController.assignTeacherToCourse,
 );
 
 // Teacher views their course assignments
 router.get(
-  '/my-assignments',
+  "/my-assignments",
   authMiddleware,
   roleMiddleware(3),
-  teacherController.getMyAssignments
+  teacherController.getMyAssignments,
 );
 
 // View assignments for a specific course
 router.get(
-  '/assignments/course/:courseId',
+  "/assignments/course/:courseId",
   authMiddleware,
   roleMiddleware(2, 3),
-  teacherController.getCourseAssignments
+  teacherController.getCourseAssignments,
 );
 
 // Coaching admin removes a teacher assignment
 router.put(
-  '/assignments/:id/remove',
+  "/assignments/:id/remove",
   authMiddleware,
   roleMiddleware(2),
-  teacherController.removeAssignment
+  teacherController.removeAssignment,
 );
 
 // Coaching admin gets available approved teachers
 router.get(
-  '/available',
+  "/available",
   authMiddleware,
   roleMiddleware(2),
-  teacherController.getAvailableTeachers
+  teacherController.getAvailableTeachers,
 );
 
 module.exports = router;

@@ -1,113 +1,113 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const examController = require('../controllers/examController');
-const authMiddleware = require('../middleware/authMiddleware');
-const roleMiddleware = require('../middleware/roleMiddleware');
-const tenantMiddleware = require('../middleware/tenantMiddleware');
+const examController = require("../controllers/examController");
+const authMiddleware = require("../middleware/authMiddleware");
+const roleMiddleware = require("../middleware/roleMiddleware");
+const tenantMiddleware = require("../middleware/tenantMiddleware");
 
 // Teacher creates exam
 router.post(
-  '/',
+  "/",
   authMiddleware,
   tenantMiddleware,
   roleMiddleware(2, 3),
-  examController.createExam
+  examController.createExam,
 );
 
 // Get all exams
 router.get(
-  '/',
+  "/",
   authMiddleware,
   tenantMiddleware,
   roleMiddleware(2, 3, 5),
-  examController.getAllExams
+  examController.getAllExams,
 );
 
 // Get exam by ID
 router.get(
-  '/:id',
+  "/:id",
   authMiddleware,
   tenantMiddleware,
-  examController.getExamById
+  examController.getExamById,
 );
 
 // Get exam questions
 router.get(
-  '/:id/questions',
+  "/:id/questions",
   authMiddleware,
   tenantMiddleware,
-  examController.getExamQuestions
+  examController.getExamQuestions,
 );
 
 // Start exam (teacher)
 router.put(
-  '/:id/start',
+  "/:id/start",
   authMiddleware,
   tenantMiddleware,
   roleMiddleware(2, 3),
-  examController.startExam
+  examController.startExam,
 );
 
 // Join exam by access code (student)
 router.post(
-  '/join',
+  "/join",
   authMiddleware,
   tenantMiddleware,
   roleMiddleware(5),
-  examController.joinExam
+  examController.joinExam,
 );
 
 // Submit exam (student)
 router.post(
-  '/:id/submit',
+  "/:id/submit",
   authMiddleware,
   tenantMiddleware,
   roleMiddleware(5),
-  examController.submitExam
+  examController.submitExam,
 );
 
 // Get results (student)
 router.get(
-  '/:id/results',
+  "/:id/results",
   authMiddleware,
   tenantMiddleware,
-  examController.getResults
+  examController.getResults,
 );
 
 // End exam (teacher)
 router.put(
-  '/:id/end',
+  "/:id/end",
   authMiddleware,
   tenantMiddleware,
   roleMiddleware(2, 3),
-  examController.endExam
+  examController.endExam,
 );
 
 // Evaluate written answers with LLM (teacher)
 router.post(
-  '/:id/evaluate-written',
+  "/:id/evaluate-written",
   authMiddleware,
   tenantMiddleware,
   roleMiddleware(2, 3),
-  examController.evaluateWritten
+  examController.evaluateWritten,
 );
 
 // Get all results for an exam (teacher)
 router.get(
-  '/:id/all-results',
+  "/:id/all-results",
   authMiddleware,
   tenantMiddleware,
   roleMiddleware(2, 3),
-  examController.getAllResults
+  examController.getAllResults,
 );
 
 // Export exam as PDF sets with answer keys (teacher)
 router.get(
-  '/:id/export-pdf',
+  "/:id/export-pdf",
   authMiddleware,
   tenantMiddleware,
   roleMiddleware(2, 3),
-  examController.exportExamPDF
+  examController.exportExamPDF,
 );
 
 module.exports = router;

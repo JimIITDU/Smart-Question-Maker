@@ -1,22 +1,22 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const multer = require('multer');
-const questionController = require('../controllers/questionController');
-const authMiddleware = require('../middleware/authMiddleware');
-const roleMiddleware = require('../middleware/roleMiddleware');
-const tenantMiddleware = require('../middleware/tenantMiddleware');
+const multer = require("multer");
+const questionController = require("../controllers/questionController");
+const authMiddleware = require("../middleware/authMiddleware");
+const roleMiddleware = require("../middleware/roleMiddleware");
+const tenantMiddleware = require("../middleware/tenantMiddleware");
 
 // Configure multer for PDF uploads
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
   fileFilter: (req, file, cb) => {
-    if (file.mimetype === 'application/pdf') {
+    if (file.mimetype === "application/pdf") {
       cb(null, true);
     } else {
-      cb(new Error('Only PDF files are allowed'), false);
+      cb(new Error("Only PDF files are allowed"), false);
     }
-  }
+  },
 });
 
 // Role IDs:
@@ -28,83 +28,83 @@ const upload = multer({
 
 // Create question (teacher, coaching_admin, student)
 router.post(
-  '/',
+  "/",
   authMiddleware,
   tenantMiddleware,
   roleMiddleware(2, 3, 5),
-  questionController.createQuestion
+  questionController.createQuestion,
 );
 
 // Bulk create questions
 router.post(
-  '/bulk',
+  "/bulk",
   authMiddleware,
   tenantMiddleware,
   roleMiddleware(2, 3, 5),
-  questionController.bulkCreateQuestions
+  questionController.bulkCreateQuestions,
 );
 
 // Get random questions
 router.get(
-  '/random',
+  "/random",
   authMiddleware,
   tenantMiddleware,
   roleMiddleware(2, 3, 5),
-  questionController.getRandomQuestions
+  questionController.getRandomQuestions,
 );
 
 // Get all questions with filters
 router.get(
-  '/',
+  "/",
   authMiddleware,
   tenantMiddleware,
   roleMiddleware(2, 3, 5),
-  questionController.getAllQuestions
+  questionController.getAllQuestions,
 );
 
 // Get single question
 router.get(
-  '/:id',
+  "/:id",
   authMiddleware,
   tenantMiddleware,
-  questionController.getQuestionById
+  questionController.getQuestionById,
 );
 
 // Update question
 router.put(
-  '/:id',
+  "/:id",
   authMiddleware,
   tenantMiddleware,
   roleMiddleware(2, 3, 5),
-  questionController.updateQuestion
+  questionController.updateQuestion,
 );
 
 // Delete question (soft delete)
 router.delete(
-  '/:id',
+  "/:id",
   authMiddleware,
   tenantMiddleware,
   roleMiddleware(2, 3, 5),
-  questionController.deleteQuestion
+  questionController.deleteQuestion,
 );
 
 // AI Generate questions (teacher/coaching admin) - with optional PDF upload
 router.post(
-  '/ai-generate',
+  "/ai-generate",
   authMiddleware,
   tenantMiddleware,
   roleMiddleware(2, 3),
-  upload.single('pdf'),
-  questionController.aiGenerate
+  upload.single("pdf"),
+  questionController.aiGenerate,
 );
 
 // Bulk update status (accept/reject AI questions)
 router.patch(
-  '/bulk-status',
+  "/bulk-status",
   authMiddleware,
   tenantMiddleware,
   roleMiddleware(2, 3),
-  questionController.bulkUpdateStatus
+  questionController.bulkUpdateStatus,
 );
 
 module.exports = router;

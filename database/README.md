@@ -8,9 +8,11 @@
 4. Database is ready!
 
 ## Database name
+
 smart_question_maker
 
 ## Tables
+
 - roles
 - users
 - coaching_center

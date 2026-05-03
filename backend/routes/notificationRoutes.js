@@ -1,58 +1,46 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const notificationController = require('../controllers/notificationController');
-const authMiddleware = require('../middleware/authMiddleware');
-const roleMiddleware = require('../middleware/roleMiddleware');
+const notificationController = require("../controllers/notificationController");
+const authMiddleware = require("../middleware/authMiddleware");
+const roleMiddleware = require("../middleware/roleMiddleware");
 
 // Create notification (admin/teacher only)
 router.post(
-  '/',
+  "/",
   authMiddleware,
   roleMiddleware(1, 2, 3),
-  notificationController.createNotification
+  notificationController.createNotification,
 );
 
 // Broadcast notification (admin only)
 router.post(
-  '/broadcast',
+  "/broadcast",
   authMiddleware,
   roleMiddleware(1, 2),
-  notificationController.broadcastNotification
+  notificationController.broadcastNotification,
 );
 
 // Get my notifications (all users)
-router.get(
-  '/',
-  authMiddleware,
-  notificationController.getMyNotifications
-);
+router.get("/", authMiddleware, notificationController.getMyNotifications);
 
 // Get unread notifications
 router.get(
-  '/unread',
+  "/unread",
   authMiddleware,
-  notificationController.getUnreadNotifications
+  notificationController.getUnreadNotifications,
 );
 
 // Mark all as read
-router.put(
-  '/read-all',
-  authMiddleware,
-  notificationController.markAllAsRead
-);
+router.put("/read-all", authMiddleware, notificationController.markAllAsRead);
 
 // Mark single as read
-router.put(
-  '/:id/read',
-  authMiddleware,
-  notificationController.markAsRead
-);
+router.put("/:id/read", authMiddleware, notificationController.markAsRead);
 
 // Delete notification
 router.delete(
-  '/:id',
+  "/:id",
   authMiddleware,
-  notificationController.deleteNotification
+  notificationController.deleteNotification,
 );
 
 module.exports = router;

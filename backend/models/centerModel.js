@@ -1,18 +1,21 @@
-const db = require('../config/db');
+const db = require("../config/db");
 
 const centerModel = {
-
   createCenter: async (data) => {
     const {
-      user_id, center_name, location,
-      contact_number, email, established_date,
+      user_id,
+      center_name,
+      location,
+      contact_number,
+      email,
+      established_date,
     } = data;
     const result = await db.query(
       `INSERT INTO coaching_center
        (user_id, center_name, location, contact_number, email, established_date)
        VALUES ($1,$2,$3,$4,$5,$6)
        RETURNING coaching_center_id`,
-      [user_id, center_name, location, contact_number, email, established_date]
+      [user_id, center_name, location, contact_number, email, established_date],
     );
     return result.rows[0].coaching_center_id;
   },
@@ -22,7 +25,7 @@ const centerModel = {
       `SELECT cc.*, sp.name as plan_name, sp.price as plan_price, sp.features as plan_features
        FROM coaching_center cc
        LEFT JOIN subscription_plans sp ON cc.current_plan_id = sp.plan_id
-       ORDER BY cc.created_at DESC`
+       ORDER BY cc.created_at DESC`,
     );
     return result.rows;
   },
@@ -32,7 +35,8 @@ const centerModel = {
       `SELECT cc.*, sp.name as plan_name, sp.price as plan_price, sp.features as plan_features
        FROM coaching_center cc
        LEFT JOIN subscription_plans sp ON cc.current_plan_id = sp.plan_id
-       WHERE cc.coaching_center_id = $1`, [id]
+       WHERE cc.coaching_center_id = $1`,
+      [id],
     );
     return result.rows[0];
   },
@@ -42,15 +46,16 @@ const centerModel = {
       `SELECT cc.*, sp.name as plan_name, sp.price as plan_price, sp.features as plan_features
        FROM coaching_center cc
        LEFT JOIN subscription_plans sp ON cc.current_plan_id = sp.plan_id
-       WHERE cc.user_id = $1`, [user_id]
+       WHERE cc.user_id = $1`,
+      [user_id],
     );
     return result.rows[0];
   },
 
   updateCenterStatus: async (id, status) => {
     await db.query(
-      'UPDATE coaching_center SET status = $1 WHERE coaching_center_id = $2',
-      [status, id]
+      "UPDATE coaching_center SET status = $1 WHERE coaching_center_id = $2",
+      [status, id],
     );
   },
 
@@ -60,7 +65,7 @@ const centerModel = {
       `UPDATE coaching_center
        SET center_name=$1, location=$2, contact_number=$3, email=$4
        WHERE coaching_center_id = $5`,
-      [center_name, location, contact_number, email, id]
+      [center_name, location, contact_number, email, id],
     );
   },
 
@@ -72,12 +77,13 @@ const centerModel = {
               sp.max_exams, sp.ai_questions_limit, sp.support_level
        FROM coaching_center cc
        LEFT JOIN subscription_plans sp ON cc.current_plan_id = sp.plan_id
-       WHERE cc.user_id = $1`, [user_id]
+       WHERE cc.user_id = $1`,
+      [user_id],
     );
     return result.rows[0];
   },
 
-// Update center subscription
+  // Update center subscription
   updateCenterSubscription: async (centerId, planId) => {
     const result = await db.query(
       `UPDATE coaching_center 
@@ -87,7 +93,7 @@ const centerModel = {
            access_type = CASE WHEN $1 = 1 THEN 'free' ELSE 'paid' END
        WHERE coaching_center_id = $2
        RETURNING *`,
-      [planId, centerId]
+      [planId, centerId],
     );
     return result.rows[0];
   },
@@ -95,36 +101,35 @@ const centerModel = {
   // Optimized count methods - using COUNT instead of SELECT * for better performance
   getCourseCount: async (coaching_center_id) => {
     const result = await db.query(
-      'SELECT COUNT(*) as count FROM course WHERE coaching_center_id = $1',
-      [coaching_center_id]
+      "SELECT COUNT(*) as count FROM course WHERE coaching_center_id = $1",
+      [coaching_center_id],
     );
     return parseInt(result.rows[0].count) || 0;
   },
 
   getBatchCount: async (coaching_center_id) => {
     const result = await db.query(
-      'SELECT COUNT(*) as count FROM batch WHERE coaching_center_id = $1',
-      [coaching_center_id]
+      "SELECT COUNT(*) as count FROM batch WHERE coaching_center_id = $1",
+      [coaching_center_id],
     );
     return parseInt(result.rows[0].count) || 0;
   },
 
   getSubjectCount: async (coaching_center_id) => {
     const result = await db.query(
-      'SELECT COUNT(*) as count FROM subjects WHERE coaching_center_id = $1',
-      [coaching_center_id]
+      "SELECT COUNT(*) as count FROM subjects WHERE coaching_center_id = $1",
+      [coaching_center_id],
     );
     return parseInt(result.rows[0].count) || 0;
   },
 
-getUnreadNotificationCount: async (user_id) => {
+  getUnreadNotificationCount: async (user_id) => {
     const result = await db.query(
-      'SELECT COUNT(*) as count FROM notification WHERE user_id = $1 AND status = $2',
-      [user_id, 'unread']
+      "SELECT COUNT(*) as count FROM notification WHERE user_id = $1 AND status = $2",
+      [user_id, "unread"],
     );
     return parseInt(result.rows[0].count) || 0;
   },
-
 };
 
 module.exports = centerModel;

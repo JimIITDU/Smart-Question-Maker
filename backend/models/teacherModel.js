@@ -1,7 +1,6 @@
-const db = require('../config/db');
+const db = require("../config/db");
 
 const teacherModel = {
-
   // ==============================
   // TEACHER APPLICATIONS
   // ==============================
@@ -21,8 +20,14 @@ const teacherModel = {
         experience_years, bio, expected_salary)
        VALUES ($1,$2,$3,$4,$5,$6)
        RETURNING application_id`,
-      [coaching_center_id, teacher_user_id, subjects_specialization,
-       experience_years, bio, expected_salary]
+      [
+        coaching_center_id,
+        teacher_user_id,
+        subjects_specialization,
+        experience_years,
+        bio,
+        expected_salary,
+      ],
     );
     return result.rows[0].application_id;
   },
@@ -36,7 +41,7 @@ const teacherModel = {
        JOIN users t ON ta.teacher_user_id = t.user_id
        LEFT JOIN users r ON ta.reviewed_by = r.user_id
        WHERE ta.application_id = $1`,
-      [application_id]
+      [application_id],
     );
     return result.rows[0];
   },
@@ -70,7 +75,7 @@ const teacherModel = {
        JOIN coaching_center cc ON ta.coaching_center_id = cc.coaching_center_id
        WHERE ta.teacher_user_id = $1
        ORDER BY ta.applied_at DESC`,
-      [teacher_user_id]
+      [teacher_user_id],
     );
     return result.rows;
   },
@@ -80,7 +85,7 @@ const teacherModel = {
       `UPDATE teacher_applications
        SET status = $1, reviewed_at = NOW(), reviewed_by = $2
        WHERE application_id = $3`,
-      [status, reviewed_by, application_id]
+      [status, reviewed_by, application_id],
     );
   },
 
@@ -88,7 +93,7 @@ const teacherModel = {
     const result = await db.query(
       `SELECT application_id FROM teacher_applications
        WHERE coaching_center_id = $1 AND teacher_user_id = $2 AND status = 'pending'`,
-      [coaching_center_id, teacher_user_id]
+      [coaching_center_id, teacher_user_id],
     );
     return result.rows.length > 0;
   },
@@ -104,7 +109,7 @@ const teacherModel = {
        (teacher_id, course_id, subject_id, assigned_by)
        VALUES ($1,$2,$3,$4)
        RETURNING assignment_id`,
-      [teacher_id, course_id, subject_id || null, assigned_by]
+      [teacher_id, course_id, subject_id || null, assigned_by],
     );
     return result.rows[0].assignment_id;
   },
@@ -121,7 +126,7 @@ const teacherModel = {
        JOIN coaching_center cc ON c.coaching_center_id = cc.coaching_center_id
        WHERE tca.teacher_id = $1 AND tca.status = 'active'
        ORDER BY tca.assigned_at DESC`,
-      [teacher_id]
+      [teacher_id],
     );
     return result.rows;
   },
@@ -137,7 +142,7 @@ const teacherModel = {
        LEFT JOIN subjects s ON tca.subject_id = s.subject_id
        WHERE tca.course_id = $1 AND tca.status = 'active'
        ORDER BY tca.assigned_at DESC`,
-      [course_id]
+      [course_id],
     );
     return result.rows;
   },
@@ -145,7 +150,7 @@ const teacherModel = {
   getAssignmentById: async (assignment_id) => {
     const result = await db.query(
       `SELECT * FROM teacher_course_assignments WHERE assignment_id = $1`,
-      [assignment_id]
+      [assignment_id],
     );
     return result.rows[0];
   },
@@ -153,7 +158,7 @@ const teacherModel = {
   removeAssignment: async (assignment_id) => {
     await db.query(
       `UPDATE teacher_course_assignments SET status = 'inactive' WHERE assignment_id = $1`,
-      [assignment_id]
+      [assignment_id],
     );
   },
 
@@ -162,7 +167,7 @@ const teacherModel = {
     const result = await db.query(
       `SELECT assignment_id FROM teacher_course_assignments
        WHERE teacher_id = $1 AND course_id = $2 AND status = 'active'`,
-      [teacher_id, course_id]
+      [teacher_id, course_id],
     );
     return result.rows.length > 0;
   },
@@ -174,7 +179,7 @@ const teacherModel = {
        WHERE teacher_id = $1 AND course_id = $2
        AND (subject_id = $3 OR subject_id IS NULL)
        AND status = 'active'`,
-      [teacher_id, course_id, subject_id]
+      [teacher_id, course_id, subject_id],
     );
     return result.rows.length > 0;
   },
@@ -191,11 +196,10 @@ const teacherModel = {
        AND u.role_id = 3
        AND u.status = 'active'
        ORDER BY u.name`,
-      [coaching_center_id]
+      [coaching_center_id],
     );
     return result.rows;
   },
-
 };
 
 module.exports = teacherModel;

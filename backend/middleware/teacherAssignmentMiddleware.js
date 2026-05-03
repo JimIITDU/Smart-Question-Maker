@@ -1,10 +1,10 @@
-const teacherModel = require('../models/teacherModel');
+const teacherModel = require("../models/teacherModel");
 
 /**
  * Middleware to check if a teacher is assigned to a specific course
  * Used to restrict exam/question creation to only assigned courses
  */
-const verifyTeacherAssignment = (paramName = 'courseId') => {
+const verifyTeacherAssignment = (paramName = "courseId") => {
   return async (req, res, next) => {
     try {
       // Only teachers need this check
@@ -16,29 +16,30 @@ const verifyTeacherAssignment = (paramName = 'courseId') => {
       if (!courseId) {
         return res.status(400).json({
           success: false,
-          message: 'Course ID is required',
+          message: "Course ID is required",
         });
       }
 
       // Check if teacher is assigned to this course
       const isAssigned = await teacherModel.isTeacherAssignedToCourse(
         req.user.user_id,
-        parseInt(courseId)
+        parseInt(courseId),
       );
 
       if (!isAssigned) {
         return res.status(403).json({
           success: false,
-          message: 'You are not assigned to this course. Contact admin for assignment.',
+          message:
+            "You are not assigned to this course. Contact admin for assignment.",
         });
       }
 
       next();
     } catch (error) {
-      console.error('verifyTeacherAssignment error:', error);
+      console.error("verifyTeacherAssignment error:", error);
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
         error: error.message,
       });
     }
@@ -56,16 +57,18 @@ const getTeacherAssignedCourses = async (req, res, next) => {
       return next();
     }
 
-    const assignments = await teacherModel.getAssignmentsByTeacherId(req.user.user_id);
-    req.assignedCourseIds = assignments.map(a => a.course_id);
-    req.assignedSubjectIds = assignments.map(a => a.subject_id);
+    const assignments = await teacherModel.getAssignmentsByTeacherId(
+      req.user.user_id,
+    );
+    req.assignedCourseIds = assignments.map((a) => a.course_id);
+    req.assignedSubjectIds = assignments.map((a) => a.subject_id);
 
     next();
   } catch (error) {
-    console.error('getTeacherAssignedCourses error:', error);
+    console.error("getTeacherAssignedCourses error:", error);
     res.status(500).json({
       success: false,
-      message: 'Server error',
+      message: "Server error",
       error: error.message,
     });
   }

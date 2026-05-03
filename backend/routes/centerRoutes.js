@@ -1,8 +1,8 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const centerController = require('../controllers/centerController');
-const authMiddleware = require('../middleware/authMiddleware');
-const roleMiddleware = require('../middleware/roleMiddleware');
+const centerController = require("../controllers/centerController");
+const authMiddleware = require("../middleware/authMiddleware");
+const roleMiddleware = require("../middleware/roleMiddleware");
 
 // Role IDs from database:
 // 1 = super_admin
@@ -14,90 +14,86 @@ const roleMiddleware = require('../middleware/roleMiddleware');
 
 // Coaching admin applies for center
 router.post(
-  '/apply',
+  "/apply",
   authMiddleware,
   roleMiddleware(2),
-  centerController.applyForCenter
+  centerController.applyForCenter,
 );
 
 // Super admin gets all centers
 router.get(
-  '/all',
+  "/all",
   authMiddleware,
   roleMiddleware(1),
-  centerController.getAllCenters
+  centerController.getAllCenters,
 );
 
 // Get my center (coaching admin)
 router.get(
-  '/my-center',
+  "/my-center",
   authMiddleware,
   roleMiddleware(2),
-  centerController.getMyCenter
+  centerController.getMyCenter,
 );
 
 // Get my subscription (coaching admin)
 router.get(
-  '/my-subscription',
+  "/my-subscription",
   authMiddleware,
   roleMiddleware(2),
-  centerController.getMySubscription
+  centerController.getMySubscription,
 );
 
 // Get dashboard stats - optimized endpoint (coaching admin)
 router.get(
-  '/dashboard-stats',
+  "/dashboard-stats",
   authMiddleware,
   roleMiddleware(2),
-  centerController.getDashboardStats
+  centerController.getDashboardStats,
 );
 
 // Upgrade subscription (coaching admin)
 router.post(
-  '/upgrade-subscription',
+  "/upgrade-subscription",
   authMiddleware,
   roleMiddleware(2),
-  centerController.upgradeSubscription
+  centerController.upgradeSubscription,
 );
 
 // Get center by ID
 
-router.get(
-  '/:id',
-  authMiddleware,
-  centerController.getCenterById
-);
+router.get("/:id", authMiddleware, centerController.getCenterById);
 
 // Super admin approves center
 router.put(
-  '/approve/:id',
+  "/approve/:id",
   authMiddleware,
   roleMiddleware(1),
-  centerController.approveCenter
+  centerController.approveCenter,
 );
 
 // Super admin rejects center
 router.put(
-  '/reject/:id',
+  "/reject/:id",
   authMiddleware,
   roleMiddleware(1),
-  centerController.rejectCenter
+  centerController.rejectCenter,
 );
 
 // Super admin suspends center
 router.put(
-  '/suspend/:id',
+  "/suspend/:id",
   authMiddleware,
   roleMiddleware(1),
-  centerController.suspendCenter
+  centerController.suspendCenter,
 );
 
 // Coaching admin updates center
 router.put(
-  '/update/:id',
+  "/update/:id",
   authMiddleware,
   roleMiddleware(2),
-  centerController.updateCenter
+  centerController.updateCenter,
 );
 
 module.exports = router;

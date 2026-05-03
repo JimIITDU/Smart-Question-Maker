@@ -1,21 +1,18 @@
-const academicModel = require('../models/academicModel');
-const centerModel = require('../models/centerModel');
+const academicModel = require("../models/academicModel");
+const centerModel = require("../models/centerModel");
 
 const academicController = {
-
   // ==================
   // COURSE CONTROLLERS
   // ==================
 
   createCourse: async (req, res) => {
     try {
-      const center = await centerModel.getCenterByUserId(
-        req.user.user_id
-      );
+      const center = await centerModel.getCenterByUserId(req.user.user_id);
       if (!center) {
         return res.status(404).json({
           success: false,
-          message: 'You do not have a coaching center',
+          message: "You do not have a coaching center",
         });
       }
 
@@ -26,13 +23,13 @@ const academicController = {
 
       res.status(201).json({
         success: true,
-        message: 'Course created successfully',
+        message: "Course created successfully",
         data: { course_id: courseId },
       });
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
         error: error.message,
       });
     }
@@ -40,18 +37,16 @@ const academicController = {
 
   getAllCourses: async (req, res) => {
     try {
-      const center = await centerModel.getCenterByUserId(
-        req.user.user_id
-      );
+      const center = await centerModel.getCenterByUserId(req.user.user_id);
       if (!center) {
         return res.status(404).json({
           success: false,
-          message: 'You do not have a coaching center',
+          message: "You do not have a coaching center",
         });
       }
 
       const courses = await academicModel.getAllCourses(
-        center.coaching_center_id
+        center.coaching_center_id,
       );
 
       res.status(200).json({
@@ -61,7 +56,7 @@ const academicController = {
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
         error: error.message,
       });
     }
@@ -69,18 +64,16 @@ const academicController = {
 
   getActiveCourses: async (req, res) => {
     try {
-      const center = await centerModel.getCenterByUserId(
-        req.user.user_id
-      );
+      const center = await centerModel.getCenterByUserId(req.user.user_id);
       if (!center) {
         return res.status(404).json({
           success: false,
-          message: 'You do not have a coaching center',
+          message: "You do not have a coaching center",
         });
       }
 
       const courses = await academicModel.getActiveCourses(
-        center.coaching_center_id
+        center.coaching_center_id,
       );
 
       res.status(200).json({
@@ -90,7 +83,7 @@ const academicController = {
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
         error: error.message,
       });
     }
@@ -101,12 +94,12 @@ const academicController = {
       if (req.user.role_id !== 3) {
         return res.status(403).json({
           success: false,
-          message: 'Access denied. Only teachers can view assigned courses.',
+          message: "Access denied. Only teachers can view assigned courses.",
         });
       }
 
       const courses = await academicModel.getCoursesForTeacher(
-        req.user.user_id
+        req.user.user_id,
       );
 
       res.status(200).json({
@@ -116,22 +109,19 @@ const academicController = {
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
         error: error.message,
       });
     }
   },
 
   getCourseById: async (req, res) => {
-
     try {
-      const course = await academicModel.getCourseById(
-        req.params.id
-      );
+      const course = await academicModel.getCourseById(req.params.id);
       if (!course) {
         return res.status(404).json({
           success: false,
-          message: 'Course not found',
+          message: "Course not found",
         });
       }
       res.status(200).json({
@@ -141,7 +131,7 @@ const academicController = {
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
         error: error.message,
       });
     }
@@ -149,13 +139,11 @@ const academicController = {
 
   getCourseWithDetails: async (req, res) => {
     try {
-      const course = await academicModel.getCourseWithDetails(
-        req.params.id
-      );
+      const course = await academicModel.getCourseWithDetails(req.params.id);
       if (!course) {
         return res.status(404).json({
           success: false,
-          message: 'Course not found',
+          message: "Course not found",
         });
       }
 
@@ -166,22 +154,19 @@ const academicController = {
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
         error: error.message,
       });
     }
   },
 
   updateCourse: async (req, res) => {
-
     try {
-      const course = await academicModel.getCourseById(
-        req.params.id
-      );
+      const course = await academicModel.getCourseById(req.params.id);
       if (!course) {
         return res.status(404).json({
           success: false,
-          message: 'Course not found',
+          message: "Course not found",
         });
       }
 
@@ -189,12 +174,12 @@ const academicController = {
 
       res.status(200).json({
         success: true,
-        message: 'Course updated successfully',
+        message: "Course updated successfully",
       });
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
         error: error.message,
       });
     }
@@ -202,13 +187,11 @@ const academicController = {
 
   deleteCourse: async (req, res) => {
     try {
-      const course = await academicModel.getCourseById(
-        req.params.id
-      );
+      const course = await academicModel.getCourseById(req.params.id);
       if (!course) {
         return res.status(404).json({
           success: false,
-          message: 'Course not found',
+          message: "Course not found",
         });
       }
 
@@ -216,12 +199,12 @@ const academicController = {
 
       res.status(200).json({
         success: true,
-        message: 'Course deleted successfully',
+        message: "Course deleted successfully",
       });
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
         error: error.message,
       });
     }
@@ -233,13 +216,11 @@ const academicController = {
 
   createBatch: async (req, res) => {
     try {
-      const center = await centerModel.getCenterByUserId(
-        req.user.user_id
-      );
+      const center = await centerModel.getCenterByUserId(req.user.user_id);
       if (!center) {
         return res.status(404).json({
           success: false,
-          message: 'You do not have a coaching center',
+          message: "You do not have a coaching center",
         });
       }
 
@@ -250,13 +231,13 @@ const academicController = {
 
       res.status(201).json({
         success: true,
-        message: 'Batch created successfully',
+        message: "Batch created successfully",
         data: { batch_id: batchId },
       });
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
         error: error.message,
       });
     }
@@ -264,18 +245,16 @@ const academicController = {
 
   getAllBatches: async (req, res) => {
     try {
-      const center = await centerModel.getCenterByUserId(
-        req.user.user_id
-      );
+      const center = await centerModel.getCenterByUserId(req.user.user_id);
       if (!center) {
         return res.status(404).json({
           success: false,
-          message: 'You do not have a coaching center',
+          message: "You do not have a coaching center",
         });
       }
 
       const batches = await academicModel.getAllBatches(
-        center.coaching_center_id
+        center.coaching_center_id,
       );
 
       res.status(200).json({
@@ -285,7 +264,7 @@ const academicController = {
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
         error: error.message,
       });
     }
@@ -293,13 +272,11 @@ const academicController = {
 
   getBatchById: async (req, res) => {
     try {
-      const batch = await academicModel.getBatchById(
-        req.params.id
-      );
+      const batch = await academicModel.getBatchById(req.params.id);
       if (!batch) {
         return res.status(404).json({
           success: false,
-          message: 'Batch not found',
+          message: "Batch not found",
         });
       }
       res.status(200).json({
@@ -309,7 +286,7 @@ const academicController = {
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
         error: error.message,
       });
     }
@@ -317,13 +294,11 @@ const academicController = {
 
   updateBatch: async (req, res) => {
     try {
-      const batch = await academicModel.getBatchById(
-        req.params.id
-      );
+      const batch = await academicModel.getBatchById(req.params.id);
       if (!batch) {
         return res.status(404).json({
           success: false,
-          message: 'Batch not found',
+          message: "Batch not found",
         });
       }
 
@@ -331,12 +306,12 @@ const academicController = {
 
       res.status(200).json({
         success: true,
-        message: 'Batch updated successfully',
+        message: "Batch updated successfully",
       });
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
         error: error.message,
       });
     }
@@ -344,13 +319,11 @@ const academicController = {
 
   deleteBatch: async (req, res) => {
     try {
-      const batch = await academicModel.getBatchById(
-        req.params.id
-      );
+      const batch = await academicModel.getBatchById(req.params.id);
       if (!batch) {
         return res.status(404).json({
           success: false,
-          message: 'Batch not found',
+          message: "Batch not found",
         });
       }
 
@@ -358,12 +331,12 @@ const academicController = {
 
       res.status(200).json({
         success: true,
-        message: 'Batch deleted successfully',
+        message: "Batch deleted successfully",
       });
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
         error: error.message,
       });
     }
@@ -375,13 +348,11 @@ const academicController = {
 
   createSubject: async (req, res) => {
     try {
-      const center = await centerModel.getCenterByUserId(
-        req.user.user_id
-      );
+      const center = await centerModel.getCenterByUserId(req.user.user_id);
       if (!center) {
         return res.status(404).json({
           success: false,
-          message: 'You do not have a coaching center',
+          message: "You do not have a coaching center",
         });
       }
 
@@ -392,13 +363,13 @@ const academicController = {
 
       res.status(201).json({
         success: true,
-        message: 'Subject created successfully',
+        message: "Subject created successfully",
         data: { subject_id: subjectId },
       });
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
         error: error.message,
       });
     }
@@ -406,18 +377,16 @@ const academicController = {
 
   getAllSubjects: async (req, res) => {
     try {
-      const center = await centerModel.getCenterByUserId(
-        req.user.user_id
-      );
+      const center = await centerModel.getCenterByUserId(req.user.user_id);
       if (!center) {
         return res.status(404).json({
           success: false,
-          message: 'You do not have a coaching center',
+          message: "You do not have a coaching center",
         });
       }
 
       const subjects = await academicModel.getAllSubjects(
-        center.coaching_center_id
+        center.coaching_center_id,
       );
 
       res.status(200).json({
@@ -427,7 +396,7 @@ const academicController = {
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
         error: error.message,
       });
     }
@@ -435,13 +404,11 @@ const academicController = {
 
   getSubjectById: async (req, res) => {
     try {
-      const subject = await academicModel.getSubjectById(
-        req.params.id
-      );
+      const subject = await academicModel.getSubjectById(req.params.id);
       if (!subject) {
         return res.status(404).json({
           success: false,
-          message: 'Subject not found',
+          message: "Subject not found",
         });
       }
       res.status(200).json({
@@ -451,7 +418,7 @@ const academicController = {
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
         error: error.message,
       });
     }
@@ -459,13 +426,11 @@ const academicController = {
 
   updateSubject: async (req, res) => {
     try {
-      const subject = await academicModel.getSubjectById(
-        req.params.id
-      );
+      const subject = await academicModel.getSubjectById(req.params.id);
       if (!subject) {
         return res.status(404).json({
           success: false,
-          message: 'Subject not found',
+          message: "Subject not found",
         });
       }
 
@@ -473,12 +438,12 @@ const academicController = {
 
       res.status(200).json({
         success: true,
-        message: 'Subject updated successfully',
+        message: "Subject updated successfully",
       });
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
         error: error.message,
       });
     }
@@ -486,13 +451,11 @@ const academicController = {
 
   deleteSubject: async (req, res) => {
     try {
-      const subject = await academicModel.getSubjectById(
-        req.params.id
-      );
+      const subject = await academicModel.getSubjectById(req.params.id);
       if (!subject) {
         return res.status(404).json({
           success: false,
-          message: 'Subject not found',
+          message: "Subject not found",
         });
       }
 
@@ -500,12 +463,12 @@ const academicController = {
 
       res.status(200).json({
         success: true,
-        message: 'Subject deleted successfully',
+        message: "Subject deleted successfully",
       });
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
         error: error.message,
       });
     }
@@ -523,14 +486,14 @@ const academicController = {
       if (!batch) {
         return res.status(404).json({
           success: false,
-          message: 'Batch not found',
+          message: "Batch not found",
         });
       }
 
       if (batch.current_students >= batch.max_students) {
         return res.status(400).json({
           success: false,
-          message: 'Batch is full',
+          message: "Batch is full",
         });
       }
 
@@ -538,12 +501,12 @@ const academicController = {
 
       res.status(200).json({
         success: true,
-        message: 'Student enrolled successfully',
+        message: "Student enrolled successfully",
       });
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
         error: error.message,
       });
     }
@@ -551,9 +514,7 @@ const academicController = {
 
   getStudentsInBatch: async (req, res) => {
     try {
-      const students = await academicModel.getStudentsInBatch(
-        req.params.id
-      );
+      const students = await academicModel.getStudentsInBatch(req.params.id);
       res.status(200).json({
         success: true,
         data: students,
@@ -561,12 +522,11 @@ const academicController = {
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
         error: error.message,
       });
     }
   },
-
 };
 
 module.exports = academicController;

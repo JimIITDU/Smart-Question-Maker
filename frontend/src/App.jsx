@@ -1,78 +1,79 @@
-import React from 'react'
-import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom'
+import React from "react";
+import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 
 // Layout & Route Guards
-import Layout from './components/Layout.jsx'
-import ProtectedRoute from './components/ProtectedRoute.jsx'
-import RoleBasedRoute from './components/RoleBasedRoute.jsx'
-import ErrorPage from './components/ErrorPage.jsx'
+import Layout from "./components/Layout.jsx";
+import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import RoleBasedRoute from "./components/RoleBasedRoute.jsx";
+import ErrorPage from "./components/ErrorPage.jsx";
+import SearchResults from "./components/SearchResults.jsx";
 
 // Public / Auth pages
-import HomePage from './pages/HomePage.jsx'
-import Login from './pages/Auth/Login.jsx'
-import Register from './pages/Auth/Register.jsx'
-import VerifyOTP from './pages/Auth/VerifyOTP.jsx'
-import ForgotPassword from './pages/Auth/ForgotPassword.jsx'
-import ResetPassword from './pages/Auth/ResetPassword.jsx'
+import HomePage from "./pages/HomePage.jsx";
+import Login from "./pages/Auth/Login.jsx";
+import Register from "./pages/Auth/Register.jsx";
+import VerifyOTP from "./pages/Auth/VerifyOTP.jsx";
+import ForgotPassword from "./pages/Auth/ForgotPassword.jsx";
+import ResetPassword from "./pages/Auth/ResetPassword.jsx";
 
 // Shared protected pages
-import Dashboard from './pages/Dashboard.jsx'
-import Notifications from './pages/Notifications.jsx'
-import Profile from './pages/Profile.jsx'
+import Dashboard from "./pages/Dashboard.jsx";
+import Notifications from "./pages/Notifications.jsx";
+import Profile from "./pages/Profile.jsx";
 
 // SuperAdmin pages (role_id = 1)
-import SuperAdminDashboard from './pages/SuperAdmin/SuperAdminDashboard.jsx'
-import ManageCenters from './pages/SuperAdmin/ManageCenters.jsx'
-import CenterDetails from './pages/SuperAdmin/CenterDetails.jsx'
-import ManageSubscriptionPlans from './pages/SuperAdmin/ManageSubscriptionPlans.jsx'
+import SuperAdminDashboard from "./pages/SuperAdmin/SuperAdminDashboard.jsx";
+import ManageCenters from "./pages/SuperAdmin/ManageCenters.jsx";
+import CenterDetails from "./pages/SuperAdmin/CenterDetails.jsx";
+import ManageSubscriptionPlans from "./pages/SuperAdmin/ManageSubscriptionPlans.jsx";
 
 // CoachingAdmin pages (role_id = 2)
-import CoachingAdminDashboard from './pages/CoachingAdmin/CoachingAdminDashboard.jsx'
-import ApplyForCenter from './pages/CoachingAdmin/ApplyForCenter.jsx'
-import ManageCourses from './pages/CoachingAdmin/ManageCourses.jsx'
-import ManageBatches from './pages/CoachingAdmin/ManageBatches.jsx'
-import ManageSubjects from './pages/CoachingAdmin/ManageSubjects.jsx'
-import ManageStudents from './pages/CoachingAdmin/ManageStudents.jsx'
-import ManageTeachers from './pages/CoachingAdmin/ManageTeachers.jsx'
-import ManageStaff from './pages/CoachingAdmin/ManageStaff.jsx'
-import ManageUsers from './pages/CoachingAdmin/ManageUsers.jsx'
-import FeeManagement from './pages/CoachingAdmin/FeeManagement.jsx'
-import SubscriptionManagement from './pages/CoachingAdmin/SubscriptionManagement.jsx'
+import CoachingAdminDashboard from "./pages/CoachingAdmin/CoachingAdminDashboard.jsx";
+import ApplyForCenter from "./pages/CoachingAdmin/ApplyForCenter.jsx";
+import ManageCourses from "./pages/CoachingAdmin/ManageCourses.jsx";
+import ManageBatches from "./pages/CoachingAdmin/ManageBatches.jsx";
+import ManageSubjects from "./pages/CoachingAdmin/ManageSubjects.jsx";
+import ManageStudents from "./pages/CoachingAdmin/ManageStudents.jsx";
+import ManageTeachers from "./pages/CoachingAdmin/ManageTeachers.jsx";
+import ManageStaff from "./pages/CoachingAdmin/ManageStaff.jsx";
+import ManageUsers from "./pages/CoachingAdmin/ManageUsers.jsx";
+import FeeManagement from "./pages/CoachingAdmin/FeeManagement.jsx";
+import SubscriptionManagement from "./pages/CoachingAdmin/SubscriptionManagement.jsx";
 
 // Teacher pages (role_id = 3)
-import TeacherDashboard from './pages/Teacher/TeacherDashboard.jsx'
-import QuestionBank from './pages/Teacher/QuestionBank.jsx'
-import CreateQuestion from './pages/Teacher/CreateQuestion.jsx'
-import EditQuestion from './pages/Teacher/EditQuestion.jsx'
-import AIQuestionGenerator from './pages/Teacher/AIQuestionGenerator.jsx'
-import ManageExams from './pages/Teacher/ManageExams.jsx'
-import CreateExam from './pages/Teacher/CreateExam.jsx'
-import ExamDetails from './pages/Teacher/ExamDetails.jsx'
-import LiveQuiz from './pages/Teacher/LiveQuiz.jsx'
-import Analytics from './pages/Teacher/Analytics.jsx'
-import UploadMaterial from './pages/Teacher/UploadMaterial.jsx'
-import ApplyToCenter from './pages/Teacher/ApplyToCenter.jsx'
+import TeacherDashboard from "./pages/Teacher/TeacherDashboard.jsx";
+import QuestionBank from "./pages/Teacher/QuestionBank.jsx";
+import CreateQuestion from "./pages/Teacher/CreateQuestion.jsx";
+import EditQuestion from "./pages/Teacher/EditQuestion.jsx";
+import AIQuestionGenerator from "./pages/Teacher/AIQuestionGenerator.jsx";
+import ManageExams from "./pages/Teacher/ManageExams.jsx";
+import CreateExam from "./pages/Teacher/CreateExam.jsx";
+import ExamDetails from "./pages/Teacher/ExamDetails.jsx";
+import LiveQuiz from "./pages/Teacher/LiveQuiz.jsx";
+import Analytics from "./pages/Teacher/Analytics.jsx";
+import UploadMaterial from "./pages/Teacher/UploadMaterial.jsx";
+import ApplyToCenter from "./pages/Teacher/ApplyToCenter.jsx";
 
 // Student pages (role_id = 5)
-import StudentDashboard from './pages/Student/StudentDashboard.jsx'
-import Exams from './pages/Student/Exams.jsx'
-import TakeExam from './pages/Student/TakeExam.jsx'
-import Results from './pages/Student/Results.jsx'
-import MyResults from './pages/Student/MyResults.jsx'
-import StudyMaterials from './pages/Student/StudyMaterials.jsx'
-import JoinQuiz from './pages/Student/JoinQuiz.jsx'
-import BrowseCourses from './pages/Student/BrowseCourses.jsx'
-import MockPayment from './pages/Student/MockPayment.jsx'
-import MyCourses from './pages/Student/MyCourses.jsx'
-import CourseDetail from './pages/Student/CourseDetail.jsx'
+import StudentDashboard from "./pages/Student/StudentDashboard.jsx";
+import Exams from "./pages/Student/Exams.jsx";
+import TakeExam from "./pages/Student/TakeExam.jsx";
+import Results from "./pages/Student/Results.jsx";
+import MyResults from "./pages/Student/MyResults.jsx";
+import StudyMaterials from "./pages/Student/StudyMaterials.jsx";
+import JoinQuiz from "./pages/Student/JoinQuiz.jsx";
+import BrowseCourses from "./pages/Student/BrowseCourses.jsx";
+import MockPayment from "./pages/Student/MockPayment.jsx";
+import MyCourses from "./pages/Student/MyCourses.jsx";
+import CourseDetail from "./pages/Student/CourseDetail.jsx";
 
 // CoachingAdmin pages (role_id = 2)
-import TeacherApplications from './pages/CoachingAdmin/TeacherApplications.jsx'
-import AssignTeachers from './pages/CoachingAdmin/AssignTeachers.jsx'
+import TeacherApplications from "./pages/CoachingAdmin/TeacherApplications.jsx";
+import AssignTeachers from "./pages/CoachingAdmin/AssignTeachers.jsx";
 
 // Parent pages (role_id = 6)
-import ParentDashboard from './pages/Parent/ParentDashboard.jsx'
-import ChildResults from './pages/Parent/ChildResults.jsx'
+import ParentDashboard from "./pages/Parent/ParentDashboard.jsx";
+import ChildResults from "./pages/Parent/ChildResults.jsx";
 
 /**
  * LayoutWrapper
@@ -83,7 +84,7 @@ const LayoutWrapper = () => (
   <Layout>
     <Outlet />
   </Layout>
-)
+);
 
 function App() {
   return (
@@ -100,6 +101,7 @@ function App() {
         {/* ==================== PROTECTED ROUTES ==================== */}
         <Route element={<ProtectedRoute />}>
           <Route element={<LayoutWrapper />}>
+            <Route path="/search" element={<SearchResults />} />
             {/* Shared — any authenticated user */}
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/notifications" element={<Notifications />} />
@@ -114,30 +116,30 @@ function App() {
 
             {/* -------------------- SUPER ADMIN (role_id: 1) -------------------- */}
             <Route element={<RoleBasedRoute allowedRoles={[1]} />}>
-              <Route path="/super-admin" element={<SuperAdminDashboard />} />
-              <Route path="/super-admin/centers" element={<ManageCenters />} />
-              <Route path="/super-admin/centers/:id" element={<CenterDetails />} />
-              <Route path="/super-admin/subscriptions" element={<ManageSubscriptionPlans />} />
+              <Route path="/superadmin" element={<SuperAdminDashboard />} />
+              <Route path="/superadmin/manage-centers" element={<ManageCenters />} />
+              <Route path="/superadmin/manage-centers/:id" element={<CenterDetails />} />
+              <Route path="/superadmin/manage-subscription-plans" element={<ManageSubscriptionPlans />} />
             </Route>
 
-{/* -------------------- COACHING ADMIN (role_id: 2) -------------------- */}
+            {/* -------------------- COACHING ADMIN (role_id: 2) -------------------- */}
             <Route element={<RoleBasedRoute allowedRoles={[2]} />}>
-              <Route path="/coaching-admin" element={<CoachingAdminDashboard />} />
-              <Route path="/coaching-admin/apply" element={<ApplyForCenter />} />
-              <Route path="/coaching-admin/courses" element={<ManageCourses />} />
-              <Route path="/coaching-admin/batches" element={<ManageBatches />} />
-              <Route path="/coaching-admin/subjects" element={<ManageSubjects />} />
-              <Route path="/coaching-admin/students" element={<ManageStudents />} />
-              <Route path="/coaching-admin/teachers" element={<ManageTeachers />} />
-              <Route path="/coaching-admin/staff" element={<ManageStaff />} />
-              <Route path="/coaching-admin/users" element={<ManageUsers />} />
-              <Route path="/coaching-admin/fees" element={<FeeManagement />} />
-              <Route path="/coaching-admin/subscription" element={<SubscriptionManagement />} />
-              <Route path="/coaching-admin/teacher-applications" element={<TeacherApplications />} />
-              <Route path="/coaching-admin/assign-teachers" element={<AssignTeachers />} />
+              <Route path="/coachingadmin" element={<CoachingAdminDashboard />} />
+              <Route path="/coachingadmin/apply-for-center" element={<ApplyForCenter />} />
+              <Route path="/coachingadmin/manage-courses" element={<ManageCourses />} />
+              <Route path="/coachingadmin/manage-batches" element={<ManageBatches />} />
+              <Route path="/coachingadmin/manage-subjects" element={<ManageSubjects />} />
+              <Route path="/coachingadmin/manage-students" element={<ManageStudents />} />
+              <Route path="/coachingadmin/manage-teachers" element={<ManageTeachers />} />
+              <Route path="/coachingadmin/manage-staff" element={<ManageStaff />} />
+              <Route path="/coachingadmin/manage-users" element={<ManageUsers />} />
+              <Route path="/coachingadmin/fee-management" element={<FeeManagement />} />
+              <Route path="/coachingadmin/subscription-management" element={<SubscriptionManagement />} />
+              <Route path="/coachingadmin/teacher-applications" element={<TeacherApplications />} />
+              <Route path="/coachingadmin/assign-teachers" element={<AssignTeachers />} />
             </Route>
 
-{/* -------------------- TEACHER (role_id: 3) -------------------- */}
+            {/* -------------------- TEACHER (role_id: 3) -------------------- */}
             <Route element={<RoleBasedRoute allowedRoles={[3]} />}>
               <Route path="/teacher" element={<TeacherDashboard />} />
               <Route path="/teacher/questions" element={<QuestionBank />} />
@@ -150,7 +152,7 @@ function App() {
               <Route path="/teacher/live-quiz" element={<LiveQuiz />} />
               <Route path="/teacher/analytics" element={<Analytics />} />
               <Route path="/teacher/upload-material" element={<UploadMaterial />} />
-              <Route path="/teacher/apply" element={<ApplyToCenter />} />
+              <Route path="/teacher/apply-to-center" element={<ApplyToCenter />} />
             </Route>
 
             {/* -------------------- STUDENT (role_id: 5) -------------------- */}
@@ -158,16 +160,15 @@ function App() {
               <Route path="/student" element={<StudentDashboard />} />
               <Route path="/student/exams" element={<Exams />} />
               <Route path="/student/exams/:id/take" element={<TakeExam />} />
-              <Route path="/student/results" element={<MyResults />} />
-              <Route path="/student/results/:id" element={<Results />} />
+              <Route path="/student/my-results" element={<MyResults />} />
+              <Route path="/student/my-results/:id" element={<Results />} />
               <Route path="/student/study-materials" element={<StudyMaterials />} />
               <Route path="/student/join-quiz" element={<JoinQuiz />} />
               <Route path="/student/browse-courses" element={<BrowseCourses />} />
-              <Route path="/student/payment/:enrollmentId" element={<MockPayment />} />
-<Route path="/student/courses" element={<MyCourses />} />
+              <Route path="/student/mock-payment/:enrollmentId" element={<MockPayment />} />
+              <Route path="/student/my-courses" element={<MyCourses />} />
               <Route path="/student/courses/:course_id" element={<CourseDetail />} />
             </Route>
-
 
             {/* -------------------- PARENT (role_id: 6) -------------------- */}
             <Route element={<RoleBasedRoute allowedRoles={[6]} />}>
@@ -181,8 +182,7 @@ function App() {
         </Route>
       </Routes>
     </BrowserRouter>
-  )
+  );
 }
 
-export default App
-
+export default App;

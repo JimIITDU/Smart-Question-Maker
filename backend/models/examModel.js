@@ -1,11 +1,18 @@
-const db = require('../config/db');
+const db = require("../config/db");
 
 const examModel = {
-
   createExam: async (data) => {
     const {
-      coaching_center_id, subject_id, batch_id, exam_type, host_teacher_id,
-      title, duration_minutes, start_time, end_time, access_code,
+      coaching_center_id,
+      subject_id,
+      batch_id,
+      exam_type,
+      host_teacher_id,
+      title,
+      duration_minutes,
+      start_time,
+      end_time,
+      access_code,
     } = data;
     const result = await db.query(
       `INSERT INTO quiz_exam
@@ -13,8 +20,18 @@ const examModel = {
         title, duration_minutes, start_time, end_time, access_code)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
        RETURNING exam_id`,
-      [coaching_center_id, subject_id, batch_id, exam_type, host_teacher_id,
-       title, duration_minutes, start_time, end_time, access_code]
+      [
+        coaching_center_id,
+        subject_id,
+        batch_id,
+        exam_type,
+        host_teacher_id,
+        title,
+        duration_minutes,
+        start_time,
+        end_time,
+        access_code,
+      ],
     );
     return result.rows[0].exam_id;
   },
@@ -28,18 +45,17 @@ const examModel = {
       WHERE q.host_teacher_id = $1
     `;
     const values = [teacher_id];
-    
+
     if (coaching_center_id) {
       query += ` AND q.coaching_center_id = $2`;
       values.push(coaching_center_id);
     }
-    
+
     query += ` ORDER BY q.created_at DESC`;
-    
+
     const result = await db.query(query, values);
     return result.rows;
   },
-
 
   getAllExamsForStudent: async (coaching_center_id) => {
     let query = `
@@ -50,18 +66,17 @@ const examModel = {
       WHERE q.status != 'completed'
     `;
     const values = [];
-    
+
     if (coaching_center_id) {
       query += ` AND q.coaching_center_id = $1`;
       values.push(coaching_center_id);
     }
-    
+
     query += ` ORDER BY q.start_time ASC`;
-    
+
     const result = await db.query(query, values);
     return result.rows;
   },
-
 
   getExamById: async (id) => {
     const result = await db.query(
@@ -69,11 +84,11 @@ const examModel = {
        FROM quiz_exam q
        LEFT JOIN subjects s ON q.subject_id = s.subject_id
        LEFT JOIN batch b ON q.batch_id = b.batch_id
-       WHERE q.exam_id = $1`, [id]
+       WHERE q.exam_id = $1`,
+      [id],
     );
     return result.rows[0];
   },
-
 
   getExamByAccessCode: async (access_code) => {
     const result = await db.query(
@@ -82,17 +97,16 @@ const examModel = {
        LEFT JOIN subjects s ON q.subject_id = s.subject_id
        LEFT JOIN batch b ON q.batch_id = b.batch_id
        WHERE q.access_code = $1`,
-      [access_code]
+      [access_code],
     );
     return result.rows[0];
   },
 
-
   updateExamStatus: async (exam_id, status) => {
-    await db.query(
-      `UPDATE quiz_exam SET status = $1 WHERE exam_id = $2`,
-      [status, exam_id]
-    );
+    await db.query(`UPDATE quiz_exam SET status = $1 WHERE exam_id = $2`, [
+      status,
+      exam_id,
+    ]);
   },
 
   addQuestionsToExam: async (exam_id, question_ids) => {
@@ -100,7 +114,7 @@ const examModel = {
       await db.query(
         `INSERT INTO exam_questions (exam_id, question_id)
          VALUES ($1, $2) ON CONFLICT DO NOTHING`,
-        [exam_id, question_id]
+        [exam_id, question_id],
       );
     }
   },
@@ -110,7 +124,7 @@ const examModel = {
       `SELECT qb.* FROM exam_questions eq
        JOIN question_bank qb ON eq.question_id = qb.question_id
        WHERE eq.exam_id = $1`,
-      [exam_id]
+      [exam_id],
     );
     return result.rows;
   },
@@ -120,15 +134,20 @@ const examModel = {
       `SELECT COUNT(*) FROM result_summary
        WHERE exam_id = $1 AND student_id = $2
        AND answer_status = 'submitted'`,
-      [exam_id, student_id]
+      [exam_id, student_id],
     );
     return parseInt(result.rows[0].count) > 0;
   },
 
   submitAnswer: async (data) => {
     const {
-      coaching_center_id, exam_id, student_id, question_id,
-      descriptive_answer, marks_obtained, evaluated_by,
+      coaching_center_id,
+      exam_id,
+      student_id,
+      question_id,
+      descriptive_answer,
+      marks_obtained,
+      evaluated_by,
     } = data;
     const result = await db.query(
       `INSERT INTO result_summary
@@ -136,8 +155,15 @@ const examModel = {
         marks_obtained, evaluated_by, answer_status, answered_at)
        VALUES ($1,$2,$3,$4,$5,$6,$7,'submitted', NOW())
        RETURNING result_id`,
-      [coaching_center_id, exam_id, student_id, question_id, descriptive_answer,
-       marks_obtained, evaluated_by]
+      [
+        coaching_center_id,
+        exam_id,
+        student_id,
+        question_id,
+        descriptive_answer,
+        marks_obtained,
+        evaluated_by,
+      ],
     );
     return result.rows[0].result_id;
   },
@@ -148,7 +174,7 @@ const examModel = {
        FROM result_summary rs
        JOIN question_bank qb ON rs.question_id = qb.question_id
        WHERE rs.exam_id = $1 AND rs.student_id = $2`,
-      [exam_id, student_id]
+      [exam_id, student_id],
     );
     return result.rows;
   },
@@ -161,12 +187,18 @@ const examModel = {
        FROM result_summary rs
        JOIN question_bank qb ON rs.question_id = qb.question_id
        WHERE rs.exam_id = $1 AND rs.student_id = $2`,
-      [exam_id, student_id]
+      [exam_id, student_id],
     );
     return result.rows[0];
   },
 
-  evaluateResult: async (result_id, marks_obtained, feedback, confidence_score, evaluated_by = 'llm') => {
+  evaluateResult: async (
+    result_id,
+    marks_obtained,
+    feedback,
+    confidence_score,
+    evaluated_by = "llm",
+  ) => {
     await db.query(
       `UPDATE result_summary
        SET marks_obtained = $1,
@@ -175,7 +207,7 @@ const examModel = {
            evaluated_by = $4,
            evaluated_at = NOW()
        WHERE result_id = $5`,
-      [marks_obtained, feedback, confidence_score, evaluated_by, result_id]
+      [marks_obtained, feedback, confidence_score, evaluated_by, result_id],
     );
   },
 
@@ -188,7 +220,7 @@ const examModel = {
        AND qb.question_type = 'descriptive'
        AND (rs.evaluated_by IS NULL OR rs.evaluated_by = 'pending')
        ORDER BY rs.result_id`,
-      [exam_id]
+      [exam_id],
     );
     return result.rows;
   },
@@ -202,11 +234,10 @@ const examModel = {
        JOIN users u ON rs.student_id = u.user_id
        WHERE rs.exam_id = $1
        ORDER BY rs.student_id, rs.result_id`,
-      [exam_id]
+      [exam_id],
     );
     return result.rows;
   },
-
 };
 
 module.exports = examModel;

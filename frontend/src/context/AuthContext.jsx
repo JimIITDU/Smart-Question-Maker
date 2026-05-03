@@ -1,5 +1,5 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
-import { getMe } from '../services/api';
+import React, { createContext, useState, useEffect, useContext } from "react";
+import { getMe } from "../services/api";
 
 const AuthContext = createContext();
 
@@ -8,14 +8,14 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (token) {
       getMe()
         .then((res) => {
           setUser(res.data.data);
         })
         .catch(() => {
-          localStorage.removeItem('token');
+          localStorage.removeItem("token");
         })
         .finally(() => {
           setLoading(false);
@@ -26,19 +26,17 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const loginUser = (token, userData) => {
-    localStorage.setItem('token', token);
+    localStorage.setItem("token", token);
     setUser(userData);
   };
 
   const logoutUser = () => {
-    localStorage.removeItem('token');
+    localStorage.removeItem("token");
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider
-      value={{ user, loading, loginUser, logoutUser }}
-    >
+    <AuthContext.Provider value={{ user, loading, loginUser, logoutUser }}>
       {children}
     </AuthContext.Provider>
   );

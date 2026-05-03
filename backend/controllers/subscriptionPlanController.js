@@ -1,7 +1,6 @@
-const subscriptionPlanModel = require('../models/subscriptionPlanModel');
+const subscriptionPlanModel = require("../models/subscriptionPlanModel");
 
 const subscriptionPlanController = {
-
   // Get all subscription plans (public)
   getAllPlans: async (req, res) => {
     try {
@@ -13,7 +12,7 @@ const subscriptionPlanController = {
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
         error: error.message,
       });
     }
@@ -30,7 +29,7 @@ const subscriptionPlanController = {
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
         error: error.message,
       });
     }
@@ -43,7 +42,7 @@ const subscriptionPlanController = {
       if (!plan) {
         return res.status(404).json({
           success: false,
-          message: 'Plan not found',
+          message: "Plan not found",
         });
       }
       res.status(200).json({
@@ -53,7 +52,7 @@ const subscriptionPlanController = {
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
         error: error.message,
       });
     }
@@ -76,7 +75,7 @@ const subscriptionPlanController = {
       if (!name || price === undefined) {
         return res.status(400).json({
           success: false,
-          message: 'Name and price are required',
+          message: "Name and price are required",
         });
       }
 
@@ -93,13 +92,13 @@ const subscriptionPlanController = {
 
       res.status(201).json({
         success: true,
-        message: 'Subscription plan created successfully',
+        message: "Subscription plan created successfully",
         data: plan,
       });
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
         error: error.message,
       });
     }
@@ -110,11 +109,11 @@ const subscriptionPlanController = {
     try {
       const planId = req.params.id;
       const existingPlan = await subscriptionPlanModel.getPlanById(planId);
-      
+
       if (!existingPlan) {
         return res.status(404).json({
           success: false,
-          message: 'Plan not found',
+          message: "Plan not found",
         });
       }
 
@@ -134,23 +133,28 @@ const subscriptionPlanController = {
         name: name || existingPlan.name,
         price: price !== undefined ? price : existingPlan.price,
         features: features || existingPlan.features,
-        max_students: max_students !== undefined ? max_students : existingPlan.max_students,
-        max_courses: max_courses !== undefined ? max_courses : existingPlan.max_courses,
+        max_students:
+          max_students !== undefined ? max_students : existingPlan.max_students,
+        max_courses:
+          max_courses !== undefined ? max_courses : existingPlan.max_courses,
         max_exams: max_exams !== undefined ? max_exams : existingPlan.max_exams,
-        ai_questions_limit: ai_questions_limit !== undefined ? ai_questions_limit : existingPlan.ai_questions_limit,
+        ai_questions_limit:
+          ai_questions_limit !== undefined
+            ? ai_questions_limit
+            : existingPlan.ai_questions_limit,
         support_level: support_level || existingPlan.support_level,
         is_active: is_active !== undefined ? is_active : existingPlan.is_active,
       });
 
       res.status(200).json({
         success: true,
-        message: 'Subscription plan updated successfully',
+        message: "Subscription plan updated successfully",
         data: updatedPlan,
       });
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
         error: error.message,
       });
     }
@@ -161,11 +165,11 @@ const subscriptionPlanController = {
     try {
       const planId = req.params.id;
       const existingPlan = await subscriptionPlanModel.getPlanById(planId);
-      
+
       if (!existingPlan) {
         return res.status(404).json({
           success: false,
-          message: 'Plan not found',
+          message: "Plan not found",
         });
       }
 
@@ -173,12 +177,12 @@ const subscriptionPlanController = {
 
       res.status(200).json({
         success: true,
-        message: 'Subscription plan deleted successfully',
+        message: "Subscription plan deleted successfully",
       });
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
         error: error.message,
       });
     }
@@ -190,22 +194,24 @@ const subscriptionPlanController = {
       const planId = req.params.id;
       const { is_active } = req.body;
 
-      const plan = await subscriptionPlanModel.togglePlanStatus(planId, is_active);
-      
+      const plan = await subscriptionPlanModel.togglePlanStatus(
+        planId,
+        is_active,
+      );
+
       res.status(200).json({
         success: true,
-        message: `Plan ${is_active ? 'activated' : 'deactivated'} successfully`,
+        message: `Plan ${is_active ? "activated" : "deactivated"} successfully`,
         data: plan,
       });
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
         error: error.message,
       });
     }
   },
-
 };
 
 module.exports = subscriptionPlanController;

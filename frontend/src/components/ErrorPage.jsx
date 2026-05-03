@@ -1,5 +1,5 @@
-﻿import React from 'react'
-import { Link } from 'react-router-dom'
+﻿import React from "react";
+import { Link } from "react-router-dom";
 
 const ErrorPage = ({ code = 404, message = "Page Not Found" }) => {
   return (
@@ -9,7 +9,6 @@ const ErrorPage = ({ code = 404, message = "Page Not Found" }) => {
       <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none"></div>
 
       <div className="relative z-10 text-center max-w-lg w-full">
-        
         {/* Large Ghosted Error Code */}
         <h1 className="text-[120px] md:text-[150px] font-bold leading-none mb-2 text-transparent bg-clip-text bg-gradient-to-b from-white/20 to-transparent">
           {code}
@@ -29,10 +28,9 @@ const ErrorPage = ({ code = 404, message = "Page Not Found" }) => {
             Go Back to Dashboard
           </Link>
         </div>
-
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ErrorPage
+export default ErrorPage;

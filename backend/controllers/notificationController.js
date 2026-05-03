@@ -1,29 +1,27 @@
-const notificationModel = require('../models/notificationModel');
+const notificationModel = require("../models/notificationModel");
 
 const notificationController = {
-
   // Create notification
   createNotification: async (req, res) => {
     try {
       const { user_id, message, type } = req.body;
 
-      const notificationId = await notificationModel
-        .createNotification({
-          user_id,
-          message,
-          type,
-        });
+      const notificationId = await notificationModel.createNotification({
+        user_id,
+        message,
+        type,
+      });
 
       res.status(201).json({
         success: true,
-        message: 'Notification created successfully',
+        message: "Notification created successfully",
         data: { notification_id: notificationId },
       });
     } catch (error) {
-      console.error('createNotification error:', error);
+      console.error("createNotification error:", error);
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
         error: error.message,
       });
     }
@@ -38,25 +36,21 @@ const notificationController = {
       if (!user_ids || user_ids.length === 0) {
         return res.status(400).json({
           success: false,
-          message: 'No users provided',
+          message: "No users provided",
         });
       }
 
-      await notificationModel.createBulkNotifications(
-        user_ids,
-        message,
-        type
-      );
+      await notificationModel.createBulkNotifications(user_ids, message, type);
 
       res.status(201).json({
         success: true,
         message: `Notification sent to ${user_ids.length} users`,
       });
     } catch (error) {
-      console.error('broadcastNotification error:', error);
+      console.error("broadcastNotification error:", error);
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
         error: error.message,
       });
     }
@@ -66,8 +60,9 @@ const notificationController = {
 
   getMyNotifications: async (req, res) => {
     try {
-      const notifications = await notificationModel
-        .getNotificationsByUserId(req.user.user_id);
+      const notifications = await notificationModel.getNotificationsByUserId(
+        req.user.user_id,
+      );
 
       res.status(200).json({
         success: true,
@@ -75,10 +70,10 @@ const notificationController = {
         data: notifications,
       });
     } catch (error) {
-      console.error('getMyNotifications error:', error);
+      console.error("getMyNotifications error:", error);
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
         error: error.message,
       });
     }
@@ -88,8 +83,9 @@ const notificationController = {
 
   getUnreadNotifications: async (req, res) => {
     try {
-      const notifications = await notificationModel
-        .getUnreadNotifications(req.user.user_id);
+      const notifications = await notificationModel.getUnreadNotifications(
+        req.user.user_id,
+      );
 
       res.status(200).json({
         success: true,
@@ -97,10 +93,10 @@ const notificationController = {
         data: notifications,
       });
     } catch (error) {
-      console.error('getUnreadNotifications error:', error);
+      console.error("getUnreadNotifications error:", error);
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
         error: error.message,
       });
     }
@@ -110,13 +106,14 @@ const notificationController = {
 
   markAsRead: async (req, res) => {
     try {
-      const notification = await notificationModel
-        .getNotificationById(req.params.id);
+      const notification = await notificationModel.getNotificationById(
+        req.params.id,
+      );
 
       if (!notification) {
         return res.status(404).json({
           success: false,
-          message: 'Notification not found',
+          message: "Notification not found",
         });
       }
 
@@ -124,13 +121,13 @@ const notificationController = {
 
       res.status(200).json({
         success: true,
-        message: 'Notification marked as read',
+        message: "Notification marked as read",
       });
     } catch (error) {
-      console.error('markAsRead error:', error);
+      console.error("markAsRead error:", error);
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
         error: error.message,
       });
     }
@@ -144,13 +141,13 @@ const notificationController = {
 
       res.status(200).json({
         success: true,
-        message: 'All notifications marked as read',
+        message: "All notifications marked as read",
       });
     } catch (error) {
-      console.error('markAllAsRead error:', error);
+      console.error("markAllAsRead error:", error);
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
         error: error.message,
       });
     }
@@ -160,13 +157,14 @@ const notificationController = {
 
   deleteNotification: async (req, res) => {
     try {
-      const notification = await notificationModel
-        .getNotificationById(req.params.id);
+      const notification = await notificationModel.getNotificationById(
+        req.params.id,
+      );
 
       if (!notification) {
         return res.status(404).json({
           success: false,
-          message: 'Notification not found',
+          message: "Notification not found",
         });
       }
 
@@ -174,19 +172,17 @@ const notificationController = {
 
       res.status(200).json({
         success: true,
-        message: 'Notification deleted successfully',
+        message: "Notification deleted successfully",
       });
     } catch (error) {
-      console.error('deleteNotification error:', error);
+      console.error("deleteNotification error:", error);
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
         error: error.message,
       });
     }
   },
-
 };
-
 
 module.exports = notificationController;

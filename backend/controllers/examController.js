@@ -1,15 +1,12 @@
-const db = require('../config/db');
-const examModel = require('../models/examModel');
-const questionModel = require('../models/questionModel');
-const llmService = require('../services/llmService');
-const centerModel = require('../models/centerModel');
-const pdfService = require('../services/pdfService');
-const archiver = require('archiver');
-
-
+const db = require("../config/db");
+const examModel = require("../models/examModel");
+const questionModel = require("../models/questionModel");
+const llmService = require("../services/llmService");
+const centerModel = require("../models/centerModel");
+const pdfService = require("../services/pdfService");
+const archiver = require("archiver");
 
 const examController = {
-
   // ==============================
   // ENROLLMENT CHECK MIDDLEWARE
   // ==============================
@@ -22,20 +19,23 @@ const examController = {
       }
 
       const examId = req.params.id;
-      
+
       // Get exam details to find course_id
       const exam = await examModel.getExamById(examId);
       if (!exam) {
         return res.status(404).json({
           success: false,
-          message: 'Exam not found'
+          message: "Exam not found",
         });
       }
 
       // Skip check if:
       // 1. exam doesn't have a course_id (old exams)
       // 2. exam_type = 'practice' AND is_public = true
-      if (!exam.course_id || (exam.exam_type === 'practice' && exam.is_public === true)) {
+      if (
+        !exam.course_id ||
+        (exam.exam_type === "practice" && exam.is_public === true)
+      ) {
         return next();
       }
 
@@ -45,23 +45,23 @@ const examController = {
          WHERE student_id = $1 AND course_id = $2
          AND status = 'active'
          AND (expires_at IS NULL OR expires_at > NOW())`,
-        [req.user.user_id, exam.course_id]
+        [req.user.user_id, exam.course_id],
       );
 
       if (enrollmentResult.rows.length === 0) {
         return res.status(403).json({
           success: false,
-          message: 'Not enrolled or enrollment expired'
+          message: "Not enrolled or enrollment expired",
         });
       }
 
       next();
     } catch (error) {
-      console.error('checkEnrollmentForStudent error:', error);
+      console.error("checkEnrollmentForStudent error:", error);
       res.status(500).json({
         success: false,
-        message: 'Server error',
-        error: error.message
+        message: "Server error",
+        error: error.message,
       });
     }
   },
@@ -80,17 +80,22 @@ const examController = {
       } = req.body;
 
       // 1. Convert '2026-04-27T23:32' to '2026-04-27 23:32:00'
-      const formattedStart = start_time ? start_time.replace('T', ' ') : null;
-      const formattedEnd = end_time ? end_time.replace('T', ' ') : null;
+      const formattedStart = start_time ? start_time.replace("T", " ") : null;
+      const formattedEnd = end_time ? end_time.replace("T", " ") : null;
 
       // 2. Access Code
-      const access_code = Math.random().toString(36).substring(2, 8).toUpperCase();
+      const access_code = Math.random()
+        .toString(36)
+        .substring(2, 8)
+        .toUpperCase();
 
       // 3. User ID Check (Safety for different middleware setups)
       const host_teacher_id = req.user?.user_id || req.user?.id;
 
       if (!host_teacher_id) {
-        return res.status(401).json({ success: false, message: "User not authenticated" });
+        return res
+          .status(401)
+          .json({ success: false, message: "User not authenticated" });
       }
 
       // 4. Create the Exam
@@ -100,7 +105,7 @@ const examController = {
         batch_id,
         exam_type,
         host_teacher_id,
-        title: title || `Exam ${subject_id || 'N/A'}`,
+        title: title || `Exam ${subject_id || "N/A"}`,
         duration_minutes: duration_minutes || 60,
         start_time: formattedStart,
         end_time: formattedEnd,
@@ -114,22 +119,21 @@ const examController = {
 
       res.status(201).json({
         success: true,
-        message: 'Exam created successfully',
+        message: "Exam created successfully",
         data: { exam_id: examId, access_code },
       });
-
     } catch (error) {
       // THIS PRINTS THE REAL ERROR IN YOUR TERMINAL
       console.error("--- BACKEND CRASH LOG ---");
-      console.error(error); 
-      
+      console.error(error);
+
       // THIS SENDS THE REAL ERROR TO YOUR BROWSER
       res.status(500).json({
         success: false,
-        message: 'Database Error',
+        message: "Database Error",
         error: error.message,
         sqlMessage: error.sqlMessage, // Specific MySQL error
-        hint: "Check if subject_id 102 and batch_id 201 exist in your DB"
+        hint: "Check if subject_id 102 and batch_id 201 exist in your DB",
       });
     }
   },
@@ -139,9 +143,14 @@ const examController = {
     try {
       let exams;
       if (req.user.role_id === 5) {
-        exams = await examModel.getAllExamsForStudent(req.user.coaching_center_id);
+        exams = await examModel.getAllExamsForStudent(
+          req.user.coaching_center_id,
+        );
       } else {
-        exams = await examModel.getAllExams(req.user.user_id, req.user.coaching_center_id);
+        exams = await examModel.getAllExams(
+          req.user.user_id,
+          req.user.coaching_center_id,
+        );
       }
       res.status(200).json({
         success: true,
@@ -149,10 +158,10 @@ const examController = {
         data: exams,
       });
     } catch (error) {
-      console.error('getAllExams error:', error);
+      console.error("getAllExams error:", error);
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
         error: error.message,
       });
     }
@@ -165,7 +174,7 @@ const examController = {
       if (!exam) {
         return res.status(404).json({
           success: false,
-          message: 'Exam not found',
+          message: "Exam not found",
         });
       }
       res.status(200).json({
@@ -173,10 +182,10 @@ const examController = {
         data: exam,
       });
     } catch (error) {
-      console.error('getExamById error:', error);
+      console.error("getExamById error:", error);
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
         error: error.message,
       });
     }
@@ -189,13 +198,11 @@ const examController = {
       if (!exam) {
         return res.status(404).json({
           success: false,
-          message: 'Exam not found',
+          message: "Exam not found",
         });
       }
 
-      const questions = await examModel.getExamQuestions(
-        req.params.id
-      );
+      const questions = await examModel.getExamQuestions(req.params.id);
 
       // Hide correct answers from students
       if (req.user.role_id === 5) {
@@ -211,10 +218,10 @@ const examController = {
         data: questions,
       });
     } catch (error) {
-      console.error('getExamQuestions error:', error);
+      console.error("getExamQuestions error:", error);
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
         error: error.message,
       });
     }
@@ -227,21 +234,21 @@ const examController = {
       if (!exam) {
         return res.status(404).json({
           success: false,
-          message: 'Exam not found',
+          message: "Exam not found",
         });
       }
 
-      await examModel.updateExamStatus(req.params.id, 'ongoing');
+      await examModel.updateExamStatus(req.params.id, "ongoing");
 
       res.status(200).json({
         success: true,
-        message: 'Exam started successfully',
+        message: "Exam started successfully",
       });
     } catch (error) {
-      console.error('startExam error:', error);
+      console.error("startExam error:", error);
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
         error: error.message,
       });
     }
@@ -252,26 +259,22 @@ const examController = {
     try {
       const { access_code } = req.body;
 
-      const exam = await examModel.getExamByAccessCode(
-        access_code
-      );
+      const exam = await examModel.getExamByAccessCode(access_code);
       if (!exam) {
         return res.status(404).json({
           success: false,
-          message: 'Invalid access code',
+          message: "Invalid access code",
         });
       }
 
-      if (exam.status !== 'ongoing') {
+      if (exam.status !== "ongoing") {
         return res.status(400).json({
           success: false,
-          message: 'Exam is not active',
+          message: "Exam is not active",
         });
       }
 
-      const questions = await examModel.getExamQuestions(
-        exam.exam_id
-      );
+      const questions = await examModel.getExamQuestions(exam.exam_id);
 
       // Hide answers from students
       questions.forEach((q) => {
@@ -281,17 +284,17 @@ const examController = {
 
       res.status(200).json({
         success: true,
-        message: 'Joined exam successfully',
+        message: "Joined exam successfully",
         data: {
           exam,
           questions,
         },
       });
     } catch (error) {
-      console.error('joinExam error:', error);
+      console.error("joinExam error:", error);
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
         error: error.message,
       });
     }
@@ -300,28 +303,28 @@ const examController = {
   // Submit exam answers
   submitExam: async (req, res) => {
     try {
-        // Check if already submitted
-        const { answers } = req.body;
-        const exam_id = req.params.id;
-        
-        const exam = await examModel.getExamById(exam_id);
-        if (!exam) {
-            return res.status(404).json({
-                success: false,
-                message: 'Exam not found',
-            });
-        }
-        const alreadySubmitted = await examModel.checkAlreadySubmitted(
-          exam_id,
-          req.user.user_id
-        );
-        
-        if (alreadySubmitted) {
-          return res.status(400).json({
-            success: false,
-            message: 'You have already submitted this exam',
-          });
-        }
+      // Check if already submitted
+      const { answers } = req.body;
+      const exam_id = req.params.id;
+
+      const exam = await examModel.getExamById(exam_id);
+      if (!exam) {
+        return res.status(404).json({
+          success: false,
+          message: "Exam not found",
+        });
+      }
+      const alreadySubmitted = await examModel.checkAlreadySubmitted(
+        exam_id,
+        req.user.user_id,
+      );
+
+      if (alreadySubmitted) {
+        return res.status(400).json({
+          success: false,
+          message: "You have already submitted this exam",
+        });
+      }
 
       let totalMarks = 0;
       let obtainedMarks = 0;
@@ -329,15 +332,17 @@ const examController = {
 
       for (const answer of answers) {
         const question = await questionModel.getQuestionById(
-          answer.question_id
+          answer.question_id,
         );
 
         let marks_obtained = 0;
 
         // Auto grade MCQ - support multiple correct answers
-        if (question.question_type === 'mcq') {
+        if (question.question_type === "mcq") {
           const correctOptions = question.correct_option
-            ? question.correct_option.split(',').map((opt) => opt.trim().toUpperCase())
+            ? question.correct_option
+                .split(",")
+                .map((opt) => opt.trim().toUpperCase())
             : [];
           const selectedOptions = answer.selected_options
             ? answer.selected_options.map((opt) => opt.trim().toUpperCase())
@@ -345,13 +350,20 @@ const examController = {
 
           if (selectedOptions.length > 0 && correctOptions.length > 0) {
             // Check if all selected options are correct and no incorrect options selected
-            const allCorrect = selectedOptions.every((opt) => correctOptions.includes(opt));
+            const allCorrect = selectedOptions.every((opt) =>
+              correctOptions.includes(opt),
+            );
             const noExtra = selectedOptions.length === correctOptions.length;
             if (allCorrect && noExtra) {
               marks_obtained = question.max_marks;
-            } else if (allCorrect && selectedOptions.length < correctOptions.length) {
+            } else if (
+              allCorrect &&
+              selectedOptions.length < correctOptions.length
+            ) {
               // Partial credit for partially correct
-              marks_obtained = (selectedOptions.length / correctOptions.length) * question.max_marks;
+              marks_obtained =
+                (selectedOptions.length / correctOptions.length) *
+                question.max_marks;
             }
           }
         }
@@ -366,13 +378,12 @@ const examController = {
           question_id: answer.question_id,
           descriptive_answer: answer.descriptive_answer || null,
           marks_obtained,
-          evaluated_by: question.question_type === 'mcq'
-            ? 'teacher'
-            : 'pending',
+          evaluated_by:
+            question.question_type === "mcq" ? "teacher" : "pending",
         });
 
         // Track descriptive answers for LLM evaluation
-        if (question.question_type === 'descriptive') {
+        if (question.question_type === "descriptive") {
           descriptiveResults.push({
             result_id: resultId,
             question_text: question.question_text,
@@ -391,30 +402,30 @@ const examController = {
               desc.question_text,
               desc.student_answer,
               desc.expected_answer,
-              desc.max_marks
+              desc.max_marks,
             );
             await examModel.evaluateResult(
               desc.result_id,
               evaluation.marks_obtained,
               evaluation.feedback,
               evaluation.confidence_score,
-              'llm'
+              "llm",
             );
             obtainedMarks += evaluation.marks_obtained;
           }
         } catch (evalError) {
-          console.error('Auto LLM evaluation error:', evalError);
+          console.error("Auto LLM evaluation error:", evalError);
           // Continue without failing the submission
         }
       }
 
       const percentage = (obtainedMarks / totalMarks) * 100;
 
-      const result_status = percentage >= 50 ? 'pass' : 'fail';
+      const result_status = percentage >= 50 ? "pass" : "fail";
 
       res.status(200).json({
         success: true,
-        message: 'Exam submitted successfully',
+        message: "Exam submitted successfully",
         data: {
           total_marks: totalMarks,
           obtained_marks: obtainedMarks,
@@ -423,10 +434,10 @@ const examController = {
         },
       });
     } catch (error) {
-      console.error('submitExam error:', error);
+      console.error("submitExam error:", error);
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
         error: error.message,
       });
     }
@@ -437,12 +448,12 @@ const examController = {
     try {
       const results = await examModel.getStudentResults(
         req.params.id,
-        req.user.user_id
+        req.user.user_id,
       );
 
       const summary = await examModel.calculateTotalMarks(
         req.params.id,
-        req.user.user_id
+        req.user.user_id,
       );
 
       res.status(200).json({
@@ -453,10 +464,10 @@ const examController = {
         },
       });
     } catch (error) {
-      console.error('getResults error:', error);
+      console.error("getResults error:", error);
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
         error: error.message,
       });
     }
@@ -469,24 +480,21 @@ const examController = {
       if (!exam) {
         return res.status(404).json({
           success: false,
-          message: 'Exam not found',
+          message: "Exam not found",
         });
       }
 
-      await examModel.updateExamStatus(
-        req.params.id,
-        'completed'
-      );
+      await examModel.updateExamStatus(req.params.id, "completed");
 
       res.status(200).json({
         success: true,
-        message: 'Exam ended successfully',
+        message: "Exam ended successfully",
       });
     } catch (error) {
-      console.error('endExam error:', error);
+      console.error("endExam error:", error);
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
         error: error.message,
       });
     }
@@ -501,7 +509,7 @@ const examController = {
       if (!exam) {
         return res.status(404).json({
           success: false,
-          message: 'Exam not found',
+          message: "Exam not found",
         });
       }
 
@@ -511,7 +519,7 @@ const examController = {
       if (unevaluated.length === 0) {
         return res.status(200).json({
           success: true,
-          message: 'No pending descriptive answers to evaluate',
+          message: "No pending descriptive answers to evaluate",
           data: [],
         });
       }
@@ -522,14 +530,14 @@ const examController = {
           result.question_text,
           result.descriptive_answer,
           result.expected_answer,
-          result.max_marks
+          result.max_marks,
         );
         await examModel.evaluateResult(
           result.result_id,
           evaluation.marks_obtained,
           evaluation.feedback,
           evaluation.confidence_score,
-          'llm'
+          "llm",
         );
         evaluated.push({
           result_id: result.result_id,
@@ -544,10 +552,10 @@ const examController = {
         data: evaluated,
       });
     } catch (error) {
-      console.error('evaluateWritten error:', error);
+      console.error("evaluateWritten error:", error);
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
         error: error.message,
       });
     }
@@ -563,10 +571,10 @@ const examController = {
         data: results,
       });
     } catch (error) {
-      console.error('getAllResults error:', error);
+      console.error("getAllResults error:", error);
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
         error: error.message,
       });
     }
@@ -582,7 +590,7 @@ const examController = {
       if (numSets < 1 || numSets > 4) {
         return res.status(400).json({
           success: false,
-          message: 'Number of sets must be between 1 and 4',
+          message: "Number of sets must be between 1 and 4",
         });
       }
 
@@ -591,7 +599,7 @@ const examController = {
       if (!exam) {
         return res.status(404).json({
           success: false,
-          message: 'Exam not found',
+          message: "Exam not found",
         });
       }
 
@@ -599,7 +607,7 @@ const examController = {
       if (exam.coaching_center_id !== req.user.coaching_center_id) {
         return res.status(403).json({
           success: false,
-          message: 'You do not have permission to export this exam',
+          message: "You do not have permission to export this exam",
         });
       }
 
@@ -611,28 +619,33 @@ const examController = {
       if (!questions || questions.length === 0) {
         return res.status(400).json({
           success: false,
-          message: 'No questions found for this exam',
+          message: "No questions found for this exam",
         });
       }
 
       // Generate PDF sets
-      const sets = await pdfService.generateExamSets(exam, center, questions, numSets);
-
-      // Create ZIP archive
-      const archive = archiver('zip', { zlib: { level: 9 } });
-
-      res.setHeader('Content-Type', 'application/zip');
-      res.setHeader(
-        'Content-Disposition',
-        `attachment; filename="${(exam.title || 'Exam').replace(/\s+/g, '_')}_Sets.zip"`
+      const sets = await pdfService.generateExamSets(
+        exam,
+        center,
+        questions,
+        numSets,
       );
 
-      archive.on('error', (err) => {
-        console.error('Archive error:', err);
+      // Create ZIP archive
+      const archive = archiver("zip", { zlib: { level: 9 } });
+
+      res.setHeader("Content-Type", "application/zip");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${(exam.title || "Exam").replace(/\s+/g, "_")}_Sets.zip"`,
+      );
+
+      archive.on("error", (err) => {
+        console.error("Archive error:", err);
         if (!res.headersSent) {
           res.status(500).json({
             success: false,
-            message: 'Failed to create ZIP archive',
+            message: "Failed to create ZIP archive",
           });
         }
       });
@@ -646,19 +659,17 @@ const examController = {
       });
 
       await archive.finalize();
-
     } catch (error) {
-      console.error('exportExamPDF error:', error);
+      console.error("exportExamPDF error:", error);
       if (!res.headersSent) {
         res.status(500).json({
           success: false,
-          message: 'Server error',
+          message: "Server error",
           error: error.message,
         });
       }
     }
   },
-
 };
 
 module.exports = examController;

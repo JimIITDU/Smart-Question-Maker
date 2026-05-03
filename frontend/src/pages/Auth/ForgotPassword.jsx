@@ -1,35 +1,38 @@
-﻿import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
-import toast from 'react-hot-toast'
-import { FiMail, FiArrowLeft, FiArrowRight } from 'react-icons/fi'
+﻿import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import toast from "react-hot-toast";
+import { FiMail, FiArrowLeft, FiArrowRight } from "react-icons/fi";
 
 const ForgotPassword = () => {
-  const [email, setEmail] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [sent, setSent] = useState(false)
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [sent, setSent] = useState(false);
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setLoading(true)
+    e.preventDefault();
+    setLoading(true);
     try {
-      const res = await fetch('https://smart-question-maker-backend.onrender.com/api/auth/forgot-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      })
-      const data = await res.json()
+      const res = await fetch(
+        "https://smart-question-maker-backend.onrender.com/api/auth/forgot-password",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        },
+      );
+      const data = await res.json();
       if (res.ok) {
-        setSent(true)
-        toast.success('Reset OTP sent to your email!')
+        setSent(true);
+        toast.success("Reset OTP sent to your email!");
       } else {
-        toast.error(data.message || 'Failed to send reset email')
+        toast.error(data.message || "Failed to send reset email");
       }
     } catch {
-      toast.error('Something went wrong')
+      toast.error("Something went wrong");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#030712] text-white relative overflow-hidden">
@@ -48,8 +51,12 @@ const ForgotPassword = () => {
                 <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/30">
                   <FiMail className="text-white text-2xl" />
                 </div>
-                <h1 className="text-2xl font-bold text-white mb-2">Forgot Password?</h1>
-                <p className="text-gray-400 text-sm">Enter your email and we'll send you a reset OTP</p>
+                <h1 className="text-2xl font-bold text-white mb-2">
+                  Forgot Password?
+                </h1>
+                <p className="text-gray-400 text-sm">
+                  Enter your email and we'll send you a reset OTP
+                </p>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-5">
@@ -80,9 +87,15 @@ const ForgotPassword = () => {
                   <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 group-hover:from-blue-500 group-hover:to-indigo-500 transition-all"></div>
                   <span className="relative flex items-center justify-center gap-2">
                     {loading ? (
-                      <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> Sending...</>
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>{" "}
+                        Sending...
+                      </>
                     ) : (
-                      <><span>Send Reset OTP</span><FiArrowRight className="group-hover:translate-x-1 transition-transform" /></>
+                      <>
+                        <span>Send Reset OTP</span>
+                        <FiArrowRight className="group-hover:translate-x-1 transition-transform" />
+                      </>
                     )}
                   </span>
                 </button>
@@ -91,25 +104,46 @@ const ForgotPassword = () => {
           ) : (
             <div className="text-center py-4">
               <div className="w-16 h-16 mx-auto mb-4 bg-emerald-500/20 rounded-2xl flex items-center justify-center">
-                <svg className="text-emerald-400 w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                <svg
+                  className="text-emerald-400 w-8 h-8"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
               </div>
               <h2 className="text-xl font-bold text-white mb-2">OTP Sent!</h2>
-              <p className="text-gray-400 text-sm mb-6">Check your email for the reset OTP. Use it on the reset password page.</p>
-              <Link to="/reset-password" className="w-full flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all">
+              <p className="text-gray-400 text-sm mb-6">
+                Check your email for the reset OTP. Use it on the reset password
+                page.
+              </p>
+              <Link
+                to="/reset-password"
+                className="w-full flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all"
+              >
                 Go to Reset Password <FiArrowRight />
               </Link>
             </div>
           )}
 
           <div className="mt-6 text-center">
-            <Link to="/login" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-300 transition-colors">
+            <Link
+              to="/login"
+              className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-300 transition-colors"
+            >
               <FiArrowLeft size={14} /> Back to Login
             </Link>
           </div>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ForgotPassword
+export default ForgotPassword;

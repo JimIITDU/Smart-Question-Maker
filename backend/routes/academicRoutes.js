@@ -1,8 +1,8 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const academicController = require('../controllers/academicController');
-const authMiddleware = require('../middleware/authMiddleware');
-const roleMiddleware = require('../middleware/roleMiddleware');
+const academicController = require("../controllers/academicController");
+const authMiddleware = require("../middleware/authMiddleware");
+const roleMiddleware = require("../middleware/roleMiddleware");
 
 // Role IDs:
 // 1 = super_admin
@@ -15,148 +15,136 @@ const roleMiddleware = require('../middleware/roleMiddleware');
 // COURSE ROUTES
 // ============
 router.post(
-  '/courses',
+  "/courses",
   authMiddleware,
   roleMiddleware(2),
-  academicController.createCourse
+  academicController.createCourse,
 );
 
 router.get(
-  '/courses',
+  "/courses",
   authMiddleware,
   roleMiddleware(2, 3, 4),
-  academicController.getAllCourses
+  academicController.getAllCourses,
 );
 
-router.get(
-  '/courses/:id',
-  authMiddleware,
-  academicController.getCourseById
-);
+router.get("/courses/:id", authMiddleware, academicController.getCourseById);
 
 router.get(
-  '/courses/active',
+  "/courses/active",
   authMiddleware,
   roleMiddleware(2, 3, 4),
-  academicController.getActiveCourses
+  academicController.getActiveCourses,
 );
 
 router.get(
-  '/courses/teacher',
+  "/courses/teacher",
   authMiddleware,
   roleMiddleware(3),
-  academicController.getCoursesForTeacher
+  academicController.getCoursesForTeacher,
 );
 
 router.get(
-  '/courses/:id/details',
+  "/courses/:id/details",
   authMiddleware,
-  academicController.getCourseWithDetails
+  academicController.getCourseWithDetails,
 );
 
 router.put(
-  '/courses/:id',
+  "/courses/:id",
   authMiddleware,
   roleMiddleware(2),
-  academicController.updateCourse
+  academicController.updateCourse,
 );
 
 router.delete(
-  '/courses/:id',
+  "/courses/:id",
   authMiddleware,
   roleMiddleware(2),
-  academicController.deleteCourse
+  academicController.deleteCourse,
 );
 
 // ============
 // BATCH ROUTES
 // ============
 router.post(
-  '/batches',
+  "/batches",
   authMiddleware,
   roleMiddleware(2),
-  academicController.createBatch
+  academicController.createBatch,
 );
 
 router.get(
-  '/batches',
+  "/batches",
   authMiddleware,
   roleMiddleware(2, 3, 4),
-  academicController.getAllBatches
+  academicController.getAllBatches,
 );
 
-router.get(
-  '/batches/:id',
-  authMiddleware,
-  academicController.getBatchById
-);
+router.get("/batches/:id", authMiddleware, academicController.getBatchById);
 
 router.put(
-  '/batches/:id',
+  "/batches/:id",
   authMiddleware,
   roleMiddleware(2, 4),
-  academicController.updateBatch
+  academicController.updateBatch,
 );
 
 router.delete(
-  '/batches/:id',
+  "/batches/:id",
   authMiddleware,
   roleMiddleware(2),
-  academicController.deleteBatch
+  academicController.deleteBatch,
 );
 
 // ==============
 // SUBJECT ROUTES
 // ==============
 router.post(
-  '/subjects',
+  "/subjects",
   authMiddleware,
   roleMiddleware(2),
-  academicController.createSubject
+  academicController.createSubject,
 );
 
 router.get(
-  '/subjects',
+  "/subjects",
   authMiddleware,
   roleMiddleware(2, 3, 4),
-  academicController.getAllSubjects
+  academicController.getAllSubjects,
 );
 
-router.get(
-  '/subjects/:id',
-  authMiddleware,
-  academicController.getSubjectById
-);
+router.get("/subjects/:id", authMiddleware, academicController.getSubjectById);
 
 router.put(
-  '/subjects/:id',
+  "/subjects/:id",
   authMiddleware,
   roleMiddleware(2),
-  academicController.updateSubject
+  academicController.updateSubject,
 );
 
 router.delete(
-  '/subjects/:id',
+  "/subjects/:id",
   authMiddleware,
   roleMiddleware(2),
-  academicController.deleteSubject
+  academicController.deleteSubject,
 );
 
 // =================
 // ENROLLMENT ROUTES
 // =================
 router.post(
-  '/enroll',
+  "/enroll",
   authMiddleware,
   roleMiddleware(2, 4),
-  academicController.enrollStudent
+  academicController.enrollStudent,
 );
 
 router.get(
-  '/batches/:id/students',
+  "/batches/:id/students",
   authMiddleware,
   roleMiddleware(2, 3, 4),
-  academicController.getStudentsInBatch
+  academicController.getStudentsInBatch,
 );
 
 module.exports = router;

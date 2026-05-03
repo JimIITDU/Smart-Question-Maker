@@ -1,16 +1,15 @@
-const questionModel = require('../models/questionModel');
-const pdfService = require('../services/pdfService');
+const questionModel = require("../models/questionModel");
+const pdfService = require("../services/pdfService");
 
 const questionController = {
-
   createQuestion: async (req, res) => {
     try {
       const questionData = {
         ...req.body,
         coaching_center_id: req.tenant.coaching_center_id,
         created_by: req.user.user_id,
-        source: 'manual',
-        status: 'active',
+        source: "manual",
+        status: "active",
       };
 
       // Map marks to max_marks if provided
@@ -22,13 +21,13 @@ const questionController = {
 
       res.status(201).json({
         success: true,
-        message: 'Question created successfully',
+        message: "Question created successfully",
         data: { question_id: questionId },
       });
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
         error: error.message,
       });
     }
@@ -65,7 +64,7 @@ const questionController = {
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
         error: error.message,
       });
     }
@@ -76,12 +75,12 @@ const questionController = {
       const question = await questionModel.getQuestionById(
         req.params.id,
         req.user.user_id,
-        req.tenant.coaching_center_id
+        req.tenant.coaching_center_id,
       );
       if (!question) {
         return res.status(404).json({
           success: false,
-          message: 'Question not found',
+          message: "Question not found",
         });
       }
       res.status(200).json({
@@ -91,7 +90,7 @@ const questionController = {
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
         error: error.message,
       });
     }
@@ -109,23 +108,23 @@ const questionController = {
         req.params.id,
         updateData,
         req.user.user_id,
-        req.tenant.coaching_center_id
+        req.tenant.coaching_center_id,
       );
 
       res.status(200).json({
         success: true,
-        message: 'Question updated successfully',
+        message: "Question updated successfully",
       });
     } catch (error) {
-      if (error.message === 'Question not found or access denied') {
+      if (error.message === "Question not found or access denied") {
         return res.status(404).json({
           success: false,
-          message: 'Question not found',
+          message: "Question not found",
         });
       }
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
         error: error.message,
       });
     }
@@ -136,23 +135,23 @@ const questionController = {
       const result = await questionModel.deleteQuestion(
         req.params.id,
         req.user.user_id,
-        req.tenant.coaching_center_id
+        req.tenant.coaching_center_id,
       );
       if (!result) {
         return res.status(404).json({
           success: false,
-          message: 'Question not found',
+          message: "Question not found",
         });
       }
 
       res.status(200).json({
         success: true,
-        message: 'Question deleted successfully',
+        message: "Question deleted successfully",
       });
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
         error: error.message,
       });
     }
@@ -165,7 +164,7 @@ const questionController = {
       if (!questions || questions.length === 0) {
         return res.status(400).json({
           success: false,
-          message: 'No questions provided',
+          message: "No questions provided",
         });
       }
 
@@ -173,8 +172,8 @@ const questionController = {
         ...q,
         coaching_center_id: req.tenant.coaching_center_id,
         created_by: req.user.user_id,
-        source: 'manual',
-        status: 'active',
+        source: "manual",
+        status: "active",
       }));
 
       const ids = await questionModel.bulkCreateQuestions(questionsWithUser);
@@ -187,7 +186,7 @@ const questionController = {
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
         error: error.message,
       });
     }
@@ -203,7 +202,7 @@ const questionController = {
       if (!questions || questions.length === 0) {
         return res.status(400).json({
           success: false,
-          message: 'No questions provided',
+          message: "No questions provided",
         });
       }
 
@@ -212,8 +211,8 @@ const questionController = {
         ...q,
         coaching_center_id: req.tenant.coaching_center_id,
         created_by: req.user.user_id,
-        source: source || 'ai_generated',
-        status: 'draft',
+        source: source || "ai_generated",
+        status: "draft",
         // Apply metadata overrides including new filter fields
         class_name: metadata?.class_name || q.class_name || null,
         subject_name: metadata?.subject_name || q.subject_name || null,
@@ -221,7 +220,7 @@ const questionController = {
         chapter: metadata?.chapter || q.chapter || null,
         chapter_name: metadata?.chapter_name || q.chapter_name || null,
         topic: metadata?.topic || q.topic || null,
-        difficulty: metadata?.difficulty || q.difficulty || 'medium',
+        difficulty: metadata?.difficulty || q.difficulty || "medium",
       }));
 
       const ids = await questionModel.bulkCreateQuestions(questionsWithMeta);
@@ -229,7 +228,11 @@ const questionController = {
       // Fetch created questions to return with full data
       const savedQuestions = [];
       for (const id of ids) {
-        const q = await questionModel.getQuestionById(id, req.user.user_id, req.tenant.coaching_center_id);
+        const q = await questionModel.getQuestionById(
+          id,
+          req.user.user_id,
+          req.tenant.coaching_center_id,
+        );
         if (q) savedQuestions.push(q);
       }
 
@@ -241,7 +244,7 @@ const questionController = {
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
         error: error.message,
       });
     }
@@ -256,7 +259,7 @@ const questionController = {
         subject_id,
         difficulty,
         parseInt(limit) || 10,
-        req.user.user_id
+        req.user.user_id,
       );
 
       res.status(200).json({
@@ -267,7 +270,7 @@ const questionController = {
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
         error: error.message,
       });
     }
@@ -280,8 +283,8 @@ const questionController = {
    */
   aiGenerate: async (req, res) => {
     try {
-      const llmService = require('../services/llmService');
-      
+      const llmService = require("../services/llmService");
+
       // Extract new filter fields
       const {
         class_name,
@@ -299,107 +302,123 @@ const questionController = {
         // Legacy fields for backward compatibility
         subject_id,
         chapter_id,
-        mode: frontendMode
+        mode: frontendMode,
       } = req.body;
 
       // Support both 'source_type' (new) and 'mode' (legacy) fields
-      const effectiveSourceType = source_type || frontendMode || 'general';
-      
+      const effectiveSourceType = source_type || frontendMode || "general";
+
       // Determine effective question types - support array or single type
-      const effectiveQuestionTypes = Array.isArray(question_types) && question_types.length > 0
-        ? question_types
-        : [question_type || 'mcq']; // Default to mcq if not provided
+      const effectiveQuestionTypes =
+        Array.isArray(question_types) && question_types.length > 0
+          ? question_types
+          : [question_type || "mcq"]; // Default to mcq if not provided
 
       // Build display topic for LLM
-      let llmTopic = topic || chapter_name || `Chapter ${chapter || ''} - ${subject_name || 'General'}`;
-      let llmHints = hints || content || '';
-      let llmMode = 'random';
+      let llmTopic =
+        topic ||
+        chapter_name ||
+        `Chapter ${chapter || ""} - ${subject_name || "General"}`;
+      let llmHints = hints || content || "";
+      let llmMode = "random";
 
       // Handle PDF text extraction
-      let pdfText = '';
+      let pdfText = "";
       if (req.file) {
         // PDF file was uploaded - extract text
         try {
           // Note: In production, use proper PDF parsing; here we add placeholder
-          pdfText = '[PDF content extracted]';
-          if (effectiveSourceType === 'pdf') {
-            llmHints = pdfText + ' ' + llmHints;
+          pdfText = "[PDF content extracted]";
+          if (effectiveSourceType === "pdf") {
+            llmHints = pdfText + " " + llmHints;
           }
         } catch (pdfError) {
-          console.error('PDF extraction error:', pdfError);
+          console.error("PDF extraction error:", pdfError);
         }
       }
 
       // Handle 'previous' source_type - fetch teacher's existing questions for context
-      let previousContext = '';
-      if (effectiveSourceType === 'previous') {
+      let previousContext = "";
+      if (effectiveSourceType === "previous") {
         try {
           const filters = {
             coaching_center_id: req.tenant.coaching_center_id,
             teacher_id: req.user.user_id,
             subject_name: subject_name,
             chapter: chapter,
-            status: 'active',
+            status: "active",
           };
-          const existingQuestions = await questionModel.getAllQuestions(filters);
-          
+          const existingQuestions =
+            await questionModel.getAllQuestions(filters);
+
           if (existingQuestions.length > 0) {
             // Build context from previous questions
-            previousContext = existingQuestions.slice(0, 10).map((q, idx) => {
-              return `Q${idx + 1}: ${q.question_text}` +
-                (q.question_type === 'mcq' && q.option_text_a 
-                  ? ` [Options: A) ${q.option_text_a} B) ${q.option_text_b} C) ${q.option_text_c} D) ${q.option_text_d}]`
-                  : '') +
-                ` Answer: ${q.correct_option || q.expected_answer || 'N/A'}`;
-            }).join('\n');
-            llmHints = previousContext + '\n\nAdditional hints: ' + llmHints;
+            previousContext = existingQuestions
+              .slice(0, 10)
+              .map((q, idx) => {
+                return (
+                  `Q${idx + 1}: ${q.question_text}` +
+                  (q.question_type === "mcq" && q.option_text_a
+                    ? ` [Options: A) ${q.option_text_a} B) ${q.option_text_b} C) ${q.option_text_c} D) ${q.option_text_d}]`
+                    : "") +
+                  ` Answer: ${q.correct_option || q.expected_answer || "N/A"}`
+                );
+              })
+              .join("\n");
+            llmHints = previousContext + "\n\nAdditional hints: " + llmHints;
           }
         } catch (prevError) {
-          console.error('Error fetching previous questions:', prevError);
+          console.error("Error fetching previous questions:", prevError);
         }
       }
 
       // Map source_type to LLM mode
       switch (effectiveSourceType) {
-        case 'general':
-          llmMode = 'random';
-          llmTopic = topic || chapter_name || `Subject: ${subject_name}, Chapter ${chapter}`;
+        case "general":
+          llmMode = "random";
+          llmTopic =
+            topic ||
+            chapter_name ||
+            `Subject: ${subject_name}, Chapter ${chapter}`;
           break;
-        case 'text':
-          llmMode = 'guided';
-          llmTopic = topic || chapter_name || 'Topic from teacher input';
+        case "text":
+          llmMode = "guided";
+          llmTopic = topic || chapter_name || "Topic from teacher input";
           break;
-        case 'pdf':
-          llmMode = 'guided';
-          llmTopic = topic || chapter_name || 'Content from PDF';
+        case "pdf":
+          llmMode = "guided";
+          llmTopic = topic || chapter_name || "Content from PDF";
           break;
-        case 'previous':
-          llmMode = 'zero-shot';
-          llmTopic = topic || chapter_name || `Subject: ${subject_name}, Chapter ${chapter}`;
+        case "previous":
+          llmMode = "zero-shot";
+          llmTopic =
+            topic ||
+            chapter_name ||
+            `Subject: ${subject_name}, Chapter ${chapter}`;
           break;
         // Legacy frontend mode mappings
-        case 'random':
-          llmMode = 'random';
+        case "random":
+          llmMode = "random";
           llmTopic = topic || `Subject: ${subject_name}, Chapter ${chapter}`;
           break;
-        case 'guided':
-          llmMode = 'guided';
-          llmTopic = topic || 'Teacher provided topic';
+        case "guided":
+          llmMode = "guided";
+          llmTopic = topic || "Teacher provided topic";
           break;
-        case 'zero-shot':
-          llmMode = 'zero-shot';
-          llmTopic = topic || subject_name || 'General';
+        case "zero-shot":
+          llmMode = "zero-shot";
+          llmTopic = topic || subject_name || "General";
           break;
         default:
-          llmMode = 'random';
-          llmTopic = topic || subject_name || 'General';
+          llmMode = "random";
+          llmTopic = topic || subject_name || "General";
       }
 
       // Generate questions for each type (will be distributed evenly)
       const targetCount = parseInt(count) || 5;
       const typesCount = effectiveQuestionTypes.length;
       const countPerType = Math.ceil(targetCount / typesCount);
-      
+
       let allGeneratedQuestions = [];
 
       // Generate for each question type
@@ -407,32 +426,33 @@ const questionController = {
         const generated = await llmService.generateQuestion(llmMode, {
           topic: llmTopic,
           hints: llmHints,
-          subject_id: subject_name || '',
+          subject_id: subject_name || "",
           question_type: qType,
-          difficulty: difficulty || 'medium',
-          count: countPerType
+          difficulty: difficulty || "medium",
+          count: countPerType,
         });
-        
+
         // Transform to our format
         const transformed = generated.map((q, idx) => ({
           question_text: q.question_text || `Generated ${qType} question`,
           question_type: qType,
-          difficulty: q.difficulty || difficulty || 'medium',
-          max_marks: q.max_marks || (qType === 'descriptive' ? 5 : 2),
+          difficulty: q.difficulty || difficulty || "medium",
+          max_marks: q.max_marks || (qType === "descriptive" ? 5 : 2),
           // MCQ options
           option_text_a: q.option_text_a || null,
           option_text_b: q.option_text_b || null,
           option_text_c: q.option_text_c || null,
           option_text_d: q.option_text_d || null,
-          correct_option: q.correct_option || (qType === 'true_false' ? 'True' : 'A'),
+          correct_option:
+            q.correct_option || (qType === "true_false" ? "True" : "A"),
           is_multiple_correct: q.is_multiple_correct || false,
           // Descriptive answer
           expected_answer: q.expected_answer || null,
           // Metadata
-          source: 'ai_generated',
+          source: "ai_generated",
           explanation: q.explanation || null,
         }));
-        
+
         allGeneratedQuestions = [...allGeneratedQuestions, ...transformed];
       }
 
@@ -447,7 +467,7 @@ const questionController = {
         chapter: chapter || null,
         chapter_name: chapter_name || null,
         topic: topic || null,
-        difficulty: difficulty || 'medium',
+        difficulty: difficulty || "medium",
       };
 
       // Save as drafts with teacher isolation and metadata
@@ -455,27 +475,31 @@ const questionController = {
         allGeneratedQuestions,
         req.user.user_id,
         req.tenant.coaching_center_id,
-        questionMetadata
+        questionMetadata,
       );
 
       // Fetch saved questions to return with IDs
       const savedQuestions = [];
       for (const id of savedIds) {
-        const q = await questionModel.getQuestionById(id, req.user.user_id, req.tenant.coaching_center_id);
+        const q = await questionModel.getQuestionById(
+          id,
+          req.user.user_id,
+          req.tenant.coaching_center_id,
+        );
         if (q) savedQuestions.push(q);
       }
 
       res.status(201).json({
         success: true,
         message: `${savedQuestions.length} questions generated and saved as drafts`,
-        data: savedQuestions
+        data: savedQuestions,
       });
     } catch (error) {
-      console.error('AI generate error:', error);
+      console.error("AI generate error:", error);
       res.status(500).json({
         success: false,
-        message: 'AI generation failed',
-        error: error.message
+        message: "AI generation failed",
+        error: error.message,
       });
     }
   },
@@ -487,7 +511,7 @@ const questionController = {
       if (!updates || !Array.isArray(updates) || updates.length === 0) {
         return res.status(400).json({
           success: false,
-          message: 'No updates provided. Expected array of {id, status}',
+          message: "No updates provided. Expected array of {id, status}",
         });
       }
 
@@ -496,7 +520,7 @@ const questionController = {
         if (!update.id || !update.status) {
           return res.status(400).json({
             success: false,
-            message: 'Each update must have id and status',
+            message: "Each update must have id and status",
           });
         }
       }
@@ -504,23 +528,22 @@ const questionController = {
       const updatedIds = await questionModel.bulkUpdateStatusWithDifficulty(
         updates,
         req.user.user_id,
-        req.tenant.coaching_center_id
+        req.tenant.coaching_center_id,
       );
 
       res.status(200).json({
         success: true,
         message: `${updatedIds.length} questions updated`,
-        data: { updated_ids: updatedIds }
+        data: { updated_ids: updatedIds },
       });
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: "Server error",
         error: error.message,
       });
     }
   },
-
 };
 
 module.exports = questionController;
