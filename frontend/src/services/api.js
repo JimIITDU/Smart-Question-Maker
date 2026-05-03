@@ -77,6 +77,13 @@ export const upgradeSubscription = (planId) =>
 // Dashboard Stats - Optimized endpoint
 export const getDashboardStats = () => API.get("/center/dashboard-stats");
 
+// Admin APIs (Super Admin role 1 only)
+export const getAdminUsers = (params) => API.get('/admin/users', { params });
+export const getCentersStats = () => API.get('/admin/centers/stats');
+export const getUsersStats = () => API.get('/admin/users/stats');
+export const updateUserStatus = (id, status) => API.patch(`/admin/users/${id}/status`, { status });
+export const resetUserPassword = (id) => API.post(`/admin/users/${id}/reset-password`);
+
 // Subscription Plans
 export const getSubscriptionPlans = () => API.get("/subscription-plans/active");
 export const getAllSubscriptionPlans = () => API.get("/subscription-plans/all");
@@ -243,3 +250,4 @@ export const getCourseWithDetails = (id) =>
   API.get(`/academic/courses/${id}/details`);
 
 export default API;
+

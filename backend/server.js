@@ -19,6 +19,7 @@ const examRoutes = require("./routes/examRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const subscriptionPlanRoutes = require("./routes/subscriptionPlanRoutes");
 const teacherRoutes = require("./routes/teacherRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 const courseEnrollmentRoutes = require("./routes/courseEnrollmentRoutes");
 
 app.use("/api/auth", authRoutes);
@@ -29,6 +30,7 @@ app.use("/api/exams", examRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/subscription-plans", subscriptionPlanRoutes);
 app.use("/api/teachers", teacherRoutes);
+app.use("/api/admin", adminRoutes);
 
 // Course enrollment routes (mounted at /api/courses)
 app.use("/api/courses", courseEnrollmentRoutes);
@@ -51,3 +53,4 @@ app.listen(PORT, () => {
 });
 
 module.exports = app;
+

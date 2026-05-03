@@ -113,7 +113,7 @@ const HomePage = () => {
               <span className="text-xl font-bold tracking-tight text-white leading-none">
                 Proshno<span className="text-purple-400">Ghor</span>
               </span>
-              <span className="text-[10px] text-gray-500 uppercase tracking-widest font-medium mt-0.5">
+              <span className="text-[14px] text-gray-500 uppercase tracking-widest font-medium mt-0.5 font-bold">
                 প্রশ্নঘর
               </span>
             </div>
@@ -560,7 +560,7 @@ const HomePage = () => {
           {/* --- Copyright & Developer Info --- */}
           <div className="border-t border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left">
             <p className="text-gray-600 text-sm">
-              © 2025–2026 ProshnoGhor. সর্বস্বত্ব সংরক্ষিত।
+              © 2025–2026 ProshnoGhor. All rights reserved
             </p>
             
             <p className="text-gray-600 text-sm">

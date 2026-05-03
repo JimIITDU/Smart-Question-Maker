@@ -77,7 +77,7 @@ const ManageSubscriptionPlans = () => {
           ? parseInt(formData.ai_questions_limit)
           : null,
         support_level: formData.support_level || "Email",
-        is_active: true,
+        is_active: formData.is_active,
       };
 
       if (editingPlan) {
@@ -181,11 +181,25 @@ const ManageSubscriptionPlans = () => {
       <div className="fixed top-[-10%] left-[-10%] w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-[120px] pointer-events-none"></div>
 
       <main className="max-w-7xl mx-auto px-6 pt-28 pb-20">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">
-            Subscription <span className="text-purple-400">Plans</span>
-          </h1>
-          <p className="text-gray-400">Manage platform subscription plans</p>
+        <div className="mb-8 flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-white mb-2">
+              Subscription <span className="text-purple-400">Plans</span>
+            </h1>
+            <p className="text-gray-400">Manage platform subscription plans</p>
+          </div>
+          {!showForm && (
+            <button
+              onClick={() => {
+                setShowForm(true);
+                setEditingPlan(null);
+              }}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all whitespace-nowrap"
+            >
+              <FiPlus size={18} />
+              Add New Plan
+            </button>
+          )}
         </div>
 
         {showForm && (
@@ -290,7 +304,7 @@ const ManageSubscriptionPlans = () => {
                   className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-purple-500"
                 />
               </div>
-              <div>
+<div>
                 <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-2">
                   Support Level
                 </label>
@@ -302,6 +316,18 @@ const ManageSubscriptionPlans = () => {
                   placeholder="e.g. 24/7, Priority, Email"
                   className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-purple-500"
                 />
+              </div>
+              <div>
+                <label className="flex items-center gap-2 text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-2">
+                  <input
+                    type="checkbox"
+                    name="is_active"
+                    checked={formData.is_active}
+                    onChange={handleChange}
+                    className="w-4 h-4 text-purple-600 bg-white/10 border-white/20 rounded focus:ring-purple-500 focus:ring-2"
+                  />
+                  Active Plan
+                </label>
               </div>
             </div>
             <div>

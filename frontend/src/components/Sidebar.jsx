@@ -46,7 +46,8 @@ const Sidebar = ({ collapsed, mobileOpen, onClose }) => {
       { type: "group", label: "Platform" },
       { path: "/superadmin", label: "Dashboard", icon: FiHome },
       { path: "/superadmin/manage-centers", label: "Manage Centers", icon: FiUsers },
-      { path: "/superadmin/manage-subscription-plans", label: "Subscription Plans", icon: FiDollarSign },
+{ path: "/superadmin/manage-subscription-plans", label: "Subscription Plans", icon: FiDollarSign },
+      { path: "/superadmin/users", label: "Manage Users", icon: FiUsers },
     ],
     2: [ // Coaching Admin
       { type: "group", label: "Dashboard" },

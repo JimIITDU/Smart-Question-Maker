@@ -26,6 +26,7 @@ import SuperAdminDashboard from "./pages/SuperAdmin/SuperAdminDashboard.jsx";
 import ManageCenters from "./pages/SuperAdmin/ManageCenters.jsx";
 import CenterDetails from "./pages/SuperAdmin/CenterDetails.jsx";
 import ManageSubscriptionPlans from "./pages/SuperAdmin/ManageSubscriptionPlans.jsx";
+import ManageUsers from "./pages/SuperAdmin/ManageUsers.jsx";
 
 // CoachingAdmin pages (role_id = 2)
 import CoachingAdminDashboard from "./pages/CoachingAdmin/CoachingAdminDashboard.jsx";
@@ -36,7 +37,7 @@ import ManageSubjects from "./pages/CoachingAdmin/ManageSubjects.jsx";
 import ManageStudents from "./pages/CoachingAdmin/ManageStudents.jsx";
 import ManageTeachers from "./pages/CoachingAdmin/ManageTeachers.jsx";
 import ManageStaff from "./pages/CoachingAdmin/ManageStaff.jsx";
-import ManageUsers from "./pages/CoachingAdmin/ManageUsers.jsx";
+import CoachingManageUsers from "./pages/CoachingAdmin/ManageUsers.jsx";
 import FeeManagement from "./pages/CoachingAdmin/FeeManagement.jsx";
 import SubscriptionManagement from "./pages/CoachingAdmin/SubscriptionManagement.jsx";
 
@@ -120,6 +121,7 @@ function App() {
               <Route path="/superadmin/manage-centers" element={<ManageCenters />} />
               <Route path="/superadmin/manage-centers/:id" element={<CenterDetails />} />
               <Route path="/superadmin/manage-subscription-plans" element={<ManageSubscriptionPlans />} />
+              <Route path="/superadmin/users" element={<ManageUsers />} />
             </Route>
 
             {/* -------------------- COACHING ADMIN (role_id: 2) -------------------- */}
@@ -132,7 +134,7 @@ function App() {
               <Route path="/coachingadmin/manage-students" element={<ManageStudents />} />
               <Route path="/coachingadmin/manage-teachers" element={<ManageTeachers />} />
               <Route path="/coachingadmin/manage-staff" element={<ManageStaff />} />
-              <Route path="/coachingadmin/manage-users" element={<ManageUsers />} />
+              <Route path="/coachingadmin/manage-users" element={<CoachingManageUsers />} />
               <Route path="/coachingadmin/fee-management" element={<FeeManagement />} />
               <Route path="/coachingadmin/subscription-management" element={<SubscriptionManagement />} />
               <Route path="/coachingadmin/teacher-applications" element={<TeacherApplications />} />

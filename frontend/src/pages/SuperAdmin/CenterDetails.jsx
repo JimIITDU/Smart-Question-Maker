@@ -52,6 +52,13 @@ const CenterDetails = () => {
           <div className="space-y-6">
             <div className="bg-white/5 border border-white/10 rounded-2xl p-8">
               <div className="flex justify-between items-start mb-6">
+                <Link 
+                  to="/superadmin/manage-centers" 
+                  className="inline-flex items-center gap-2 text-gray-400 hover:text-white font-semibold transition-colors mb-4 lg:mb-0"
+                >
+                  <FiArrowLeft />
+                  Back to Manage Centers
+                </Link>
                 <div>
                   <h1 className="text-2xl font-bold text-white mb-2">
                     {center.center_name}

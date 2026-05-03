@@ -290,6 +290,74 @@ const centerController = {
     }
   },
 
+  // Update center status (super admin)
+  updateCenterStatus: async (req, res) => {
+    try {
+      const centerId = req.params.id;
+      const { status, reason } = req.body;
+      const center = await centerModel.getCenterById(centerId);
+
+      if (!center) {
+        return res.status(404).json({
+          success: false,
+          message: "Center not found",
+        });
+      }
+
+      await centerModel.updateCenterStatus(centerId, status);
+      console.log('Center status updated:', status); // Debug log
+
+      res.status(200).json({
+        success: true,
+        message: `Center status updated to ${status}`,
+      });
+    } catch (error) {
+      console.error('Center status update error:', error);
+      res.status(500).json({
+        success: false,
+        message: "Server error: " + error.message,
+      });
+    }
+  },
+
+  // Assign subscription plan to center (super admin)
+  assignCenterSubscription: async (req, res) => {
+    try {
+      const centerId = req.params.id;
+      const { plan_id } = req.body;
+      const center = await centerModel.getCenterById(centerId);
+
+      if (!center) {
+        return res.status(404).json({
+          success: false,
+          message: "Center not found",
+        });
+      }
+
+      if (!plan_id) {
+        return res.status(400).json({
+          success: false,
+          message: "Plan ID is required",
+        });
+      }
+
+      const updatedCenter = await centerModel.updateCenterSubscription(centerId, plan_id);
+      console.log('Plan assigned:', plan_id, 'to center:', centerId); // Debug
+
+      res.status(200).json({
+        success: true,
+        message: "Subscription plan assigned successfully",
+        data: updatedCenter,
+      });
+    } catch (error) {
+      console.error('Assign plan error:', error);
+      res.status(500).json({
+        success: false,
+        message: "Server error: " + error.message,
+      });
+    }
+  },
+
   // Get dashboard stats - truly parallel optimized endpoint
   getDashboardStats: async (req, res) => {
     try {

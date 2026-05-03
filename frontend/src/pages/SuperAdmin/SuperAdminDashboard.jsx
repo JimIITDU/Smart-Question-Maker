@@ -1,31 +1,39 @@
 ﻿import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { getAllCenters, getUnreadNotifications } from "../../services/api";
-import { FiHome, FiCreditCard, FiBell, FiUser } from "react-icons/fi";
+import { 
+  getCentersStats, 
+  getUsersStats, 
+  getAllSubscriptionPlans,
+  getUnreadNotifications 
+} from "../../services/api";
+import { FiHome, FiCreditCard, FiBell, FiUsers } from "react-icons/fi";
 
 const SuperAdminDashboard = () => {
   const [stats, setStats] = useState({
-    total: 0,
-    active: 0,
-    pending: 0,
-    notifications: 0,
+    activeCenters: 0,
+    pendingApplications: 0,
+    totalUsers: 0,
+    totalPlans: 0,
   });
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [c, n] = await Promise.all([
-          getAllCenters(),
+        const [centersRes, usersRes, plansRes, n] = await Promise.all([
+          getCentersStats(),
+          getUsersStats(),
+          getAllSubscriptionPlans(),
           getUnreadNotifications(),
         ]);
-        const centers = c.data.data;
         setStats({
-          total: centers.length,
-          active: centers.filter((c) => c.status === "active").length,
-          pending: centers.filter((c) => c.status === "pending").length,
-          notifications: n.data.data.length,
+          activeCenters: centersRes.data.data.active,
+          pendingApplications: centersRes.data.data.pending,
+          totalUsers: usersRes.data.data.total,
+          totalPlans: plansRes.data.data.length,
         });
-      } catch {}
+      } catch (err) {
+        console.error('Dashboard fetch error', err);
+      }
     };
     fetchData();
   }, []);
@@ -36,7 +44,7 @@ const SuperAdminDashboard = () => {
       path: "/superadmin/manage-centers",
       icon: FiHome,
       color: "from-blue-500 to-cyan-500",
-      desc: `${stats.total} total centers`,
+      desc: `${stats.activeCenters} active centers`,
     },
     {
       label: "Subscription Plans",
@@ -46,18 +54,18 @@ const SuperAdminDashboard = () => {
       desc: "Manage platform plans",
     },
     {
+      label: "Manage Users",
+      path: "/superadmin/users",
+      icon: FiUsers,
+      color: "from-indigo-500 to-blue-500",
+      desc: `${stats.totalUsers} total users`,
+    },
+    {
       label: "Notifications",
       path: "/notifications",
       icon: FiBell,
       color: "from-rose-500 to-pink-500",
-      desc: `${stats.notifications} unread`,
-    },
-    {
-      label: "Profile",
-      path: "/profile",
-      icon: FiUser,
-      color: "from-gray-500 to-gray-600",
-      desc: "Manage your profile",
+      desc: "Platform notifications",
     },
   ];
 
@@ -76,20 +84,24 @@ const SuperAdminDashboard = () => {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         {[
           {
-            label: "Total Centers",
-            value: stats.total,
+            label: "Active Centers",
+            value: stats.activeCenters || 0,
+            color: "text-emerald-400",
+          },
+          {
+            label: "Pending Applications",
+            value: stats.pendingApplications || 0,
+            color: "text-amber-400",
+          },
+          {
+            label: "Total Users",
+            value: stats.totalUsers || 0,
             color: "text-blue-400",
           },
           {
-            label: "Active Centers",
-            value: stats.active,
-            color: "text-emerald-400",
-          },
-          { label: "Pending", value: stats.pending, color: "text-amber-400" },
-          {
-            label: "Notifications",
-            value: stats.notifications,
-            color: "text-rose-400",
+            label: "Subscription Plans",
+            value: stats.totalPlans || 0,
+            color: "text-purple-400",
           },
         ].map((s, i) => (
           <div
@@ -124,3 +136,4 @@ const SuperAdminDashboard = () => {
 };
 
 export default SuperAdminDashboard;
+

@@ -88,6 +88,22 @@ router.put(
   centerController.suspendCenter,
 );
 
+// Super admin status update
+router.patch(
+  "/:id/status",
+  authMiddleware,
+  roleMiddleware(1),
+  centerController.updateCenterStatus,
+);
+
+// Super admin subscription assign
+router.patch(
+  "/:id/subscription",
+  authMiddleware,
+  roleMiddleware(1),
+  centerController.assignCenterSubscription,
+);
+
 // Coaching admin updates center
 router.put(
   "/update/:id",
