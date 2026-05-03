@@ -285,11 +285,10 @@ Guidelines:
     );
     console.log("[LLM] Mode:", mode, "| Topic:", topic, "| Count:", count);
 
-    const groqClient = getGroqClient();
+const groqClient = getGroqClient();
     if (!groqClient) {
-      throw new Error(
-        "GROQ_API_KEY is not configured. Please set GROQ_API_KEY environment variable.",
-      );
+      console.warn("[LLM] No GROQ_API_KEY found, using mock generation");
+      return llmService.mockGenerateQuestion(mode, params);
     }
 
     try {

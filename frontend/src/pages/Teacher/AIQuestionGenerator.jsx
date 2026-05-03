@@ -1057,13 +1057,7 @@ const AIQuestionGenerator = () => {
                                         {opt}.
                                       </span>
                                       {q[`option_text_${opt}`]}
-                                      {correctOpts.includes(
-                                        opt.toUpperCase(),
-                                      ) && (
-                                        <span className="ml-1 text-emerald-300">
-                                          ✓
-                                        </span>
-                                      )}
+
                                     </div>
                                   ),
                               );
@@ -1078,11 +1072,7 @@ const AIQuestionGenerator = () => {
                                 className={`text-xs px-3 py-2 rounded-lg border ${q.correct_option === opt ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" : "bg-white/5 border-white/5 text-gray-400"}`}
                               >
                                 {opt}
-                                {q.correct_option === opt && (
-                                  <span className="ml-1 text-emerald-300">
-                                    ✓
-                                  </span>
-                                )}
+
                               </div>
                             ))}
                           </div>

@@ -308,11 +308,11 @@ const questionController = {
       // Support both 'source_type' (new) and 'mode' (legacy) fields
       const effectiveSourceType = source_type || frontendMode || "general";
 
-      // Determine effective question types - support array or single type
-      const effectiveQuestionTypes =
-        Array.isArray(question_types) && question_types.length > 0
-          ? question_types
-          : [question_type || "mcq"]; // Default to mcq if not provided
+      // Extract type-specific counts from frontend (priority) or fallback to uniform
+      const typeCounts = req.body.type_counts || {};
+      const effectiveQuestionTypes = Array.isArray(question_types) && question_types.length > 0 
+        ? question_types 
+        : Object.keys(typeCounts).filter(k => (typeCounts[k] || 0) > 0) || ["mcq"];
 
       // Build display topic for LLM
       let llmTopic =
@@ -414,22 +414,21 @@ const questionController = {
           llmTopic = topic || subject_name || "General";
       }
 
-      // Generate questions for each type (will be distributed evenly)
-      const targetCount = parseInt(count) || 5;
-      const typesCount = effectiveQuestionTypes.length;
-      const countPerType = Math.ceil(targetCount / typesCount);
+      console.log("[AI-GEN] Request:", {effectiveSourceType, effectiveQuestionTypes, typeCounts: req.body.type_counts, totalCount: count});
 
       let allGeneratedQuestions = [];
 
-      // Generate for each question type
+      // Generate EXACT counts per type from frontend type_counts
       for (const qType of effectiveQuestionTypes) {
+        const perTypeCount = Math.max(1, (typeCounts[qType] || 0)) || Math.ceil((parseInt(count) || 5) / effectiveQuestionTypes.length);
+        console.log(`[AI-GEN] Generating ${perTypeCount} ${qType} questions`);
         const generated = await llmService.generateQuestion(llmMode, {
           topic: llmTopic,
           hints: llmHints,
           subject_id: subject_name || "",
           question_type: qType,
           difficulty: difficulty || "medium",
-          count: countPerType,
+          count: perTypeCount,
         });
 
         // Transform to our format
@@ -456,8 +455,8 @@ const questionController = {
         allGeneratedQuestions = [...allGeneratedQuestions, ...transformed];
       }
 
-      // Trim to exact count
-      allGeneratedQuestions = allGeneratedQuestions.slice(0, targetCount);
+      // No trim needed - using exact per-type counts
+      // allGeneratedQuestions = allGeneratedQuestions.slice(0, targetCount);
 
       // Build metadata object for questions
       const questionMetadata = {
