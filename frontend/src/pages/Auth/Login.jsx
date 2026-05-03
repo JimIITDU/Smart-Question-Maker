@@ -29,7 +29,20 @@ const Login = () => {
       loginUser(res.data.data.token, res.data.data.user);
       navigate("/dashboard"); // Layout will handle role-based redirection
     } catch (err) {
-      setError(err.response?.data?.message || "Login failed. Please check your credentials.");
+      const errMsg = err.response?.data?.message || "Login failed. Please check your credentials.";
+      if (errMsg === "Please verify your email first") {
+        // Auto resend OTP and redirect to verify
+        try {
+          const resendRes = await resendVerificationOTP({ email: formData.email });
+          localStorage.setItem("verify_email", formData.email);
+          alert(`New OTP sent to ${formData.email}. Please verify your email.`);
+          navigate("/verify-otp");
+        } catch (resendErr) {
+          setError("Email verification required. Please check your email or register again.");
+        }
+      } else {
+        setError(errMsg);
+      }
     } finally {
       setLoading(false);
     }

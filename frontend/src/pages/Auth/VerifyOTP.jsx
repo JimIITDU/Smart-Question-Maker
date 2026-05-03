@@ -145,8 +145,8 @@ const VerifyOTP = () => {
                   </div>
                 </div>
 
-                {/* Error Alert */}
-                {error && (
+                {/* Error Alert - COMMENTED OUT */}
+                {/* {error && (
                   <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 flex items-start gap-3 animate-fade-in-down">
                     <div className="mt-0.5 text-red-400">
                       <FiShield />
@@ -156,9 +156,25 @@ const VerifyOTP = () => {
                       <p className="text-red-400/70 text-xs mt-1">{error}</p>
                     </div>
                   </div>
-                )}
+                )} */}
 
                 <form onSubmit={handleSubmit} className="space-y-6">
+              {/* SUCCESS STATE - COMMENTED OUT */}
+              {/* <div className="flex flex-col items-center justify-center py-12 animate-fade-in-up">
+                <div className="w-20 h-20 rounded-full bg-green-500/10 flex items-center justify-center mb-6 relative">
+                   <div className="absolute inset-0 bg-green-500/20 rounded-full animate-ping"></div>
+                  <FiCheckCircle className="text-5xl text-green-400 relative z-10" />
+                </div>
+                <h2 className="text-2xl font-bold text-white mb-2">Verified Successfully</h2>
+                <p className="text-gray-400 text-sm text-center mb-8">
+                  {success}
+                </p>
+                <div className="flex items-center text-purple-400 text-sm gap-2 animate-pulse">
+                  <span>Redirecting you to dashboard</span>
+                  <FiArrowRight />
+                </div>
+              </div> */}
+              
                   {/* OTP Input */}
                   <div className="space-y-2">
                     <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider ml-1 text-center">

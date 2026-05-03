@@ -14,7 +14,7 @@ import Login from "./pages/Auth/Login.jsx";
 import Register from "./pages/Auth/Register.jsx";
 import VerifyOTP from "./pages/Auth/VerifyOTP.jsx";
 import ForgotPassword from "./pages/Auth/ForgotPassword.jsx";
-import ResetPassword from "./pages/Auth/ResetPassword.jsx";
+
 
 // Shared protected pages
 import Dashboard from "./pages/Dashboard.jsx";
@@ -97,7 +97,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/verify-otp" element={<VerifyOTP />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
+<Route path="/reset-password" element={<ForgotPassword />} />
 
         {/* ==================== PROTECTED ROUTES ==================== */}
         <Route element={<ProtectedRoute />}>

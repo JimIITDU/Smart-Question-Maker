@@ -3,15 +3,24 @@
 ## Plan Overview
 Fix AI question generation failures due to missing GROQ_API_KEY, count mismatch, and UI tik icons.
 
-## Steps (0/7 complete)
+## Steps (3/10 complete)
 
-### 1. ✅ Backend: Make llmService.generateQuestion graceful (no throw on missing key)
-### 2. ✅ Backend: questionController use frontend type_counts for exact per-type generation
-### 3. ✅ Frontend: Remove ✓ icons from answer preview in AIQuestionGenerator
-### 4. [ ] Backend: Add payload logging + better validation/error messages
-### 5. [ ] Check/install groq-sdk dependency
-### 6. [ ] Test: Generate with uneven counts (mcq:3, descriptive:7), verify exact output
-### 7. [ ] Restart backend, full manual test UI → API → DB
+### 1. ✅ Backend: llmService graceful mock
+### 2. ✅ Backend: controller exact typeCounts
+### 3. ✅ Frontend: Remove preview ✓ icons
+
+**User Feedback Fixes:**
+### 4. [ ] Frontend: Type selector - conditional check icon if count>0
+### 5. [ ] Frontend: Remove bottom "Number of questions" input
+
+### 6. ✅ Frontend: Disable save during regenerate loading
+### 7. ✅ Frontend: saveAccepted → bulkUpdateStatus (activate drafts, no duplicates)
+
+### 8. [ ] Backend: Add question source="ai_generated" filter in getAllQuestions if needed
+### 9. [ ] Test regenerate (only rejected), uneven counts, save to bank (status=active)
+### 10.[ ] Polish + complete
+
+**Next:** UI conditional icons + remove count input
 
 **Next:** Step 1 - Update llmService.js
 

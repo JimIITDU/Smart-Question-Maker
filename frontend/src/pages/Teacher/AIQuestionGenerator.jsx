@@ -1,4 +1,4 @@
-﻿import React, { useState, useRef } from "react";
+import React, { useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import {
@@ -17,7 +17,7 @@ import {
   FiBookOpen,
   FiFileText,
 } from "react-icons/fi";
-import { aiGenerate, bulkCreateQuestions } from "../../services/api";
+import { aiGenerate, bulkStatusUpdate } from "../../services/api";
 
 // Class options
 const CLASS_OPTIONS = [
@@ -121,6 +121,7 @@ const AIQuestionGenerator = () => {
   const [hints, setHints] = useState("");
   const [pdfFile, setPdfFile] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [regenerateLoading, setRegenerateLoading] = useState(false);
 
   // ── Review state
   const [questions, setQuestions] = useState([]);
@@ -306,7 +307,7 @@ const AIQuestionGenerator = () => {
     ).length;
     if (rejectedCount === 0) return;
 
-    setLoading(true);
+    setRegenerateLoading(true);
     try {
       const payload = {
         ...buildPayload(),
@@ -331,7 +332,7 @@ const AIQuestionGenerator = () => {
     } catch (err) {
       toast.error(err.response?.data?.message || "Regeneration failed");
     } finally {
-      setLoading(false);
+      setRegenerateLoading(false);
     }
   };
 
@@ -344,21 +345,18 @@ const AIQuestionGenerator = () => {
       return;
     }
 
-    const payload = accepted.map((q) => {
+    const updates = accepted.map((q) => {
       const finalDiff = q._difficultyOverride || q.difficulty || "medium";
       return {
-        ...q,
-        difficulty: finalDiff,
-        source: "ai_generated",
+        id: q._id || q.question_id,
         status: "active",
-        coaching_center_id: undefined, // set by backend
-        created_by: undefined, // set by backend
+        difficulty: finalDiff,
       };
     });
 
     setLoading(true);
     try {
-      await bulkCreateQuestions({ questions: payload });
+      await bulkStatusUpdate({ updates });
       toast.success(`${accepted.length} questions saved to bank!`);
       navigate("/teacher/questions");
     } catch (err) {
@@ -699,14 +697,19 @@ const AIQuestionGenerator = () => {
                 },
               ].map((t) => (
                 <div key={t.key} className="space-y-2">
-                  <label className="flex items-center gap-2 text-sm font-semibold text-gray-300 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={selectedTypes.includes(t.key)}
-                      onChange={() => toggleType(t.key)}
-                      className="w-4 h-4 text-purple-600 bg-white/10 border-white/20 rounded focus:ring-purple-500"
-                    />
-                    {t.label}
+<label className="flex items-center gap-2 text-sm font-semibold text-gray-300 cursor-pointer group">
+                    <div className="relative">
+                      <input
+                        type="checkbox"
+                        checked={selectedTypes.includes(t.key)}
+                        onChange={() => toggleType(t.key)}
+                        className="w-4 h-4 text-purple-600 bg-white/10 border-white/20 rounded focus:ring-purple-500 peer"
+                      />
+                      <FiCheckCircle className={`absolute left-0 top-0 w-4 h-4 text-emerald-400 opacity-0 peer-checked:opacity-100 transition-all peer-checked:scale-110 ${typeCounts[t.countKey] > 0 ? 'opacity-100 scale-110' : ''}`} />
+                    </div>
+                    <span className={typeCounts[t.countKey] > 0 ? 'text-emerald-300 font-bold' : ''}>
+                      {t.label}
+                    </span>
                   </label>
                   <input
                     type="number"
@@ -1162,11 +1165,13 @@ const AIQuestionGenerator = () => {
                   )}
                 </button>
               )}
+
               <button
                 onClick={saveAccepted}
-                disabled={loading || acceptedCount === 0}
+                disabled={loading || regenerateLoading || acceptedCount === 0}
                 className="w-full flex items-center justify-center gap-2 py-4 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl font-bold disabled:opacity-50"
               >
+
                 {loading ? (
                   <>
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />{" "}

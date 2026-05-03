@@ -1,8 +1,49 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const userModel = require("../models/userModel");
+const { sendOTP } = require("../services/emailService");
 
 const authController = {
+  resendVerificationOTP: async (req, res) => {
+    try {
+      const { email } = req.body;
+
+      const user = await userModel.findByEmail(email);
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: "Email not found",
+        });
+      }
+
+      if (user.is_email_verified) {
+        return res.status(400).json({
+          success: false,
+          message: "Email already verified. Please login.",
+        });
+      }
+
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      const otp_expires_at = new Date(Date.now() + 10 * 60 * 1000);
+
+      await userModel.saveOTP(user.user_id, otp, otp_expires_at);
+      const emailSent = await sendOTP(email, otp);
+      if (!emailSent) throw new Error('Email sending failed');
+
+      res.status(200).json({
+        success: true,
+        message: "New OTP sent to your email. Please verify now.",
+        data: { user_id: user.user_id, email },
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: "Server error",
+        error: error.message,
+      });
+    }
+  },
+
   // Register new user
   register: async (req, res) => {
     try {
@@ -10,10 +51,22 @@ const authController = {
 
       const existingUser = await userModel.findByEmail(email);
       if (existingUser) {
-        return res.status(400).json({
-          success: false,
-          message: "Email already registered",
-        });
+        if (existingUser.is_email_verified) {
+          return res.status(400).json({
+            success: false,
+            message: "Email already registered and verified. Please login.",
+          });
+        } else {
+          // Auto-resend OTP for unverified
+          const resendRes = await authController.resendVerificationOTP({ body: { email } }, res);
+          if (resendRes) {
+            return res.status(200).json(resendRes);
+          }
+          return res.status(400).json({
+            success: false,
+            message: "Your email is not verified. New OTP sent.",
+          });
+        }
       }
 
       const salt = await bcrypt.genSalt(10);
@@ -32,10 +85,13 @@ const authController = {
         otp_expires_at,
       });
 
+      const emailSent = await sendOTP(email, otp);
+      if (!emailSent) throw new Error('Email sending failed');
+
       res.status(201).json({
         success: true,
-        message: "Registration successful. Please verify your email with OTP.",
-        data: { user_id: userId, email, otp },
+        message: "Registration successful. OTP sent to your email.",
+        data: { user_id: userId, email },
       });
     } catch (error) {
       res
@@ -217,10 +273,12 @@ const authController = {
 
       await userModel.saveOTP(user.user_id, otp, otp_expires_at);
 
+      const emailSent = await sendOTP(email, otp);
+      if (!emailSent) throw new Error('Email sending failed');
+
       res.status(200).json({
         success: true,
         message: "OTP sent to your email",
-        data: { otp },
       });
     } catch (error) {
       res

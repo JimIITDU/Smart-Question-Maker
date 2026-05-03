@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FiUser, FiMail, FiPhone, FiLock, FiArrowRight, FiCheck, FiAlertCircle, FiChevronDown } from "react-icons/fi";
-import { register } from "../../services/api";
+import { register, resendVerificationOTP } from "../../services/api";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -46,12 +46,18 @@ const Register = () => {
       
       localStorage.setItem("verify_email", formData.email);
       
-      // 2. OTP Popup Logic (Kept as requested)
-      alert(`Your OTP is: ${res.data.data.otp}`);
+      // Check if unverified existing user - show new OTP
+      if (res.data.message.includes("New OTP") || res.data.message.includes("not verified")) {
+        alert(`New OTP is: ${res.data.data?.otp || 'Check your email'} - Your email was not verified.`);
+      } else {
+        alert(`Your OTP is: ${res.data.data.otp}`);
+      }
       
       navigate("/verify-otp");
     } catch (err) {
-      setError(err.response?.data?.message || "Registration failed. Please try again.");
+      const errMsg = err.response?.data?.message || "Registration failed. Please try again.";
+      setError(errMsg);
+      // If already verified, user will see specific message
     } finally {
       setLoading(false);
     }
