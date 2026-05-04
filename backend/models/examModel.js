@@ -15,26 +15,23 @@ createExam: async (data) => {
       end_time,
       access_code,
       total_marks,
+      negative_marks,
       pass_mark,
-      instructions,
-      num_sets,
-      overlap_pct
+      instructions
     } = data;
 
-    // ✅ SAFE STATIC COLUMNS - matches typical DB schema
-    // Skip num_sets/overlap_pct if DB doesn't have them
     const result = await db.query(
       `INSERT INTO quiz_exam (
-        coaching_center_id, course_id, subject_id, batch_id, 
+        coaching_center_id, course_id, subject_id, batch_id,
         exam_type, host_teacher_id, title, duration_minutes,
-        total_marks, negative_marks, 
-        pass_mark, instructions, status
-      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,'draft')
+        start_time, end_time, access_code,
+        status
+      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
       RETURNING exam_id`,
-      [
+[
         coaching_center_id,
         course_id || null,
-        subject_id || null, 
+        subject_id || null,
         batch_id || null,
         exam_type || 'practice',
         host_teacher_id,
@@ -43,10 +40,7 @@ createExam: async (data) => {
         start_time,
         end_time,
         access_code,
-        total_marks || 0,
-        data.negative_marks || 0,
-        pass_mark || null,
-        instructions || ''
+        'scheduled'
       ]
     );
     

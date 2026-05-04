@@ -164,7 +164,7 @@ const CreateExam = () => {
       console.log("Submitting exam data:", examData); // Debug log
       await createExam(examData);
       toast.success("Exam created successfully!");
-      navigate("/teacher/manage-exams");
+      navigate("/teacher/exams");
     } catch (err) {
       console.error("Create exam error:", err.response?.data || err);
       toast.error(err.response?.data?.message || "Failed to create exam");

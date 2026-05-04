@@ -801,10 +801,10 @@ const AIQuestionGenerator = () => {
               )}
 
               {/* Count (all AI modes) */}
-              <div>
-                {/* <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-2">
+              {/* <div>
+                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-2">
                   Number of questions
-                </label> */}
+                </label>
                 <input
                   type="number"
                   value={count}
@@ -817,7 +817,7 @@ const AIQuestionGenerator = () => {
                   max={50}
                   className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-purple-500"
                 />
-              </div>
+              </div> */}
             </div>
 
             {/* Generate button */}

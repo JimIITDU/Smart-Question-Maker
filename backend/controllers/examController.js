@@ -126,8 +126,7 @@ const examController = {
       console.error("createExam error:", error);
       res.status(500).json({
         success: false,
-        message: "Failed to create exam",
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        message: "Server error"
       });
     }
   },

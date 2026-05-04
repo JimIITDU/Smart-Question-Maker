@@ -414,22 +414,33 @@ IMPORTANT: Return ONLY the JSON array, no markdown, no explanations.
         prompt.length,
         "chars",
       );
-      const completion = await groqClient.chat.completions.create({
-        model: "llama-3.3-70b-versatile",
-        messages: [{ role: "user", content: prompt }],
-        temperature: 0.7,
-      });
-      console.log("[LLM] Groq responded successfully");
-      const rawText = completion.choices[0].message.content;
-      const text = rawText;
-
-      // Extract JSON from response
-      const jsonMatch = text.match(/\[[\s\S]*\]/);
-      if (!jsonMatch) {
-        throw new Error("No JSON array found in Groq response");
+      let completion, rawText, text, questions;
+      try {
+        completion = await groqClient.chat.completions.create({
+          model: "llama-3.3-70b-versatile",
+          messages: [{ role: "user", content: prompt }],
+          temperature: 0.7,
+        });
+        console.log("[LLM] Groq responded successfully");
+        rawText = completion.choices[0].message.content;
+        text = rawText;
+        // Extract JSON from response
+        const jsonMatch = text.match(/\[[\s\S]*\]/);
+        if (!jsonMatch) {
+          throw new Error("No JSON array found in Groq response");
+        }
+        questions = JSON.parse(jsonMatch[0]);
+      } catch (apiError) {
+        console.error("[LLM] Groq API or parsing error:", {
+          message: apiError.message,
+          stack: apiError.stack,
+          response: apiError.response?.data,
+          rawText,
+          text,
+        });
+        console.warn("[LLM] Falling back to mock generation due to API/parsing error");
+        return llmService.mockGenerateQuestion(mode, params);
       }
-
-      const questions = JSON.parse(jsonMatch[0]);
 
       // Validate and sanitize questions
       return questions.map((q) => ({
@@ -448,8 +459,15 @@ IMPORTANT: Return ONLY the JSON array, no markdown, no explanations.
         source: `ai_${mode}`,
       }));
     } catch (error) {
-      console.error("[LLM] Groq generation error:", error.message);
-      // Fallback to mock generation
+      console.error("[LLM] Groq generation error (outer catch):", {
+        message: error.message,
+        status: error.status,
+        response: error.response?.data,
+        keyStatus: !!process.env.GROQ_API_KEY ? 'PRESENT (invalid?)' : 'MISSING',
+        mode, topic, question_type, count
+      });
+      console.warn("[LLM] Falling back to mock generation to prevent 500 errors (outer catch)");
+      // ALWAYS fallback to mock - restore working state
       return llmService.mockGenerateQuestion(mode, params);
     }
   },
