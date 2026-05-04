@@ -432,21 +432,53 @@ async function seed() {
     // ══════════════════════════════════════════════════════════════════
     // 13. TEACHER COURSE ASSIGNMENTS (new table)
     // ══════════════════════════════════════════════════════════════════
+    // Format: [ci, co, subjectIdx, teacherIdx, adminIdx]
+    // teacherIdx must be 0-14 (15 teachers total)
     const assignData = [
-      [0,0,0,0],[0,1,1,0],[0,2,2,0],[0,3,3,0],[0,4,4,0],
-      [1,1,5,1],[1,2,6,1],[1,3,7,1],[1,4,8,1],
-      [2,0,9,2],[2,3,10,2],[2,5,11,2],[2,6,12,2],[2,8,13,2],
-      [3,0,14,3],[3,1,15,3],[3,2,16,3],[3,4,17,3],
-      [4,0,18,4],[4,1,19,4],[4,2,20,4],[4,3,21,4],
+      // Excellence (ci:0) — teachers 0,1,2
+      [0, 0,  0,  0, 0],  // Math     → teacher 0 (Anisur)
+      [0, 0,  1,  1, 0],  // Physics  → teacher 1 (Fatema)
+      [0, 0,  2,  1, 0],  // Chem     → teacher 1
+      [0, 0,  3,  1, 0],  // Bio      → teacher 1
+      [0, 0,  4,  2, 0],  // English  → teacher 2 (Mizanur)
+      [0, 1,  5,  2, 0],  // Bengali  → teacher 2
+      [0, 1,  6,  0, 0],  // Gen Math → teacher 0
+      [0, 2,  7,  2, 0],  // Acct     → teacher 2
+      [0, 2,  8,  2, 0],  // Biz Eng  → teacher 2
+      // Alo (ci:1) — teachers 3,4,5
+      [1, 3,  9,  3, 1],  // Higher Math → teacher 3 (Sumaiya)
+      [1, 4, 10,  4, 1],  // Physics Adv → teacher 4 (Abdur)
+      [1, 4, 11,  5, 1],  // History     → teacher 5 (Nasrin)
+      [1, 5, 12,  4, 1],  // SSC Physics → teacher 4
+      [1, 5, 13,  5, 1],  // SSC Chem    → teacher 5
+      // Medhabi (ci:2) — teachers 6,7,8
+      [2, 6, 14,  6, 2],  // Comm Eng → teacher 6 (Kamrul)
+      [2, 7, 15,  7, 2],  // IELTS R  → teacher 7 (Roksana)
+      [2, 7, 16,  7, 2],  // IELTS W  → teacher 7
+      [2, 7, 17,  6, 2],  // IELTS L  → teacher 6
+      [2, 8, 18,  8, 2],  // Med Bio  → teacher 8 (Shahadat — using index 8)
+      [2, 8, 19,  8, 2],  // Med Chem → teacher 8
+      // Proshno (ci:3) — teachers 9,10,11
+      [3, 9, 20,  9, 3],  // Eng Math → teacher 9 (Moriom)
+      [3, 9, 21, 10, 3],  // Eng Phys → teacher 10 (Jahirul)
+      [3,10, 22, 11, 3],  // BCS GK   → teacher 11 (Tania)
+      [3,10, 23,  9, 3],  // BCS Math → teacher 9
+      [3,11, 24,  9, 3],  // Prim Mat → teacher 9
+      // Gyaan (ci:4) — teachers 12,13,14
+      [4,12, 25, 12, 4],  // OL Math Pure  → teacher 12 (Rafiqul)
+      [4,12, 26, 12, 4],  // OL Math Stats → teacher 12
+      [4,13, 27, 13, 4],  // AL Mechanics  → teacher 13 (Dilruba)
+      [4,13, 28, 13, 4],  // AL Waves      → teacher 13
+      [4,14, 29, 14, 4],  // GRE Quant    → teacher 14 (Mahbubur)
     ];
-    // [ci, co, si, adminIdx]
-    for (const [ci,co,si,ai] of assignData) {
+    // [ci, co, subjectIdx, teacherIdx, adminIdx]
+    for (const [ci, co, si, ti, ai] of assignData) {
       await client.query(
         `INSERT INTO teacher_course_assignments
            (teacher_id,course_id,subject_id,assigned_by,status)
          VALUES ($1,$2,$3,$4,'active')
          ON CONFLICT DO NOTHING`,
-        [teacherIds[si], courseIds[co], subjectIds[si], adminIds[ai]]
+        [teacherIds[ti], courseIds[co], subjectIds[si], adminIds[ai]]
       );
     }
     console.log(`✅ ${assignData.length} Teacher Course Assignments`);

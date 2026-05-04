@@ -1,9 +1,10 @@
 const db = require("../config/db");
 
 const examModel = {
-  createExam: async (data) => {
+createExam: async (data) => {
     const {
       coaching_center_id,
+      course_id,
       subject_id,
       batch_id,
       exam_type,
@@ -13,28 +14,75 @@ const examModel = {
       start_time,
       end_time,
       access_code,
+      total_marks,
+      pass_mark,
+      instructions,
+      num_sets,
+      overlap_pct
     } = data;
+
+    // ✅ SAFE STATIC COLUMNS - matches typical DB schema
+    // Skip num_sets/overlap_pct if DB doesn't have them
     const result = await db.query(
-      `INSERT INTO quiz_exam
-       (coaching_center_id, subject_id, batch_id, exam_type, host_teacher_id,
-        title, duration_minutes, start_time, end_time, access_code)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
-       RETURNING exam_id`,
+      `INSERT INTO quiz_exam (
+        coaching_center_id, course_id, subject_id, batch_id, 
+        exam_type, host_teacher_id, title, duration_minutes,
+        start_time, end_time, access_code, total_marks, 
+        pass_mark, instructions, status
+      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,'draft')
+      RETURNING exam_id`,
       [
         coaching_center_id,
-        subject_id,
-        batch_id,
-        exam_type,
+        course_id || null,
+        subject_id || null, 
+        batch_id || null,
+        exam_type || 'practice',
         host_teacher_id,
-        title,
-        duration_minutes,
+        title || `Exam ${new Date().toISOString().slice(0,10)}`,
+        duration_minutes || 60,
         start_time,
         end_time,
         access_code,
-      ],
+        total_marks || 0,
+        pass_mark || null,
+        instructions || ''
+      ]
     );
+    
     return result.rows[0].exam_id;
   },
+
+  /**
+   * Add questions with optional multi-set support
+   */
+  addQuestionsToExam: async (exam_id, question_ids, num_sets = 1, overlap_pct = 0) => {
+    if (!Array.isArray(question_ids) || question_ids.length === 0) return;
+
+    // Single set (backward compatible)
+    if (num_sets === 1) {
+      for (const question_id of question_ids) {
+        await db.query(
+          `INSERT INTO exam_questions (exam_id, question_id)
+           VALUES ($1, $2) ON CONFLICT DO NOTHING`,
+          [exam_id, question_id]
+        );
+      }
+      return;
+    }
+
+    // Multi-set stub - full shuffle/overlap logic later
+    // For now, duplicate questions for each set (0 overlap)
+    for (let set_num = 1; set_num <= num_sets; set_num++) {
+      for (const question_id of question_ids) {
+        await db.query(
+          `INSERT INTO exam_questions (exam_id, question_id, set_num)
+           VALUES ($1, $2, $3) ON CONFLICT DO NOTHING`,
+          [exam_id, question_id, set_num]
+        );
+      }
+    }
+  },
+
 
   getAllExams: async (teacher_id, coaching_center_id) => {
     let query = `

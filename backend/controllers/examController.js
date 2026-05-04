@@ -1,139 +1,129 @@
 const db = require("../config/db");
 const examModel = require("../models/examModel");
 const questionModel = require("../models/questionModel");
+const teacherModel = require("../models/teacherModel");
 const llmService = require("../services/llmService");
 const centerModel = require("../models/centerModel");
 const pdfService = require("../services/pdfService");
 const archiver = require("archiver");
 
 const examController = {
-  // ==============================
-  // ENROLLMENT CHECK MIDDLEWARE
-  // ==============================
-  // Check if student is enrolled in the course before accessing exam
   checkEnrollmentForStudent: async (req, res, next) => {
     try {
-      // Only check for student role (role_id = 5)
-      if (req.user.role_id !== 5) {
-        return next();
-      }
+      if (req.user.role_id !== 5) return next();
 
-      const examId = req.params.id;
+      const examId = req.params.id || req.body.exam_id;
+      if (!examId) return next();
 
-      // Get exam details to find course_id
       const exam = await examModel.getExamById(examId);
       if (!exam) {
-        return res.status(404).json({
-          success: false,
-          message: "Exam not found",
-        });
+        return res.status(404).json({ success: false, message: "Exam not found" });
       }
 
-      // Skip check if:
-      // 1. exam doesn't have a course_id (old exams)
-      // 2. exam_type = 'practice' AND is_public = true
-      if (
-        !exam.course_id ||
-        (exam.exam_type === "practice" && exam.is_public === true)
-      ) {
+      if (!exam.course_id || (exam.exam_type === "practice" && exam.is_public === true)) {
         return next();
       }
 
-      // Check enrollment in course_enrollments
       const enrollmentResult = await db.query(
-        `SELECT * FROM course_enrollments
-         WHERE student_id = $1 AND course_id = $2
-         AND status = 'active'
+        `SELECT 1 FROM course_enrollments 
+         WHERE student_id = $1 AND course_id = $2 AND status = 'active'
          AND (expires_at IS NULL OR expires_at > NOW())`,
-        [req.user.user_id, exam.course_id],
+        [req.user.user_id, exam.course_id]
       );
 
       if (enrollmentResult.rows.length === 0) {
         return res.status(403).json({
           success: false,
-          message: "Not enrolled or enrollment expired",
+          message: "Not enrolled in required course or enrollment expired"
         });
       }
 
       next();
     } catch (error) {
-      console.error("checkEnrollmentForStudent error:", error);
-      res.status(500).json({
-        success: false,
-        message: "Server error",
-        error: error.message,
-      });
+      console.error("Enrollment check error:", error);
+      res.status(500).json({ success: false, message: "Server error" });
     }
   },
 
   createExam: async (req, res) => {
     try {
       const {
-        subject_id,
-        batch_id,
-        exam_type,
-        start_time,
-        end_time,
-        question_ids,
-        title,
-        duration_minutes,
+        course_id, subject_id, batch_id, exam_type, start_time, end_time,
+        question_ids, title, duration_minutes, total_marks, pass_mark,
+        instructions, num_sets = 1, overlap_pct = 0
       } = req.body;
 
-      // 1. Convert '2026-04-27T23:32' to '2026-04-27 23:32:00'
-      const formattedStart = start_time ? start_time.replace("T", " ") : null;
-      const formattedEnd = end_time ? end_time.replace("T", " ") : null;
-
-      // 2. Access Code
-      const access_code = Math.random()
-        .toString(36)
-        .substring(2, 8)
-        .toUpperCase();
-
-      // 3. User ID Check (Safety for different middleware setups)
       const host_teacher_id = req.user?.user_id || req.user?.id;
+      const coaching_center_id = req.user.coaching_center_id;
 
-      if (!host_teacher_id) {
-        return res
-          .status(401)
-          .json({ success: false, message: "User not authenticated" });
+      if (!host_teacher_id || !coaching_center_id) {
+        return res.status(401).json({ success: false, message: "User not authenticated" });
       }
 
-      // 4. Create the Exam
+      if (course_id) {
+        const assigned = await teacherModel.isTeacherAssignedToCourse(host_teacher_id, course_id);
+        if (!assigned) {
+          return res.status(403).json({ 
+            success: false, 
+            message: `Not assigned to course ${course_id}` 
+          });
+        }
+      }
+
+      let calculatedTotalMarks = total_marks || 0;
+      if (Array.isArray(question_ids) && question_ids.length > 0 && !total_marks) {
+        const validQuestions = await Promise.all(
+          question_ids.map(id => questionModel.getQuestionById(id, host_teacher_id, coaching_center_id))
+        );
+        calculatedTotalMarks = validQuestions.reduce((sum, q) => sum + (q?.max_marks || 0), 0);
+      }
+
+      if (pass_mark && pass_mark > calculatedTotalMarks) {
+        return res.status(400).json({ 
+          success: false, 
+          message: `Pass mark (${pass_mark}) exceeds total marks (${calculatedTotalMarks})` 
+        });
+      }
+
+      const formattedStart = start_time ? start_time.replace("T", " ") : null;
+      const formattedEnd = end_time ? end_time.replace("T", " ") : null;
+      const access_code = Math.random().toString(36).substring(2, 8).toUpperCase();
+
       const examId = await examModel.createExam({
-        coaching_center_id: req.user.coaching_center_id,
-        subject_id,
-        batch_id,
-        exam_type,
+        coaching_center_id,
+        course_id: course_id || null,
+        subject_id: subject_id || null,
+        batch_id: batch_id || null,
+        exam_type: exam_type || 'practice',
         host_teacher_id,
-        title: title || `Exam ${subject_id || "N/A"}`,
+        title: title || `Exam ${new Date().toISOString().slice(0,10)}`,
         duration_minutes: duration_minutes || 60,
         start_time: formattedStart,
         end_time: formattedEnd,
         access_code,
+        total_marks: calculatedTotalMarks,
+        pass_mark: pass_mark || null,
+        instructions: instructions || '',
+        num_sets,
+        overlap_pct
       });
 
-      // 5. Add Questions
       if (Array.isArray(question_ids) && question_ids.length > 0) {
-        await examModel.addQuestionsToExam(examId, question_ids);
+        await examModel.addQuestionsToExam(examId, question_ids, num_sets, overlap_pct);
       }
 
       res.status(201).json({
         success: true,
         message: "Exam created successfully",
-        data: { exam_id: examId, access_code },
+        data: { exam_id: examId, access_code }
       });
-    } catch (error) {
-      // THIS PRINTS THE REAL ERROR IN YOUR TERMINAL
-      console.error("--- BACKEND CRASH LOG ---");
-      console.error(error);
 
-      // THIS SENDS THE REAL ERROR TO YOUR BROWSER
+    } catch (error) {
+      console.error("createExam error:", error);
       res.status(500).json({
         success: false,
-        message: "Database Error",
-        error: error.message,
-        sqlMessage: error.sqlMessage, // Specific MySQL error
-        hint: "Check if subject_id 102 and batch_id 201 exist in your DB",
+        message: "Failed to create exam",
+        error: process.env.NODE_ENV === 'development' ? error.message : undefined
       });
     }
   },

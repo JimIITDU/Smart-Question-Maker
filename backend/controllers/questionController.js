@@ -503,7 +503,7 @@ const questionController = {
     }
   },
 
-  bulkUpdateStatus: async (req, res) => {
+bulkUpdateStatus: async (req, res) => {
     try {
       const { updates } = req.body;
 
@@ -543,6 +543,93 @@ const questionController = {
       });
     }
   },
+
+  /**
+   * Random stratified batch: filters + diff % split → proportionate random sample
+   * Body: {filters:{}, count:20, diffSplit:{easy:30,medium:50,hard:20}}
+   */
+  randomBatch: async (req, res) => {
+    try {
+      const { filters = {}, count = 10, diffSplit = {easy:33,medium:34,hard:33} } = req.body;
+      const totalPct = Object.values(diffSplit).reduce((a,b) => a + Number(b), 0);
+      if (totalPct !== 100) {
+        return res.status(400).json({success:false, message:"diffSplit must sum to 100"});
+      }
+
+      const strata = Object.entries(diffSplit).map(([diff, pct]) => ({
+        difficulty: diff,
+        count: Math.max(1, Math.round(count * (pct / 100)))
+      }));
+
+      const questions = [];
+      for (const stratum of strata) {
+        const stratumFilters = {...filters, difficulty: stratum.difficulty, status: 'active'};
+        const stratumQs = await questionModel.getAllQuestions({
+          ...stratumFilters,
+          coaching_center_id: req.tenant.coaching_center_id,
+          teacher_id: req.user.user_id
+        });
+        // Random sample
+        for (let i = 0; i < stratum.count && i < stratumQs.length; i++) {
+          const randIdx = Math.floor(Math.random() * stratumQs.length);
+          questions.push(stratumQs[randIdx]);
+          stratumQs.splice(randIdx, 1); // Remove to avoid duplicates
+        }
+      }
+
+      res.json({
+        success: true,
+        data: questions.slice(0, count),
+        count: questions.length,
+        breakdown: strata.map(s => ({[s.difficulty]: s.count}))
+      });
+    } catch (error) {
+      console.error('randomBatch error:', error);
+      res.status(500).json({success: false, message: error.message});
+    }
+  },
+
+  /**
+   * Check bank sufficiency for required type counts matching filters
+   * Body: {filters:{}, required:{mcq:10,true_false:5,descriptive:5}}
+   * Returns: {sufficiency:{mcq:{required:10,available:8,gap:2},...}}
+   */
+  checkSufficiency: async (req, res) => {
+    try {
+      const { filters = {}, required = {} } = req.body;
+      if (Object.keys(required).length === 0) {
+        return res.status(400).json({success:false, message:"required counts needed"});
+      }
+
+      const sufficiency = {};
+      for (const [qtype, reqCount] of Object.entries(required)) {
+        const typeFilters = {...filters, question_type: qtype, status: 'active'};
+        const typeQs = await questionModel.getAllQuestions({
+          ...typeFilters,
+          coaching_center_id: req.tenant.coaching_center_id,
+          teacher_id: req.user.user_id
+        });
+        sufficiency[qtype] = {
+          required: reqCount,
+          available: typeQs.length,
+          gap: Math.max(0, reqCount - typeQs.length),
+          sufficient: typeQs.length >= reqCount
+        };
+      }
+
+      const totalGap = Object.values(sufficiency).reduce((sum, s) => sum + s.gap, 0);
+      res.json({
+        success: true,
+        sufficiency,
+        totalGap,
+        canProceed: totalGap === 0
+      });
+    } catch (error) {
+      console.error('checkSufficiency error:', error);
+      res.status(500).json({success: false, message: error.message});
+    }
+  },
 };
 
 module.exports = questionController;
+

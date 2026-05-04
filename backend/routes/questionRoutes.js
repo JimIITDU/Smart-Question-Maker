@@ -107,4 +107,22 @@ router.patch(
   questionController.bulkUpdateStatus,
 );
 
+// Exam modes support
+router.post(
+  "/random-batch",
+  authMiddleware,
+  tenantMiddleware,
+  roleMiddleware(2, 3),
+  questionController.randomBatch
+);
+
+router.post(
+  "/check-sufficiency",
+  authMiddleware,
+  tenantMiddleware,
+  roleMiddleware(2, 3),
+  questionController.checkSufficiency
+);
+
 module.exports = router;
+

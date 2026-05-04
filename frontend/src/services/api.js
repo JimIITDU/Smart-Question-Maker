@@ -120,9 +120,12 @@ export const deleteQuestion = (id) => API.delete(`/questions/${id}`);
 
 export const getRandomQuestions = (params) =>
   API.get("/questions/random", { params });
+export const randomQuestionBatch = (data) => API.post("/questions/random-batch", data);
+export const checkBankSufficiency = (data) => API.post("/questions/check-sufficiency", data);
 export const updateQuestion = (id, data) => API.put(`/questions/${id}`, data);
 export const bulkStatusUpdate = (data) =>
   API.patch("/questions/bulk-status", data);
+
 
 // Exams
 export const createExam = (data) => API.post("/exams", data);
@@ -190,8 +193,12 @@ export const bulkCreateQuestionsWithMeta = (data) =>
   API.post("/questions/bulk", data);
 export const bulkCreateQuestions = (data) => API.post("/questions/bulk", data);
 
+// Teacher Courses
+export const getTeacherCourses = () => API.get("/teachers/my-assignments");
+
 // Teacher Applications & Assignments
 export const applyToCenter = (data) => API.post("/teachers/apply", data);
+
 export const getMyApplications = () => API.get("/teachers/my-applications");
 export const getCenterApplications = () => API.get("/teachers/applications");
 export const approveApplication = (id) =>
