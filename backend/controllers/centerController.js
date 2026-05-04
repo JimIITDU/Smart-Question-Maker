@@ -33,20 +33,9 @@ const centerController = {
         });
       }
 
-      const owner_photo = req.files?.owner_photo?.[0]?.path;
-      const nid_front = req.files?.nid_front?.[0]?.path;
-      const nid_back = req.files?.nid_back?.[0]?.path;
-
-      if (!owner_photo || !nid_front || !nid_back) {
-        return res.status(400).json({
-          success: false,
-          message: "All three photos are required",
-        });
-      }
-
+      // Skip photos for now (add later)
       const centerId = await centerModel.createApplication({
         user_id,
-        coaching_admin_id,
         center_name,
         center_type,
         established_year,
@@ -61,9 +50,6 @@ const centerController = {
         owner_name,
         owner_nid,
         owner_phone,
-        owner_photo,
-        nid_front,
-        nid_back,
       });
 
       res.status(201).json({

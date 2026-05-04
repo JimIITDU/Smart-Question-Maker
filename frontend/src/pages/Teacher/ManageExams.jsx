@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { getAllExams, startExam } from "../../services/api";
 import toast from "react-hot-toast";
@@ -39,15 +39,23 @@ const ManageExams = () => {
     <div className="min-h-screen bg-[#030712] text-white">
       <div className="fixed top-[-10%] right-[-10%] w-[500px] h-[500px] bg-violet-600/10 rounded-full blur-[120px] pointer-events-none"></div>
 
-
       <main className="max-w-7xl mx-auto px-6 pt-28 pb-20">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">
-            Manage <span className="text-purple-400">Exams</span>
-          </h1>
-          <p className="text-gray-400">
-            View, start, and monitor all your exams
-          </p>
+        <div className="mb-8 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+          <div>
+            <h1 className="text-3xl font-bold text-white mb-2">
+              Manage <span className="text-purple-400">Exams</span>
+            </h1>
+            <p className="text-gray-400">
+              View, start, and monitor all your exams
+            </p>
+          </div>
+          <Link
+            to="/teacher/exams/create"
+            className="group bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 border-2 border-purple-400/50 hover:border-purple-300 text-white font-bold px-8 py-4 rounded-2xl shadow-lg hover:shadow-2xl hover:shadow-purple-500/25 hover:-translate-y-1 transition-all flex items-center gap-3 whitespace-nowrap"
+          >
+            <FiPlus className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+            Create Exam
+          </Link>
         </div>
 
         {loading ? (
@@ -118,3 +126,4 @@ const ManageExams = () => {
 };
 
 export default ManageExams;
+

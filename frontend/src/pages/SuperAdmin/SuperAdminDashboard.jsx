@@ -1,5 +1,5 @@
 ﻿import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { 
   getCentersStats, 
   getUsersStats, 
@@ -9,6 +9,7 @@ import {
 import { FiHome, FiCreditCard, FiBell, FiUsers } from "react-icons/fi";
 
 const SuperAdminDashboard = () => {
+  const navigate = useNavigate();
   const [stats, setStats] = useState({
     activeCenters: 0,
     pendingApplications: 0,
@@ -106,7 +107,18 @@ const SuperAdminDashboard = () => {
         ].map((s, i) => (
           <div
             key={i}
-            className="bg-white/5 border border-white/10 rounded-2xl p-5 text-center"
+            className="bg-white/5 border border-white/10 rounded-2xl p-5 text-center hover:bg-white/10 hover:cursor-pointer transition-all hover:scale-[1.02]"
+            onClick={() => {
+              if (s.label === 'Active Centers') {
+                navigate('/superadmin/manage-centers?filter=active');
+              } else if (s.label === 'Pending Applications') {
+                navigate('/superadmin/manage-centers?filter=pending');
+              } else if (s.label === 'Total Users') {
+                navigate('/superadmin/users');
+              } else if (s.label === 'Subscription Plans') {
+                navigate('/superadmin/manage-subscription-plans');
+              }
+            }}
           >
             <p className={`text-3xl font-bold ${s.color}`}>{s.value}</p>
             <p className="text-gray-400 text-sm mt-1">{s.label}</p>

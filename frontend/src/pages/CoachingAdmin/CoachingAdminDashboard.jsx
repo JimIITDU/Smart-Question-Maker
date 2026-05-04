@@ -329,7 +329,7 @@ const CoachingAdminDashboard = () => {
               </div>
             </div>
             <Link
-              to="/coaching-admin/apply"
+              to="/coachingadmin/apply-for-center"
               className="px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-xl font-bold hover:shadow-lg transition-all flex items-center gap-2"
             >
               <FiHome /> Apply for Centre

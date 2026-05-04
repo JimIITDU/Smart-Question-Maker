@@ -85,6 +85,20 @@ const TeacherDashboard = () => {
       desc: "Start a live quiz session",
     },
     {
+      label: "Manage Courses",
+      path: "/teacher/courses",
+      icon: FiBookOpen,
+      color: "from-indigo-500 to-blue-500",
+      desc: "Manage your courses",
+    },
+    {
+      label: "Create Course",
+      path: "/teacher/courses/create",
+      icon: FiPlus,
+      color: "from-green-500 to-emerald-500",
+      desc: "Add new course",
+    },
+    {
       label: "Upload Material",
       path: "/teacher/upload-material",
       icon: FiUpload,

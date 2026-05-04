@@ -55,6 +55,8 @@ import LiveQuiz from "./pages/Teacher/LiveQuiz.jsx";
 import Analytics from "./pages/Teacher/Analytics.jsx";
 import UploadMaterial from "./pages/Teacher/UploadMaterial.jsx";
 import ApplyToCenter from "./pages/Teacher/ApplyToCenter.jsx";
+import TeacherManageCourses from "./pages/Teacher/ManageCourses.jsx";
+import TeacherCreateCourse from "./pages/Teacher/CreateCourse.jsx";
 
 // Student pages (role_id = 5)
 import StudentDashboard from "./pages/Student/StudentDashboard.jsx";
@@ -157,7 +159,10 @@ function App() {
               <Route path="/teacher/analytics" element={<Analytics />} />
               <Route path="/teacher/upload-material" element={<UploadMaterial />} />
               <Route path="/teacher/apply-to-center" element={<ApplyToCenter />} />
+              <Route path="/teacher/courses" element={<TeacherManageCourses />} />
+              <Route path="/teacher/courses/create" element={<TeacherCreateCourse />} />
             </Route>
+
 
             {/* -------------------- STUDENT (role_id: 5) -------------------- */}
             <Route element={<RoleBasedRoute allowedRoles={[5]} />}>

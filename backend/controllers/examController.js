@@ -6,6 +6,7 @@ const llmService = require("../services/llmService");
 const centerModel = require("../models/centerModel");
 const pdfService = require("../services/pdfService");
 const archiver = require("archiver");
+const notificationController = require("./notificationController");
 
 const examController = {
   checkEnrollmentForStudent: async (req, res, next) => {
@@ -49,8 +50,8 @@ const examController = {
     try {
       const {
         course_id, subject_id, batch_id, exam_type, start_time, end_time,
-        question_ids, title, duration_minutes, total_marks, pass_mark,
-        instructions, num_sets = 1, overlap_pct = 0
+        question_ids, title, duration_minutes, total_marks, pass_mark, negative_marks = 0,
+        instructions, num_sets = 1, overlap_pct = 0, view_mode = 'vertical'
       } = req.body;
 
       const host_teacher_id = req.user?.user_id || req.user?.id;
@@ -102,10 +103,13 @@ const examController = {
         end_time: formattedEnd,
         access_code,
         total_marks: calculatedTotalMarks,
+        negative_marks,
         pass_mark: pass_mark || null,
         instructions: instructions || '',
         num_sets,
-        overlap_pct
+        overlap_pct,
+        view_mode,
+        skip_allowed: true
       });
 
       if (Array.isArray(question_ids) && question_ids.length > 0) {
@@ -128,7 +132,108 @@ const examController = {
     }
   },
 
-  // Get all exams
+  addQuestionsByMode: async (req, res) => {
+    try {
+      const exam_id = req.params.id;
+      const { mode, params } = req.body; // mode: 'manual'|'random'|'ai'|'mix', params: filters/count etc
+
+      const exam = await examModel.getExamById(exam_id);
+      if (!exam) return res.status(404).json({ success: false, message: "Exam not found" });
+
+      let question_ids = [];
+
+      switch (mode) {
+        case 'manual':
+          question_ids = params.question_ids || [];
+          break;
+        case 'random':
+          question_ids = await questionModel.getRandomQuestions(
+            req.user.coaching_center_id,
+            params.subject_id,
+            params.difficulty,
+            params.count || 10,
+            req.user.user_id
+          ).then(rows => rows.map(q => q.question_id));
+          break;
+        case 'ai':
+          const aiQuestions1 = await llmService.generateQuestion('zero-shot', params);
+          question_ids = await questionModel.bulkCreateQuestions(aiQuestions1.map(q => ({
+            ...q,
+            coaching_center_id: req.user.coaching_center_id,
+            created_by: req.user.user_id,
+            source: 'ai_exam_gen'
+          })));
+          break;
+        case 'mix':
+          // 50% random bank, 50% AI
+          const half = Math.floor((params.count || 20) / 2);
+          const randomIds = await questionModel.getRandomQuestions(
+            req.user.coaching_center_id,
+            params.subject_id,
+            params.difficulty,
+            half,
+            req.user.user_id
+          ).then(rows => rows.map(q => q.question_id));
+          const aiQuestions2 = await llmService.generateQuestion('zero-shot', {...params, count: half});
+          const aiIds = await questionModel.bulkCreateQuestions(aiQuestions2.map(q => ({
+            ...q,
+            coaching_center_id: req.user.coaching_center_id,
+            created_by: req.user.user_id,
+            source: 'ai_exam_mix'
+          })));
+          question_ids = [...randomIds, ...aiIds];
+          break;
+        default:
+          return res.status(400).json({ success: false, message: "Invalid mode" });
+      }
+
+      await examModel.addQuestionsToExam(exam_id, question_ids, params.num_sets || 1, params.overlap_pct || 0);
+
+      res.json({ success: true, data: { added: question_ids.length, ids: question_ids } });
+    } catch (error) {
+      console.error("addQuestionsByMode error:", error);
+      res.status(500).json({ success: false, message: error.message });
+    }
+  },
+
+  updateExamQuestions: async (req, res) => {
+    try {
+      const exam_id = req.params.id;
+      const { question_ids, order, num_sets, overlap_pct } = req.body;
+
+      // Clear existing
+      await db.query('DELETE FROM exam_questions WHERE exam_id = $1', [exam_id]);
+
+      // Add reordered
+      await examModel.addQuestionsToExam(exam_id, question_ids || [], num_sets || 1, overlap_pct || 0);
+
+      res.json({ success: true, message: "Questions updated successfully" });
+    } catch (error) {
+      console.error("updateExamQuestions error:", error);
+      res.status(500).json({ success: false, message: error.message });
+    }
+  },
+
+  publishExam: async (req, res) => {
+    try {
+      const exam_id = req.params.id;
+      await db.query('UPDATE quiz_exam SET status = $1 WHERE exam_id = $2', ['published', exam_id]);
+      
+      // Notify enrolled students
+      const exam = await examModel.getExamById(exam_id);
+      if (exam.course_id) {
+        await notificationController.sendExamPublishedNotification(exam);
+      }
+
+      res.json({ success: true, message: "Exam published and students notified" });
+    } catch (error) {
+      console.error("publishExam error:", error);
+      res.status(500).json({ success: false, message: error.message });
+    }
+  },
+
+  // ... all existing functions remain the same: getAllExams, getExamById, getExamQuestions, startExam, joinExam, submitExam (with negative), getResults, endExam, evaluateWritten, getAllResults, exportExamPDF
+
   getAllExams: async (req, res) => {
     try {
       let exams;
@@ -157,7 +262,6 @@ const examController = {
     }
   },
 
-  // Get exam by ID
   getExamById: async (req, res) => {
     try {
       const exam = await examModel.getExamById(req.params.id);
@@ -181,7 +285,6 @@ const examController = {
     }
   },
 
-  // Get exam questions
   getExamQuestions: async (req, res) => {
     try {
       const exam = await examModel.getExamById(req.params.id);
@@ -217,7 +320,6 @@ const examController = {
     }
   },
 
-  // Start exam
   startExam: async (req, res) => {
     try {
       const exam = await examModel.getExamById(req.params.id);
@@ -244,7 +346,6 @@ const examController = {
     }
   },
 
-  // Join exam by access code (live quiz)
   joinExam: async (req, res) => {
     try {
       const { access_code } = req.body;
@@ -290,7 +391,6 @@ const examController = {
     }
   },
 
-  // Submit exam answers
   submitExam: async (req, res) => {
     try {
       // Check if already submitted
@@ -298,6 +398,7 @@ const examController = {
       const exam_id = req.params.id;
 
       const exam = await examModel.getExamById(exam_id);
+      if (!exam.negative_marks) exam.negative_marks = 0;
       if (!exam) {
         return res.status(404).json({
           success: false,
@@ -326,8 +427,9 @@ const examController = {
         );
 
         let marks_obtained = 0;
+        let wrongAnswers = 0;
 
-        // Auto grade MCQ - support multiple correct answers
+        // Auto grade MCQ - support multiple correct answers + negative
         if (question.question_type === "mcq") {
           const correctOptions = question.correct_option
             ? question.correct_option
@@ -354,7 +456,18 @@ const examController = {
               marks_obtained =
                 (selectedOptions.length / correctOptions.length) *
                 question.max_marks;
+            } else {
+              // Wrong answer - negative marking
+              wrongAnswers = 1;
             }
+          } else if (selectedOptions.length > 0) {
+            wrongAnswers = 1;
+          }
+          
+          // Apply negative marking
+          if (wrongAnswers > 0 && exam.negative_marks > 0) {
+            marks_obtained -= exam.negative_marks;
+            marks_obtained = Math.max(0, marks_obtained); // No negative score
           }
         }
 
@@ -433,7 +546,6 @@ const examController = {
     }
   },
 
-  // Get student results
   getResults: async (req, res) => {
     try {
       const results = await examModel.getStudentResults(
@@ -463,7 +575,6 @@ const examController = {
     }
   },
 
-  // End exam
   endExam: async (req, res) => {
     try {
       const exam = await examModel.getExamById(req.params.id);
@@ -490,7 +601,6 @@ const examController = {
     }
   },
 
-  // Evaluate written answers with LLM (teacher endpoint)
   evaluateWritten: async (req, res) => {
     try {
       const exam_id = req.params.id;
@@ -551,7 +661,6 @@ const examController = {
     }
   },
 
-  // Get all results for an exam (teacher endpoint)
   getAllResults: async (req, res) => {
     try {
       const results = await examModel.getAllResultsByExam(req.params.id);
@@ -570,7 +679,6 @@ const examController = {
     }
   },
 
-  // Export exam as PDF sets with answer keys
   exportExamPDF: async (req, res) => {
     try {
       const examId = req.params.id;

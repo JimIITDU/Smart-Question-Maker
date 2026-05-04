@@ -9,14 +9,14 @@ const ManageCenters = () => {
   const [centers, setCenters] = useState([]);
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState("all");
+  const [filter, setFilter] = useState(new URLSearchParams(window.location.search).get('filter') || "all");
 
   // Modals
   const [rejectModal, setRejectModal] = useState({ open: false, centerId: null, reason: "" });
-  /* Assign Plan states - commented out
+  // Assign Plan states
   const [assignModal, setAssignModal] = useState({ open: false, centerId: null });
   const [selectedPlanId, setSelectedPlanId] = useState("");
-  */
+
 
   const fetchCenters = useCallback(async () => {
     try {
@@ -63,9 +63,33 @@ const ManageCenters = () => {
     }
   };
 
-  /* Assign Plan handlers - commented out
-  // const handleAssignPlan = async () => { ... }
-  */
+  // Assign Plan handlers
+  const handleAssignOpen = (centerId) => {
+    setAssignModal({ open: true, centerId });
+    setSelectedPlanId("");
+  };
+
+  const handleAssignClose = () => {
+    setAssignModal({ open: false, centerId: null });
+    setSelectedPlanId("");
+  };
+
+  const handleAssignPlan = async () => {
+    if (!selectedPlanId) {
+      toast.error("Please select a plan");
+      return;
+    }
+
+    try {
+      await assignCenterSubscription(assignModal.centerId, { plan_id: selectedPlanId });
+      toast.success("Subscription plan assigned successfully!");
+      handleAssignClose();
+      fetchCenters(); // Refresh to show new plan
+    } catch (error) {
+      toast.error("Failed to assign plan");
+    }
+  };
+
 
   const statusColor = (status) => {
     const colors = {
@@ -98,17 +122,7 @@ const ManageCenters = () => {
     handleRejectClose();
   };
 
-  /* Assign Plan handlers - commented out
-  const handleAssignOpen = (centerId) => {
-    setAssignModal({ open: true, centerId });
-    setSelectedPlanId("");
-  };
 
-  const handleAssignClose = () => {
-    setAssignModal({ open: false, centerId: null });
-    setSelectedPlanId("");
-  };
-  */
 
   if (loading) {
     return (
@@ -175,6 +189,12 @@ const ManageCenters = () => {
                       <div>✉️ {center.email}</div>
                       <div>📞 {center.contact_number}</div>
                       <div>📅 {new Date(center.created_at).toLocaleDateString()}</div>
+                      {center.plan_name && (
+                        <div className="flex items-center gap-2 text-emerald-400">
+                          <span className="w-2 h-2 bg-emerald-400 rounded-full"></span>
+                          Plan: {center.plan_name} ({center.price ? `৳${center.price}/mo` : 'Free'})
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -209,13 +229,13 @@ const ManageCenters = () => {
                       >
                         <FiX size={12} /> Deactivate
                       </button>
-      {/* TEMPORARILY DISABLED - Assign Plan 
-        <button
-        onClick={() => handleAssignOpen(center.coaching_center_id)}
-        className="flex items-center gap-1 px-3 py-1.5 bg-blue-500/20 text-blue-300 border border-blue-500/30 rounded-xl text-xs hover:bg-blue-500/30 transition-all"
-      >
-        <FiChevronDown size={12} /> Assign Plan
-      </button> */}
+                      <button
+                        onClick={() => handleAssignOpen(center.coaching_center_id)}
+                        className="flex items-center gap-1 px-3 py-1.5 bg-blue-500/20 text-blue-300 border border-blue-500/30 rounded-xl text-xs hover:bg-blue-500/30 transition-all"
+                      >
+                        <FiChevronDown size={12} /> Assign Plan
+                      </button>
+                    
                     </>
                   )}
                   {center.status === "inactive" && (
@@ -275,10 +295,51 @@ const ManageCenters = () => {
         )}
 
         {/* Assign Plan Modal */}
-{/* Assign Plan Modal - commented out
-{assignModal.open && (
-  <div ... entire modal JSX
-)} */}
+        {assignModal.open && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={handleAssignClose}>
+            <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+              <h2 className="text-xl font-bold mb-4 text-white">Assign Subscription Plan</h2>
+              <p className="text-gray-400 mb-6 text-sm">Select a plan for this center:</p>
+              
+              <div className="space-y-2 mb-6 max-h-64 overflow-y-auto">
+                {plans.map((plan) => (
+                  <label key={plan.plan_id} className="flex items-center gap-3 p-3 bg-white/5 rounded-xl hover:bg-white/10 cursor-pointer transition-all">
+                    <input
+                      type="radio"
+                      value={plan.plan_id}
+                      checked={selectedPlanId === plan.plan_id.toString()}
+                      onChange={(e) => setSelectedPlanId(e.target.value)}
+                      className="w-4 h-4 text-blue-600 bg-white/10 border-white/20 rounded focus:ring-blue-500 focus:ring-2"
+                    />
+                    <div>
+                      <div className="font-semibold text-white">{plan.name}</div>
+                      <div className="text-sm text-gray-400">
+                        {plan.price ? `৳${plan.price}/month` : 'Free'} • {plan.max_students || 'Unlimited'} students
+                      </div>
+                    </div>
+                  </label>
+                ))}
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={handleAssignPlan}
+                  disabled={!selectedPlanId}
+                  className="flex-1 bg-blue-500/90 text-white py-2.5 px-4 rounded-xl font-semibold hover:bg-blue-600 disabled:bg-blue-500/50 disabled:cursor-not-allowed transition-all"
+                >
+                  Assign Plan
+                </button>
+                <button
+                  onClick={handleAssignClose}
+                  className="flex-1 bg-white/10 text-gray-300 py-2.5 px-4 rounded-xl hover:bg-white/20 transition-all"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
       </main>
     </div>
   );

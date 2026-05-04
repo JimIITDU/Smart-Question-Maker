@@ -18,16 +18,15 @@ const centerModel = {
       owner_name,
       owner_nid,
       owner_phone,
-      owner_photo,
-      nid_front,
-      nid_back,
     } = data;
+    const coaching_admin_id = user_id; // Simplify: same as user_id
+    
     const result = await db.query(
       `INSERT INTO coaching_center
-       (user_id, coaching_admin_id, center_name, center_type, established_year, address_division, address_district, address_upazila, address_full, center_phone, center_email, website, description, owner_name, owner_nid, owner_phone, owner_photo, nid_front, nid_back, status, submitted_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, 'pending', NOW())
+       (user_id, center_name, center_type, established_year, address_division, address_district, address_upazila, address_full, center_phone, center_email, website, description, owner_name, owner_nid, owner_phone, status, submitted_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, 'pending', NOW())
        RETURNING coaching_center_id`,
-      [user_id, data.coaching_admin_id, center_name, center_type, established_year, address_division, address_district, address_upazila, address_full, center_phone, center_email, website, description, owner_name, owner_nid, owner_phone, owner_photo, nid_front, nid_back],
+      [user_id, center_name, center_type, established_year, address_division, address_district, address_upazila, address_full, center_phone, center_email, website, description, owner_name, owner_nid, owner_phone],
     );
     return result.rows[0].coaching_center_id;
   },
@@ -118,13 +117,13 @@ const centerModel = {
   // Update center subscription
   updateCenterSubscription: async (centerId, planId) => {
     const result = await db.query(
-      `UPDATE coaching_center 
+`UPDATE coaching_center 
        SET current_plan_id = $1, 
            subscription_start = NOW(),
            subscription_end = NOW() + INTERVAL '30 days',
-           access_type = CASE WHEN $1 = 1 THEN 'free' ELSE 'paid' END
+           access_type = CASE WHEN (SELECT price FROM subscription_plans WHERE plan_id = $1) = 0 THEN 'free'::access_type_enum ELSE 'paid'::access_type_enum END
        WHERE coaching_center_id = $2
-       RETURNING *`,
+       RETURNING *`
       [planId, centerId],
     );
     return result.rows[0];

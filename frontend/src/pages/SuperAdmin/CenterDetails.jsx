@@ -1,38 +1,90 @@
 import React, { useState, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
-import { getCenterById, approveCenter, rejectCenter } from "../../services/api";
+import { getCenterById, getAdminUsers, approveCenter, rejectCenter } from "../../services/api";
 import toast from "react-hot-toast";
 import { FiArrowLeft, FiCheck, FiX } from "react-icons/fi";
 
 const CenterDetails = () => {
   const { id } = useParams();
   const [center, setCenter] = useState(null);
+  const [stats, setStats] = useState({
+    teachersCount: 0,
+    studentsCount: 0,
+    examsCount: 0
+  });
   const [loading, setLoading] = useState(true);
+  const [statsLoading, setStatsLoading] = useState(true);
 
   useEffect(() => {
-    getCenterById(id)
-      .then((r) => setCenter(r.data.data))
-      .catch(() => toast.error("Failed to load center"))
-      .finally(() => setLoading(false));
+    const loadCenter = async () => {
+      try {
+        const res = await getCenterById(id);
+        setCenter(res.data.data);
+      } catch (error) {
+        console.error('Load center error:', error);
+        toast.error("Failed to load center");
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadCenter();
   }, [id]);
+
+  useEffect(() => {
+    if (!center) return;
+    
+    // Load stats
+    const loadStats = async () => {
+      try {
+        // Teachers: active users with role 3 assigned to center
+        const teachersRes = await getAdminUsers({
+          role: 3,
+          search: '',
+          page: 1
+        });
+        const centerTeachers = teachersRes.data.data.filter(u => u.coaching_center_id === parseInt(id) && u.is_active);
+        setStats(prev => ({ ...prev, teachersCount: centerTeachers.length }));
+
+        // Students: role 5
+        const studentsRes = await getAdminUsers({
+          role: 5,
+          search: '',
+          page: 1
+        });
+        const centerStudents = studentsRes.data.data.filter(u => u.coaching_center_id === parseInt(id) && u.is_active);
+        setStats(prev => ({ ...prev, studentsCount: centerStudents.length }));
+
+        // Exams: approximate from all exams, would need center_id filter in backend
+        setStats(prev => ({ ...prev, examsCount: 0 })); // TODO: backend endpoint
+      } catch (error) {
+        console.error('Load stats error:', error);
+        // Ignore stats errors
+      } finally {
+        setStatsLoading(false);
+      }
+    };
+    loadStats();
+  }, [center, id]);
 
   const handleApprove = async () => {
     try {
       await approveCenter(id);
       toast.success("Center approved!");
       setCenter({ ...center, status: "active" });
-    } catch {
-      toast.error("Failed");
+    } catch (error) {
+      console.error('Approve error:', error);
+      toast.error("Failed to approve center");
     }
   };
 
   const handleReject = async () => {
     try {
       await rejectCenter(id);
-      toast.success("Center rejected");
-      setCenter({ ...center, status: "inactive" });
-    } catch {
-      toast.error("Failed");
+      toast.success("Center rejected!");
+      setCenter({ ...center, status: "rejected" });
+    } catch (error) {
+      console.error('Reject error:', error);
+      toast.error("Failed to reject center");
     }
   };
 
@@ -68,6 +120,12 @@ const CenterDetails = () => {
                   >
                     {center.status}
                   </span>
+                  {center.plan_name && (
+                    <div className="mt-2 p-2 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
+                      <span className="text-emerald-400 font-semibold">{center.plan_name}</span>
+                      {center.price && <span className="text-sm ml-2 text-emerald-300">({center.price ? `৳${center.price}/mo` : 'Free'})</span>}
+                    </div>
+                  )}
                 </div>
                 {center.status === "pending" && (
                   <div className="flex gap-2">
@@ -86,7 +144,9 @@ const CenterDetails = () => {
                   </div>
                 )}
               </div>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+
+              {/* Basic Info */}
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-6 mb-8">
                 {[
                   { label: "Location", value: center.location },
                   { label: "Contact", value: center.contact_number },
@@ -112,6 +172,27 @@ const CenterDetails = () => {
                     </p>
                   </div>
                 ))}
+              </div>
+
+              {/* Usage Stats */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+                  <h3 className="text-lg font-bold text-white mb-4">Teachers</h3>
+                  <div className="text-3xl font-bold text-emerald-400 mb-2">{stats.teachersCount || 0}</div>
+                  <p className="text-gray-400">{statsLoading ? 'Loading...' : 'Active teachers assigned'}</p>
+                </div>
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+                  <h3 className="text-lg font-bold text-white mb-4">Students</h3>
+                  <div className="text-3xl font-bold text-blue-400 mb-2">{stats.studentsCount || 0}</div>
+                  <p className="text-gray-400">{statsLoading ? 'Loading...' : 'Active enrolled students'}</p>
+                </div>
+              </div>
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-6 mt-6">
+                <h3 className="text-lg font-bold text-white mb-4">Exams</h3>
+                <div className="text-3xl font-bold text-purple-400 mb-2">
+                  {typeof stats.examsCount === 'number' ? stats.examsCount : 'N/A'}
+                </div>
+                <p className="text-gray-400">Total exams conducted (approx)</p>
               </div>
             </div>
           </div>

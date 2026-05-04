@@ -59,11 +59,15 @@ app.use("/api/subscription-plans", subscriptionPlanRoutes);
 app.use("/api/teachers", teacherRoutes);
 app.use("/api/admin", adminRoutes);
 
-// Course enrollment routes (mounted at /api/courses)
-app.use("/api/courses", courseEnrollmentRoutes);
+// Course enrollment routes (mounted at /api/courses/enroll)
+app.use("/api/courses/enroll", courseEnrollmentRoutes);
 
 // Legacy enrollments route (kept for backward compatibility)
 app.use("/api/enrollments", courseEnrollmentRoutes);
+
+// New course management routes
+const courseRoutes = require("./routes/courseRoutes");
+app.use("/api/courses", courseRoutes);
 
 // Base route
 app.get("/", (req, res) => {

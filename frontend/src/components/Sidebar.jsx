@@ -1,6 +1,7 @@
-﻿import React from "react";
+﻿import React, { useState, useEffect, useMemo } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
+import { getDashboardStats } from "../services/api.js";
 import {
   FiHome,
   FiFileText,
@@ -25,6 +26,20 @@ const Sidebar = ({ collapsed, mobileOpen, onClose }) => {
   const { user, logoutUser } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const [center, setCenter] = useState(null);
+  const [loadingCenter, setLoadingCenter] = useState(false);
+
+  useEffect(() => {
+    if (user.role_id === 2) {
+      setLoadingCenter(true);
+      getDashboardStats()
+        .then(res => {
+          setCenter(res.data.data.center);
+        })
+        .catch(() => setCenter(null))
+        .finally(() => setLoadingCenter(false));
+    }
+  }, [user]);
 
   const isActive = (path) => {
     const currentPath = location.pathname;
@@ -69,7 +84,8 @@ const Sidebar = ({ collapsed, mobileOpen, onClose }) => {
       { path: "/teacher/questions", label: "Question Bank", icon: FiGrid },
       { path: "/teacher/questions/ai-generate", label: "AI Generator", icon: FiZap },
       { type: "group", label: "Exams" },
-      { path: "/teacher/exams", label: "Manage Exams", icon: FiFileText },
+{ path: "/teacher/exams", label: "Manage Exams", icon: FiFileText },
+      { path: "/teacher/courses", label: "Manage Courses", icon: FiBookOpen },
       { path: "/teacher/live-quiz", label: "Live Quiz", icon: FiPlayCircle },
       { type: "group", label: "Analytics & Others" },
       { path: "/teacher/analytics", label: "Analytics", icon: FiTrendingUp },
@@ -98,7 +114,21 @@ const Sidebar = ({ collapsed, mobileOpen, onClose }) => {
     ],
   };
 
-  const menuItems = roleMenus[user.role_id] || roleMenus[3];
+  const hasActiveCenter = user.role_id === 2 ? center && center.status === 'active' : true;
+  const menuItems = useMemo(() => {
+    let items = roleMenus[user.role_id] || roleMenus[3];
+    
+    if (user.role_id === 2 && !hasActiveCenter) {
+      // Disable management/finance items for coaching admin without center
+      items = items.map(item => ({
+        ...item,
+        disabled: item.path && !item.path.startsWith('/coachingadmin') && 
+                  !['/coachingadmin', '/coachingadmin/apply-for-center'].includes(item.path)
+      }));
+    }
+    
+    return items;
+  }, [user.role_id, hasActiveCenter]);
 
   const handleLogout = () => {
     logoutUser();
@@ -142,22 +172,33 @@ const Sidebar = ({ collapsed, mobileOpen, onClose }) => {
               >
                 {item.label}
               </div>
-            ) : (
-              <Link
-                key={item.path}
-                to={item.path}
-                onClick={onClose}
-                className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl text-sm font-medium transition-all group relative ${
-                  isActive(item.path)
-                    ? "bg-gradient-to-r from-purple-600/20 to-pink-600/20 border-l-2 border-purple-500 text-white"
-                    : "text-gray-400 hover:bg-white/5 hover:text-white"
-                } ${collapsed ? "justify-center px-2" : ""}`}
-                title={collapsed ? item.label : ""}
-              >
-                <item.icon
-                  className={`text-xl flex-shrink-0 transition-colors ${
-                    isActive(item.path) ? "text-purple-400" : ""
+            ) : item.disabled ? (
+                <div
+                  key={item.path}
+                  className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl text-sm font-medium opacity-50 cursor-not-allowed group relative ${
+                    collapsed ? "justify-center px-2" : ""
                   }`}
+                  title="Apply for coaching center first"
+                >
+                  <item.icon className="text-xl flex-shrink-0" />
+                  {!collapsed && <span>{item.label}</span>}
+                </div>
+              ) : (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  onClick={onClose}
+                  className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl text-sm font-medium transition-all group relative ${
+                    isActive(item.path)
+                      ? "bg-gradient-to-r from-purple-600/20 to-pink-600/20 border-l-2 border-purple-500 text-white"
+                      : "text-gray-400 hover:bg-white/5 hover:text-white"
+                  } ${collapsed ? "justify-center px-2" : ""}`}
+                  title={collapsed ? item.label : ""}
+                >
+                  <item.icon
+                    className={`text-xl flex-shrink-0 transition-colors ${
+                      isActive(item.path) ? "text-purple-400" : ""
+                    }`}
                 />
                 {!collapsed && <span>{item.label}</span>}
               </Link>

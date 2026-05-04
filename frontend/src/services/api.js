@@ -104,8 +104,10 @@ export const toggleSubscriptionPlanStatus = (id, data) =>
   API.put(`/subscription-plans/${id}/toggle`, data);
 
 // Academic
-export const createCourse = (data) => API.post("/academic/courses", data);
-export const getAllCourses = () => API.get("/academic/courses");
+// REMOVED conflicting Academic exports - using admin courses now
+// export const createCourse = (data) => API.post("/academic/courses", data);
+// export const getAllCourses = () => API.get("/academic/courses");
+
 export const createBatch = (data) => API.post("/academic/batches", data);
 export const getAllBatches = () => API.get("/academic/batches");
 export const createSubject = (data) => API.post("/academic/subjects", data);
@@ -129,6 +131,9 @@ export const bulkStatusUpdate = (data) =>
 
 // Exams
 export const createExam = (data) => API.post("/exams", data);
+export const addQuestionsByMode = (examId, data) => API.post(`/exams/${examId}/questions/add`, data);
+export const updateExamQuestions = (examId, data) => API.put(`/exams/${examId}/questions`, data);
+export const publishExam = (examId) => API.post(`/exams/${examId}/publish`);
 export const getAllExams = () => API.get("/exams");
 export const getExamById = (id) => API.get(`/exams/${id}`);
 export const getExamQuestions = (id) => API.get(`/exams/${id}/questions`);
@@ -229,12 +234,17 @@ export const checkEnrollment = (courseId) =>
 export const getCourseExams = (courseId) =>
   API.get(`/courses/${courseId}/exams`);
 
-// Admin courses (role_id = 2)
-export const getAdminCourses = () => API.get("/courses/admin/list");
+// Admin courses (role_id = 2) - with aliases for ManageCourses.jsx
+export const getAdminCourses = () => API.get("/courses/admin");
+export const getAllCourses = getAdminCourses;
 export const createCourseAdmin = (data) =>
   API.post("/courses/admin/create", data);
+export const createCourse = createCourseAdmin;
+export const deleteCourseAdmin = (courseId) => API.delete(`/courses/admin/${courseId}`);
 export const updateCourseAdmin = (courseId, data) =>
   API.put(`/courses/admin/${courseId}`, data);
+export const publishCourse = (courseId) => 
+  API.patch(`/courses/${courseId}/lifecycle`, { status: 'published' });
 export const getCourseStudentsAdmin = (courseId) =>
   API.get(`/courses/admin/${courseId}/students`);
 

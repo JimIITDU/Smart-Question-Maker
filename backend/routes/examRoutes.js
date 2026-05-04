@@ -14,6 +14,34 @@ router.post(
   examController.createExam,
 );
 
+// Add questions in different modes (teacher)
+router.post(
+  "/:id/questions/add",
+  authMiddleware,
+  tenantMiddleware,
+  roleMiddleware(2, 3),
+  examController.addQuestionsByMode,
+);
+
+// Exam review/update questions (teacher)
+router.put(
+  "/:id/questions",
+  authMiddleware,
+  tenantMiddleware,
+  roleMiddleware(2, 3),
+  examController.updateExamQuestions,
+);
+
+// Publish exam (teacher)
+router.post(
+  "/:id/publish",
+  authMiddleware,
+  tenantMiddleware,
+  roleMiddleware(2, 3),
+  examController.publishExam,
+);
+
+
 // Get all exams
 router.get(
   "/",

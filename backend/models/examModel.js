@@ -27,9 +27,9 @@ createExam: async (data) => {
       `INSERT INTO quiz_exam (
         coaching_center_id, course_id, subject_id, batch_id, 
         exam_type, host_teacher_id, title, duration_minutes,
-        start_time, end_time, access_code, total_marks, 
+        total_marks, negative_marks, 
         pass_mark, instructions, status
-      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,'draft')
+      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,'draft')
       RETURNING exam_id`,
       [
         coaching_center_id,
@@ -44,6 +44,7 @@ createExam: async (data) => {
         end_time,
         access_code,
         total_marks || 0,
+        data.negative_marks || 0,
         pass_mark || null,
         instructions || ''
       ]
