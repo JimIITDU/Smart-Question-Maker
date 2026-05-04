@@ -7,6 +7,8 @@ import {
 } from "../../services/api";
 import {
   FiBook,
+  FiBookOpen,
+  FiPlus,
   FiFileText,
   FiBarChart2,
   FiUpload,
