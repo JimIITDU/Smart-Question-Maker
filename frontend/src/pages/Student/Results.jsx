@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import { getExamById, getResults } from "../../services/api";
-import { FiPrinter, FiAward, FiCheckCircle, FiXCircle, FiCpu } from "react-icons/fi";
+import { FiPrinter, FiAward, FiBarChart2, FiCheckCircle, FiXCircle, FiCpu } from "react-icons/fi";
 import toast from "react-hot-toast";
 
 const Results = () => {

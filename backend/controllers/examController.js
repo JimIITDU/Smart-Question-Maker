@@ -5,7 +5,7 @@ const teacherModel = require("../models/teacherModel");
 const llmService = require("../services/llmService");
 const centerModel = require("../models/centerModel");
 const pdfService = require("../services/pdfService");
-const archiver = require("archiver");
+
 const notificationController = require("./notificationController");
 
 const examController = {
@@ -681,9 +681,9 @@ const examController = {
   exportExamPDF: async (req, res) => {
     try {
       const examId = req.params.id;
-      const numSets = parseInt(req.query.numSets) || 2;
+      const numSets = parseInt(req.query.numSets) || 1;
 
-      // Validate numSets
+      // Validate numSets (None=1, 2,3,4)
       if (numSets < 1 || numSets > 4) {
         return res.status(400).json({
           success: false,
@@ -720,42 +720,21 @@ const examController = {
         });
       }
 
-      // Generate PDF sets
-      const sets = await pdfService.generateExamSets(
+      // Generate combined PDF
+      const pdfBuffer = await pdfService.generateCombinedPDF(
         exam,
         center,
         questions,
-        numSets,
+        numSets
       );
 
-      // Create ZIP archive
-      const archive = archiver("zip", { zlib: { level: 9 } });
-
-      res.setHeader("Content-Type", "application/zip");
+      const safeTitle = (exam.title || "Exam").replace(/[^\w\s-]/g, "").replace(/\s+/g, "_");
+      res.setHeader("Content-Type", "application/pdf");
       res.setHeader(
         "Content-Disposition",
-        `attachment; filename="${(exam.title || "Exam").replace(/\s+/g, "_")}_Sets.zip"`,
+        `attachment; filename="${safeTitle}_Sets_${numSets}.pdf"`
       );
-
-      archive.on("error", (err) => {
-        console.error("Archive error:", err);
-        if (!res.headersSent) {
-          res.status(500).json({
-            success: false,
-            message: "Failed to create ZIP archive",
-          });
-        }
-      });
-
-      archive.pipe(res);
-
-      // Add exam PDFs and answer keys to archive
-      sets.forEach((set) => {
-        archive.append(set.examPDF, { name: set.examFilename });
-        archive.append(set.answerKeyPDF, { name: set.answerKeyFilename });
-      });
-
-      await archive.finalize();
+      res.send(pdfBuffer);
     } catch (error) {
       console.error("exportExamPDF error:", error);
       if (!res.headersSent) {

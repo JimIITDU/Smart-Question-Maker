@@ -554,8 +554,176 @@ async function generateExamSets(exam, center, questions, numSets = 2) {
   return results;
 }
 
+/**
+ * Generate single combined PDF with all sets and answer keys
+ * @param {Object} exam 
+ * @param {Object} center 
+ * @param {Array} questions 
+ * @param {number} numSets 
+ * @returns {Promise<Buffer>}
+ */
+async function generateCombinedPDF(exam, center, questions, numSets = 1) {
+  const setsCount = Math.min(Math.max(numSets, 1), 4);
+  const doc = new PDFDocument({ margin: 50, size: "A4" });
+  const buffers = [];
+
+  doc.on("data", (chunk) => buffers.push(chunk));
+  doc.on("end", () => {});
+
+  try {
+    const pageWidth = doc.page.width - 100;
+
+    // COVER PAGE
+    doc.fontSize(20).font("Helvetica-Bold").text(center?.center_name || "Coaching Center", 50, 80, { align: "center", width: pageWidth });
+    doc.moveTo(50, 110).lineTo(doc.page.width - 50, 110).stroke("#2563eb");
+    doc.moveDown(0.5);
+
+    doc.fontSize(22).font("Helvetica-Bold").text(exam.title || "Exam Paper", { align: "center", width: pageWidth });
+    doc.fontSize(16).text(`Multiple Sets Included (${setsCount} sets: A-${SET_LABELS[setsCount-1]})`, { align: "center", width: pageWidth });
+    doc.moveDown(1);
+
+    doc.fontSize(12).font("Helvetica").text(`Duration: ${exam.duration_minutes || 60} minutes | Total Marks: ${calculateTotalMarks(questions)}`, { align: "center", width: pageWidth });
+    doc.text(`Generated: ${new Date().toLocaleDateString()}`, { align: "center", width: pageWidth });
+    
+    doc.addPage();
+
+    // GENERATE EACH SET
+    for (let i = 0; i < setsCount; i++) {
+      const setLabel = SET_LABELS[i];
+      const setQuestions = generateSet(questions, setLabel);
+
+      // SET EXAM PAPER SECTION
+      doc.fontSize(18).font("Helvetica-Bold").fillColor("#dc2626").text(`SET ${setLabel} - EXAM PAPER`, 50, 50);
+      doc.fillColor("#000");
+
+      // Exam info box (reuse logic from generateExamPDF)
+      const infoY = doc.y + 10;
+      doc.rect(50, infoY, pageWidth, 60).stroke("#cccccc");
+      doc.fontSize(10).text(`Subject: ${exam.subject_name || "N/A"}`, 60, infoY + 8);
+      doc.text(`Duration: ${exam.duration_minutes || 60} minutes`, 60 + pageWidth/3, infoY + 8);
+      doc.text(`Total Marks: ${calculateTotalMarks(setQuestions)}`, 60 + 2*(pageWidth/3), infoY + 8);
+      doc.text(`Batch: ${exam.batch_name || "N/A"}`, 60, infoY + 32);
+      doc.text(`Set: ${setLabel}`, 60 + pageWidth/3, infoY + 32);
+      
+      doc.moveDown(3);
+
+      // Instructions
+      doc.fontSize(11).font("Helvetica-Bold").text("Instructions:", 50);
+      doc.moveDown(0.3);
+      doc.fontSize(9);
+      doc.text("1. Read all questions carefully before answering.", { indent: 10 });
+      doc.text("2. All questions are compulsory unless stated otherwise.", { indent: 10 });
+      doc.text("3. Write your answers clearly and legibly.", { indent: 10 });
+      doc.moveDown(1.5);
+      doc.moveTo(50, doc.y).lineTo(doc.page.width - 50, doc.y).stroke("#cccccc");
+      doc.moveDown(1);
+
+      // Questions (mimic generateExamPDF question rendering)
+      setQuestions.forEach((q, idx) => {
+        if (doc.y > doc.page.height - 150) {
+          doc.addPage();
+          doc.fontSize(10).fillColor("#666").text(`SET ${setLabel} - EXAM PAPER`, 50, 30);
+          doc.y = 55;
+          doc.fillColor("#000");
+        }
+
+        const questionY = doc.y;
+        doc.fontSize(11).font("Helvetica-Bold").text(`Q${idx+1}.`, 50, questionY);
+        doc.font("Helvetica");
+        doc.text(q.question_text, 80, questionY, { width: pageWidth - 50 });
+
+        doc.moveDown(0.5);
+        doc.fontSize(8).fillColor("#666");
+        doc.text(`[${q.max_marks || 1} marks] (${q.difficulty || "medium"})`, 80, doc.y);
+        doc.fillColor("#000");
+        doc.moveDown(0.5);
+
+        if (q.question_type === "mcq") {
+          const options = [];
+          if (q.option_text_a) options.push({label: "A", text: q.option_text_a});
+          if (q.option_text_b) options.push({label: "B", text: q.option_text_b});
+          if (q.option_text_c) options.push({label: "C", text: q.option_text_c});
+          if (q.option_text_d) options.push({label: "D", text: q.option_text_d});
+
+          const col1X = 100, col2X = doc.page.width / 2 + 20;
+          options.forEach((opt, optIdx) => {
+            const x = optIdx % 2 === 0 ? col1X : col2X;
+            const y = doc.y + Math.floor(optIdx / 2) * 20;
+            doc.fontSize(10).text(`${opt.label}. ${opt.text}`, x, y);
+          });
+          doc.moveDown(options.length > 2 ? 1.5 : 1);
+        } else {
+          // Descriptive space
+          const boxHeight = 80;
+          doc.rect(80, doc.y, doc.page.width - 160, boxHeight).stroke("#dddddd");
+          doc.moveDown(boxHeight / 14 + 0.5);
+        }
+        doc.moveDown(0.5);
+      });
+
+      doc.addPage();
+
+      // SET ANSWER KEY SECTION
+      doc.fontSize(18).font("Helvetica-Bold").fillColor("#16a34a").text(`SET ${setLabel} - ANSWER KEY`, 50, 50);
+      doc.fillColor("#000");
+      doc.moveDown(1.5);
+      doc.moveTo(50, doc.y).lineTo(doc.page.width - 50, doc.y).stroke("#cccccc");
+      doc.moveDown(1);
+
+      // Answer table header
+      const tableY = doc.y;
+      doc.fontSize(11).font("Helvetica-Bold");
+      doc.text("Q#", 50, tableY);
+      doc.text("Type", 80, tableY);
+      doc.text("Correct Answer", 150, tableY);
+      doc.text("Marks", 380, tableY);
+      doc.text("Model Answer", 430, tableY);
+      doc.moveTo(50, tableY + 18).lineTo(doc.page.width - 50, tableY + 18).stroke("#333");
+      doc.moveDown(1.5);
+
+      setQuestions.forEach((q, idx) => {
+        if (doc.y > doc.page.height - 100) {
+          doc.addPage();
+          doc.fontSize(10).fillColor("#16a34a").text(`SET ${setLabel} - ANSWER KEY`, 50, 30);
+          doc.y = 55;
+          doc.fillColor("#000");
+        }
+
+        const rowY = doc.y;
+        doc.fontSize(10).font("Helvetica");
+        doc.text(`${idx + 1}`, 50, rowY);
+        const typeColor = q.question_type === "mcq" ? "#2563eb" : q.question_type === "descriptive" ? "#9333ea" : "#d97706";
+        doc.fillColor(typeColor).text(q.question_type.toUpperCase(), 80, rowY);
+        doc.fillColor("#000").font("Helvetica-Bold").fillColor("#16a34a");
+        doc.text(q.correct_option || "N/A", 150, rowY);
+        doc.font("Helvetica").fillColor("#000");
+        doc.text(`${q.max_marks || 1}`, 380, rowY);
+        const modelText = q.expected_answer || q.correct_option || "N/A";
+        doc.text(modelText, 430, rowY, { width: doc.page.width - 480 });
+        doc.moveDown(1);
+      });
+    }
+
+    // Global footers
+    const totalPages = doc.bufferedPageRange().count;
+    for (let i = 0; i < totalPages; i++) {
+      doc.switchToPage(i);
+      doc.fontSize(8).fillColor("#999");
+      doc.text(`Page ${i+1} of ${totalPages} | Combined Sets PDF | Confidential`, 50, doc.page.height - 50, { align: "center", width: pageWidth });
+      doc.fillColor("#000");
+    }
+
+    doc.end();
+    return Buffer.concat(buffers);
+  } catch (error) {
+    doc.end();
+    throw error;
+  }
+}
+
 module.exports = {
   generateExamSets,
+  generateCombinedPDF,
   SET_LABELS,
   generateSet,
   calculateTotalMarks,

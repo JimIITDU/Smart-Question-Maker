@@ -26,7 +26,7 @@ const ExamDetails = () => {
   const [loading, setLoading] = useState(true);
   const [evaluating, setEvaluating] = useState(false);
   const [exporting, setExporting] = useState(false);
-  const [numSets, setNumSets] = useState(2);
+  const [numSets, setNumSets] = useState(1);
   const [showExportOptions, setShowExportOptions] = useState(false);
 
   useEffect(() => {
@@ -70,19 +70,20 @@ const ExamDetails = () => {
     setExporting(true);
     try {
       const response = await exportExamPDF(id, numSets);
-      const blob = new Blob([response.data], { type: "application/zip" });
+      const blob = new Blob([response.data], { type: "application/pdf" });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.setAttribute("download", `${exam?.title || "Exam"}_Sets.zip`);
+      const safeTitle = (exam?.title || "Exam").replace(/[^\\w\\s-]/g, "").replace(/\\s+/g, "_");
+      link.setAttribute("download", `${safeTitle}_Sets_${numSets}.pdf`);
       document.body.appendChild(link);
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
-      toast.success(`${numSets} PDF set(s) exported successfully!`);
+      toast.success(`PDF with ${numSets === 1 ? "1 set" : `${numSets} sets`} exported successfully!`);
       setShowExportOptions(false);
     } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to export PDF sets");
+      toast.error(err.response?.data?.message || "Failed to export PDF");
     } finally {
       setExporting(false);
     }
@@ -139,15 +140,10 @@ const ExamDetails = () => {
                       onChange={(e) => setNumSets(parseInt(e.target.value))}
                       className="bg-transparent text-white text-sm px-2 py-1 outline-none"
                     >
-                      <option value={2} className="bg-[#1a1a2e]">
-                        2 Sets
-                      </option>
-                      <option value={3} className="bg-[#1a1a2e]">
-                        3 Sets
-                      </option>
-                      <option value={4} className="bg-[#1a1a2e]">
-                        4 Sets
-                      </option>
+                      <option value={1}>None (1 Set)</option>
+                      <option value={2}>2 Sets</option>
+                      <option value={3}>3 Sets</option>
+                      <option value={4}>4 Sets</option>
                     </select>
                     <button
                       onClick={handleExportPDF}
@@ -160,7 +156,7 @@ const ExamDetails = () => {
                         </>
                       ) : (
                         <>
-                          <FiDownload size={14} /> Export
+                          <FiDownload size={14} /> Export PDF
                         </>
                       )}
                     </button>
@@ -176,7 +172,7 @@ const ExamDetails = () => {
                     onClick={() => setShowExportOptions(true)}
                     className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl font-semibold text-sm hover:shadow-lg transition-all"
                   >
-                    <FiDownload /> Export PDF Sets
+                    <FiDownload /> Export PDF
                   </button>
                 )}
                 {pendingEvaluations > 0 && (
