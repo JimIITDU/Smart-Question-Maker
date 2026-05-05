@@ -16,9 +16,6 @@ router.get('/centers/stats', adminController.getCentersStats);
 // GET /api/admin/users/stats - total users
 router.get('/users/stats', adminController.getUsersStats);
 
-// PATCH /api/admin/users/:id/status - toggle active/inactive
-router.patch('/users/:id/status', adminController.updateUserStatus);
-
 // POST /api/admin/users/:id/reset-password - generate temp pwd
 router.post('/users/:id/reset-password', adminController.resetUserPassword);
 

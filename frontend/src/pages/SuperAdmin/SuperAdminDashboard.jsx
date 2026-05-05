@@ -68,13 +68,13 @@ const SuperAdminDashboard = () => {
       color: "from-indigo-500 to-blue-500",
       desc: `${stats.totalUsers} total users`,
     },
-    {
-      label: "Notifications",
-      path: "/notifications",
-      icon: FiBell,
-      color: "from-rose-500 to-pink-500",
-      desc: "Platform notifications",
-    },
+    // {
+    //   label: "Notifications",
+    //   path: "/notifications",
+    //   icon: FiBell,
+    //   color: "from-rose-500 to-pink-500",
+    //   desc: "Platform notifications",
+    // },
   ];
 
   return (

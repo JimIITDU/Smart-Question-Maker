@@ -3,10 +3,9 @@ import { useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import {
   getAdminUsers,
-  updateUserStatus,
   resetUserPassword,
 } from '../../services/api';
-import { FiSearch, FiEye, FiToggleLeft, FiToggleRight, FiKey, FiX } from 'react-icons/fi';
+import { FiSearch, FiEye, FiKey, FiX } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext.jsx';
 
 const roleConfig = {
@@ -40,10 +39,10 @@ const ManageUsers = () => {
   useEffect(() => {
     const timeout = setTimeout(() => {
       setPage(1);
-      setSearchParams({ search, role: filter, page: '1' });
+      setSearchParams({ search, role: filter === 'all' ? '' : filter, page: '1' });
     }, 400);
     return () => clearTimeout(timeout);
-  }, [search, filter]);
+  }, [search, filter, setSearchParams]);
 
   // Fetch users
   useEffect(() => {
@@ -64,19 +63,6 @@ const ManageUsers = () => {
   }, [search, filter, page]);
 
   const getInitials = (name) => name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0,2);
-
-  const handleStatusToggle = async (userId, currentStatus) => {
-    try {
-      await updateUserStatus(userId, !currentStatus);
-      toast.success('Status updated');
-      // Refresh
-      const params = { page: page.toString(), search, role: filter === 'all' ? '' : filter };
-      const res = await getAdminUsers(params);
-      setUsers(res.data.data);
-    } catch (err) {
-      toast.error('Failed to update status');
-    }
-  };
 
   const handleResetPassword = async (userId) => {
     try {
@@ -151,9 +137,7 @@ const ManageUsers = () => {
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300 uppercase tracking-wider">User</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300 uppercase tracking-wider">Email</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300 uppercase tracking-wider">Role</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300 uppercase tracking-wider">Center</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300 uppercase tracking-wider">Joined</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300 uppercase tracking-wider">Status</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
@@ -181,21 +165,9 @@ const ManageUsers = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="text-gray-300">{user.center_name || '-'}</div>
-                      </td>
-                      <td className="px-6 py-4">
                         <div className="text-gray-300 text-sm">
                           {new Date(user.joined_date).toLocaleDateString()}
                         </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                          user.is_active 
-                            ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
-                            : 'bg-red-500/10 text-red-400 border border-red-500/20'
-                        }`}>
-                          {user.is_active ? 'Active' : 'Inactive'}
-                        </span>
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex gap-2">
@@ -205,13 +177,6 @@ const ManageUsers = () => {
                             title="View Details"
                           >
                             <FiEye />
-                          </button>
-                          <button
-                            onClick={() => handleStatusToggle(user.user_id, user.is_active)}
-                            className="p-2 text-gray-400 hover:text-yellow-400 hover:bg-white/10 rounded-lg transition-all"
-                            title={user.is_active ? 'Deactivate' : 'Reactivate'}
-                          >
-                            {user.is_active ? <FiToggleLeft /> : <FiToggleRight />}
                           </button>
                           <button
                             onClick={() => handleResetPassword(user.user_id)}
@@ -293,14 +258,7 @@ const ManageUsers = () => {
                   <label className="text-sm font-semibold text-gray-400 block mb-1">Joined</label>
                   <p>{new Date(viewModal.user.joined_date).toLocaleDateString()}</p>
                 </div>
-                <div>
-                  <label className="text-sm font-semibold text-gray-400 block mb-1">Status</label>
-                  <span className={`px-2 py-1 rounded-full text-xs font-bold ${
-                    viewModal.user.is_active ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'
-                  }`}>
-                    {viewModal.user.is_active ? 'Active' : 'Inactive'}
-                  </span>
-                </div>
+
               </div>
             )}
           </div>
@@ -334,4 +292,3 @@ const ManageUsers = () => {
 };
 
 export default ManageUsers;
-

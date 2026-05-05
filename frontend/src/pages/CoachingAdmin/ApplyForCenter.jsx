@@ -100,8 +100,8 @@ const ApplyForCenter = () => {
     setLoading(true);
     try {
       await applyForCenter(submitData);
-      toast.success("✅ Application submitted successfully! Waiting for Super Admin approval (2-3 days).");
-      navigate("/coachingadmin", { replace: true });
+      toast.success("✅ Application submitted successfully! View your application in History.");
+      navigate("/coachingadmin/application-history", { replace: true });
     } catch (err) {
       const msg = err.response?.data?.message || "Failed to submit application";
       toast.error(`❌ ${msg}`);

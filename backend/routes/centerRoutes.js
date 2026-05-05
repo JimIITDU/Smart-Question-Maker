@@ -114,6 +114,14 @@ router.patch(
   centerController.assignCenterSubscription,
 );
 
+// Get application history (coaching admin)
+router.get(
+  "/my/history", 
+  authMiddleware,
+  roleMiddleware(2),
+  centerController.getApplicationHistory
+);
+
 // Coaching admin updates center
 router.put(
   "/update/:id",

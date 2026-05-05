@@ -20,6 +20,8 @@ import {
   FiShoppingCart,
   FiX,
   FiLogOut,
+  FiBell,
+  FiUser,
 } from "react-icons/fi";
 
 const Sidebar = ({ collapsed, mobileOpen, onClose }) => {
@@ -60,6 +62,7 @@ const Sidebar = ({ collapsed, mobileOpen, onClose }) => {
     1: [ // Super Admin
       { type: "group", label: "Platform" },
       { path: "/superadmin", label: "Dashboard", icon: FiHome },
+      { path: "/superadmin/view-applications", label: "View Applications", icon: FiCalendar },
       { path: "/superadmin/manage-centers", label: "Manage Centers", icon: FiUsers },
 { path: "/superadmin/manage-subscription-plans", label: "Subscription Plans", icon: FiDollarSign },
       { path: "/superadmin/users", label: "Manage Users", icon: FiUsers },
@@ -67,6 +70,37 @@ const Sidebar = ({ collapsed, mobileOpen, onClose }) => {
     2: [ // Coaching Admin
       { type: "group", label: "Dashboard" },
       { path: "/coachingadmin", label: "Dashboard", icon: FiHome },
+      { path: "/coachingadmin/apply-for-center", label: "Apply for Center", icon: FiUsers },
+      { path: "/coachingadmin/application-history", label: "Application History", icon: FiCalendar },
+      { path: "/coachingadmin/center-details", label: "Center Details", icon: FiFileText },
+      { path: "/notifications", label: "Notifications", icon: FiBell },
+      { path: "/profile", label: "Profile", icon: FiUser },
+      { type: "group", label: "Management" },
+      { path: "/coachingadmin/manage-teachers", label: "Teachers", icon: FiUsers },
+      { path: "/coachingadmin/manage-students", label: "Students", icon: FiUsers },
+      { path: "/coachingadmin/manage-staff", label: "Staff", icon: FiUsers },
+      { path: "/coachingadmin/manage-courses", label: "Courses", icon: FiBookOpen },
+      { path: "/coachingadmin/manage-batches", label: "Batches", icon: FiCalendar },
+      { path: "/coachingadmin/manage-subjects", label: "Subjects", icon: FiEdit3 },
+      { type: "group", label: "Finance" },
+      { path: "/coachingadmin/fee-management", label: "Fee Management", icon: FiDollarSign },
+      { path: "/coachingadmin/subscription-management", label: "Subscriptions", icon: FiShoppingCart },
+    ],
+    3: [ // Teacher
+      { path: "/superadmin", label: "Dashboard", icon: FiHome },
+      { path: "/superadmin/view-applications", label: "View Applications", icon: FiCalendar },
+      { path: "/superadmin/manage-centers", label: "Manage Centers", icon: FiUsers },
+{ path: "/superadmin/manage-subscription-plans", label: "Subscription Plans", icon: FiDollarSign },
+      { path: "/superadmin/users", label: "Manage Users", icon: FiUsers },
+    ],
+    2: [ // Coaching Admin
+      { type: "group", label: "Dashboard" },
+      { path: "/coachingadmin", label: "Dashboard", icon: FiHome },
+      { path: "/coachingadmin/apply-for-center", label: "Apply for Center", icon: FiUsers },
+      { path: "/coachingadmin/application-history", label: "Application History", icon: FiCalendar },
+      { path: "/coachingadmin/application-history", label: "Application History", icon: FiCalendar },
+      { path: "/notifications", label: "Notifications", icon: FiBell },
+      { path: "/profile", label: "Profile", icon: FiUser },
       { type: "group", label: "Management" },
       { path: "/coachingadmin/manage-teachers", label: "Teachers", icon: FiUsers },
       { path: "/coachingadmin/manage-students", label: "Students", icon: FiUsers },
@@ -115,29 +149,25 @@ const Sidebar = ({ collapsed, mobileOpen, onClose }) => {
     ],
   };
 
-const noCenter = user.role_id === 2 && center === null;
-  const hasActiveCenter = user.role_id === 2 ? center && center.status === 'active' : true;
+  const isLimitedMode = user.role_id === 2 && (!center || String(center.status)?.toLowerCase() !== 'active');
   
+  const limitedMenu = [
+    { path: "/coachingadmin", label: "Dashboard", icon: FiHome },
+    { path: "/coachingadmin/application-history", label: "Application History", icon: FiCalendar },
+    { path: "/coachingadmin/apply-for-center", label: "Apply for Center", icon: FiUsers },
+    { path: "/notifications", label: "Notifications", icon: FiBell },
+    { path: "/profile", label: "Profile", icon: FiUser },
+  ];
+
   const menuItems = useMemo(() => {
     let items = roleMenus[user.role_id] || roleMenus[3];
     
-    if (noCenter) {
-      // Show ONLY Dashboard and ApplyForCenter for no center
-      items = [
-        { path: "/coachingadmin", label: "Dashboard", icon: FiHome },
-        { path: "/coachingadmin/apply-for-center", label: "Apply for Center", icon: FiUsers },
-      ];
-    } else if (user.role_id === 2 && !hasActiveCenter) {
-      // Disable management/finance items for coaching admin without active center (pending/inactive)
-      items = items.map(item => ({
-        ...item,
-        disabled: item.path && !item.path.startsWith('/coachingadmin') && 
-                  !['/coachingadmin', '/coachingadmin/apply-for-center'].includes(item.path)
-      }));
+    if (isLimitedMode) {
+      return limitedMenu;
     }
     
     return items;
-  }, [user.role_id, hasActiveCenter, center, noCenter]);
+  }, [user.role_id, center, isLimitedMode]);
 
   const handleLogout = () => {
     logoutUser();

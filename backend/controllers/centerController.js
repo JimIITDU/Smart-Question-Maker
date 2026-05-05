@@ -397,6 +397,18 @@ console.error(`Apply center FULL ERROR [user: ${uid}]:`, {
       await centerModel.updateCenterStatus(centerId, status, rejection_reason);
       console.log('Center status updated:', status); // Debug log
 
+      // Create rejection notification if rejected
+      if (status === 'rejected' && center.user_id && rejection_reason) {
+        const notificationModel = require('../models/notificationModel');
+        const message = `Your coaching center application "${center.center_name}" has been rejected. Reason: ${rejection_reason} View your application history for details.`;
+        await notificationModel.createNotification({
+          user_id: center.user_id,
+          message,
+          type: 'center_rejection'
+        });
+        console.log(`Notification sent to user ${center.user_id} for rejected center ${centerId}`);
+      }
+
       res.status(200).json({
         success: true,
         message: `Center status updated to ${status}`,
@@ -444,6 +456,24 @@ console.error(`Apply center FULL ERROR [user: ${uid}]:`, {
       res.status(500).json({
         success: false,
         message: "Server error: " + error.message,
+      });
+    }
+  },
+
+  // Get application history (coaching admin)
+  getApplicationHistory: async (req, res) => {
+    try {
+      const history = await centerModel.getApplicationHistory(req.user.user_id);
+      res.status(200).json({
+        success: true,
+        count: history.length,
+        data: history,
+      });
+    } catch (error) {
+      console.error('getApplicationHistory error:', error);
+      res.status(500).json({
+        success: false,
+        message: "Server error",
       });
     }
   },

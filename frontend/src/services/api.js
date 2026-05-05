@@ -83,6 +83,8 @@ export const upgradeSubscription = (planId) =>
 // Dashboard Stats - Optimized endpoint
 export const getDashboardStats = () => API.get("/center/dashboard-stats");
 
+export const getApplicationHistory = () => API.get("/center/my/history");
+
 // Admin APIs (Super Admin role 1 only)
 export const getAdminUsers = (params) => API.get('/admin/users', { params });
 export const getCentersStats = () => API.get('/admin/centers/stats');

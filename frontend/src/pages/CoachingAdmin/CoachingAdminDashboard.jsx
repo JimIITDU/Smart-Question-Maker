@@ -14,6 +14,8 @@ import {
   FiClock,
   FiCheckCircle,
   FiTrendingUp,
+  FiXCircle,
+  FiCalendar,
 } from "react-icons/fi";
 
 // Simple in-memory cache for dashboard data
@@ -95,8 +97,8 @@ const CoachingAdminDashboard = () => {
 
   // Memoized menu items to prevent unnecessary re-renders
   const menuItems = useMemo(() => {
-    // If no center or pending, show limited menu
-    if (!center || center.status === "pending") {
+    // If no center or pending or rejected, show limited menu
+    if (!center || center.status === "pending" || center.status === "rejected") {
       return [
         {
           label: "Apply for Center",
@@ -104,6 +106,13 @@ const CoachingAdminDashboard = () => {
           icon: FiHome,
           color: "from-blue-500 to-cyan-500",
           desc: "Register your coaching center",
+        },
+        {
+          label: "Application History",
+          path: "/coachingadmin/application-history",
+          icon: FiCalendar,
+          color: "from-indigo-500 to-purple-500",
+          desc: "View past applications",
         },
         {
           label: "Notifications",
@@ -222,7 +231,6 @@ const CoachingAdminDashboard = () => {
       {center ? (
         <>
           {center.status === "pending" ? (
-            // Pending State
             <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-6 mb-8">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
@@ -230,12 +238,9 @@ const CoachingAdminDashboard = () => {
                     <FiClock className="text-amber-400 text-xl" />
                   </div>
                   <div>
-                    <p className="text-amber-400 font-bold mb-1">
-                      Application Pending
-                    </p>
+                    <p className="text-amber-400 font-bold mb-1">Application Pending</p>
                     <p className="text-gray-400 text-sm">
-                      Your coaching center application is under review. You'll
-                      be notified once approved.
+                      Your coaching center application is under review. You'll be notified once approved.
                     </p>
                   </div>
                 </div>
@@ -245,45 +250,34 @@ const CoachingAdminDashboard = () => {
               </div>
             </div>
           ) : center.status === "active" ? (
-            // Active State - Show center info with subscription
             <div className="bg-gradient-to-r from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 rounded-2xl p-6 mb-8">
               <div className="flex items-start justify-between flex-wrap gap-4">
                 <div>
                   <div className="flex items-center gap-3 mb-2">
-                    <p className="text-xs text-gray-500 uppercase tracking-wider">
-                      Your Center
-                    </p>
+                    <p className="text-xs text-gray-500 uppercase tracking-wider">Your Center</p>
                     <span className="px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full text-xs font-bold">
                       Active
                     </span>
                   </div>
-                  <h2 className="text-xl font-bold text-white">
-                    {center.center_name}
-                  </h2>
+                  <h2 className="text-xl font-bold text-white">{center.center_name}</h2>
                   <p className="text-gray-400 text-sm">{center.location}</p>
-
-                  {/* Current Plan Badge */}
                   <div className="flex items-center gap-2 mt-3">
                     <span className="px-3 py-1 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-full text-xs font-bold">
                       Current Plan: {subscription?.plan_name || "Free"}
                     </span>
                     {subscription?.subscription_end && (
                       <span className="px-3 py-1 bg-gray-500/10 text-gray-400 border border-gray-500/20 rounded-full text-xs">
-                        Expires:{" "}
-                        {new Date(
-                          subscription.subscription_end,
-                        ).toLocaleDateString()}
+                        Expires: {new Date(subscription.subscription_end).toLocaleDateString()}
                       </span>
                     )}
                   </div>
                 </div>
-
                 <div className="flex flex-col gap-2">
                   <Link
-                    to="/coaching-admin/subscription"
+                    to="/coachingadmin/subscription-management"
                     className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-teal-600 to-emerald-600 text-white rounded-xl font-semibold text-sm hover:shadow-lg transition-all"
                   >
-                    <FiTrendingUp /> Buy Subscription Plan
+                    <FiTrendingUp /> Manage Subscription
                   </Link>
                   {subscription?.price > 0 && (
                     <span className="text-xs text-gray-500 text-center">
@@ -293,15 +287,41 @@ const CoachingAdminDashboard = () => {
                 </div>
               </div>
             </div>
+          ) : center.status === "rejected" ? (
+            <div className="bg-gradient-to-r from-red-500/10 to-rose-500/10 border border-red-500/20 rounded-2xl p-6 mb-8">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-red-500/20 flex items-center justify-center">
+                    <FiXCircle className="text-red-400 text-xl" />
+                  </div>
+                  <div>
+                    <p className="text-red-400 font-bold mb-1">Application Rejected</p>
+                    <p className="text-gray-400 text-sm">
+                      Your coaching center application was rejected.
+                    </p>
+                    {center.rejection_reason && (
+                      <p className="text-red-300 text-xs mt-1 italic bg-red-500/10 px-3 py-1 rounded-full max-w-md truncate">
+                        "{center.rejection_reason}"
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <Link 
+                  to="/coachingadmin/application-history" 
+                  className="px-4 py-2 bg-red-500/10 text-red-400 border border-red-500/20 rounded-xl text-sm font-bold hover:bg-red-500/20 transition-all"
+                >
+                  View Details
+                </Link>
+              </div>
+            </div>
           ) : (
-            // Inactive/Suspended State
-            <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-6 mb-8">
+            <div className="bg-orange-500/10 border border-orange-500/20 rounded-2xl p-6 mb-8">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-red-500/20 flex items-center justify-center">
-                  <FiCheckCircle className="text-red-400 text-xl" />
+                <div className="w-12 h-12 rounded-xl bg-orange-500/20 flex items-center justify-center">
+                  <FiClock className="text-orange-400 text-xl" />
                 </div>
                 <div>
-                  <p className="text-red-400 font-bold mb-1">Center Inactive</p>
+                  <p className="text-orange-400 font-bold mb-1">Center Inactive</p>
                   <p className="text-gray-400 text-sm">
                     Your center is currently inactive. Please contact support.
                   </p>
@@ -393,8 +413,8 @@ const CoachingAdminDashboard = () => {
         ))}
       </div>
 
-      {/* Quick Info for Pending/No Center */}
-      {(!center || center.status === "pending") && (
+      {/* Quick Info for Pending/No Center/Rejected */}
+      {(!center || center.status === "pending" || center.status === "rejected") && (
         <div className="mt-8 bg-white/5 border border-white/10 rounded-2xl p-6">
           <h3 className="text-white font-bold mb-3">What's Next?</h3>
           <ul className="space-y-2 text-gray-400 text-sm">

@@ -105,33 +105,7 @@ const adminController = {
     }
   },
 
-  // PATCH /api/admin/users/:id/status
-  async updateUserStatus(req, res) {
-    try {
-      const { id } = req.params;
-      const { status } = req.body;
 
-      const newStatus = (status === false || status === 'inactive') ? false : true;
-
-      const result = await db.query(
-        'UPDATE users SET is_active = $1 WHERE user_id = $2 RETURNING *',
-        [newStatus, id]
-      );
-
-      if (result.rowCount === 0) {
-        return res.status(404).json({ success: false, message: 'User not found' });
-      }
-
-      res.json({
-        success: true,
-        message: 'User status updated',
-        data: result.rows[0]
-      });
-    } catch (error) {
-      console.error('Update user status error:', error);
-      res.status(500).json({ success: false, message: 'Server error: ' + error.message });
-    }
-  },
 
   // POST /api/admin/users/:id/reset-password
   async resetUserPassword(req, res) {

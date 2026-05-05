@@ -164,6 +164,19 @@ ORDER BY cc.created_at DESC`,
     );
     return parseInt(result.rows[0].count) || 0;
   },
+
+  // Get all applications/history for a user (coaching admin)
+  getApplicationHistory: async (user_id) => {
+    const result = await db.query(
+      `SELECT cc.*, sp.name as plan_name 
+       FROM coaching_center cc
+       LEFT JOIN subscription_plans sp ON cc.current_plan_id = sp.plan_id
+       WHERE cc.user_id = $1 
+       ORDER BY cc.created_at DESC`,
+      [user_id]
+    );
+    return result.rows;
+  },
 };
 
 module.exports = centerModel;

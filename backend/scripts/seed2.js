@@ -30,13 +30,14 @@ async function seed2() {
     ];
 
     for (const u of users) {
-      const { rows: [{ user_id }] } = await client.query(
+      const result = await client.query(
         `INSERT INTO users (role_id, email, password_hash, name, is_email_verified, status)
          VALUES ($1, $2, $3, $4, true, 'active')
          ON CONFLICT (email) DO NOTHING
          RETURNING user_id`,
         [u.role_id, u.email, PASS, u.name]
       );
+      const user_id = result.rows[0]?.user_id;
       if (user_id) {
         console.log(`  ✅ ${u.email}  (role_id: ${u.role_id})`);
       } else {
