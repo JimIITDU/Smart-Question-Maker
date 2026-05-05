@@ -66,6 +66,7 @@ export const applyForCenterMultipart = (formData) => {
   const config = { headers: { 'Content-Type': 'multipart/form-data' } };
   return API.post("/center/apply", formData, config);
 };
+export const applyForCenter = applyForCenterMultipart;
 export const getMyCenter = () => API.get("/center/my-center");
 export const getMyApplication = () => API.get("/center/my-application");
 export const getAllCenters = () => API.get("/center/all");
@@ -214,7 +215,7 @@ export const assignTeacherToCourse = (data) =>
   API.post("/teachers/assignments", data);
 export const getMyAssignments = () => API.get("/teachers/my-assignments");
 export const getCourseAssignments = (courseId) =>
-  API.get(`/teachers/assignments/course/${courseId}`);
+  API.get(`/courses/${courseId}/assignments`);
 export const removeAssignment = (id) =>
   API.put(`/teachers/assignments/${id}/remove`);
 export const getAvailableTeachers = () => API.get("/teachers/available");
@@ -264,6 +265,14 @@ export const browseCoursesLegacy = (coachingCenterId) =>
   API.get("/enrollments/browse", {
     params: { coaching_center_id: coachingCenterId },
   });
+
+// Study Materials
+export const uploadStudyMaterials = (formData) => API.post("/study-materials/upload", formData, {
+  headers: { 'Content-Type': 'multipart/form-data' }
+});
+export const getCourseMaterials = (courseId) => API.get(`/study-materials/course/${courseId}`);
+export const getTeacherMaterials = () => API.get("/study-materials/teacher");
+export const deleteStudyMaterial = (id) => API.delete(`/study-materials/${id}`);
 
 // Academic Course Enhancements
 export const getActiveCourses = () => API.get("/academic/courses/active");

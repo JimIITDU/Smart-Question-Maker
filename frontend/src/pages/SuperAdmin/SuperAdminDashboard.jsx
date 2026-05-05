@@ -6,7 +6,7 @@ import {
   getAllSubscriptionPlans,
   getUnreadNotifications 
 } from "../../services/api";
-import { FiHome, FiCreditCard, FiBell, FiUsers } from "react-icons/fi";
+import { FiHome, FiCreditCard, FiBell, FiUsers, FiEye } from "react-icons/fi";
 
 const SuperAdminDashboard = () => {
   const navigate = useNavigate();
@@ -46,6 +46,13 @@ const SuperAdminDashboard = () => {
       icon: FiHome,
       color: "from-blue-500 to-cyan-500",
       desc: `${stats.activeCenters} active centers`,
+    },
+    {
+      label: "View Applications",
+      path: "/superadmin/view-applications",
+      icon: FiEye,
+      color: "from-amber-500 to-orange-500",
+      desc: `${stats.pendingApplications} pending`,
     },
     {
       label: "Subscription Plans",
@@ -112,7 +119,7 @@ const SuperAdminDashboard = () => {
               if (s.label === 'Active Centers') {
                 navigate('/superadmin/manage-centers?filter=active');
               } else if (s.label === 'Pending Applications') {
-                navigate('/superadmin/manage-centers?filter=pending');
+                navigate('/superadmin/view-applications');
               } else if (s.label === 'Total Users') {
                 navigate('/superadmin/users');
               } else if (s.label === 'Subscription Plans') {

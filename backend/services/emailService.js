@@ -4,7 +4,12 @@ if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config();
 }
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+let resend;
+try {
+  resend = new Resend(process.env.RESEND_API_KEY);
+} catch (e) {
+  console.warn('Email service unavailable - RESEND_API_KEY missing');
+}
 
 const sendOTP = async (email, otp) => {
   try {

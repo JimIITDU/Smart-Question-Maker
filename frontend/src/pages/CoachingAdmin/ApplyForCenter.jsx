@@ -1,6 +1,6 @@
 ﻿import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { applyForCenterMultipart, getMyApplication } from "../../services/api";
+import { applyForCenter, getMyApplication } from "../../services/api";
 import toast from "react-hot-toast";
 import { FiSave } from "react-icons/fi";
 
@@ -26,23 +26,9 @@ const ApplyForCenter = () => {
     owner_phone: "",
     location: "",
   });
-  const [files, setFiles] = useState({
-    owner_photo: null,
-    nid_front: null,
-    nid_back: null,
-  });
-
   const handleTextChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
-  const handleFileChange = (e, field) => {
-    const file = e.target.files[0];
-    if (file && file.size > 5 * 1024 * 1024) {
-      toast.error(`${field.replace('_', ' ')} must be under 5MB`);
-      return;
-    }
-    setFiles({ ...files, [field]: file });
-  };
 
   useEffect(() => {
     const checkApplication = async () => {
@@ -70,17 +56,6 @@ const ApplyForCenter = () => {
     });
     
     submitData.append('established_year', formData.established_year || new Date().getFullYear().toString());
-    
-    Object.keys(files).forEach(key => {
-      if (files[key]) {
-        submitData.append(key, files[key]);
-      }
-    });
-    
-    if (!files.owner_photo || !files.nid_front || !files.nid_back) {
-      toast.error('Please upload all three required documents');
-      return;
-    }
     
     setLoading(true);
     try {
@@ -312,65 +287,7 @@ const ApplyForCenter = () => {
             />
           </div>
 
-          <h3 className="text-xl font-bold text-white border-b border-white/10 pb-3 pt-8">Required Documents * (Images only, max 5MB each)</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div>
-              <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-2">
-                1. Owner Photo
-              </label>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => handleFileChange(e, 'owner_photo')}
-                className="w-full file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-gradient-to-r file:from-indigo-600 file:to-purple-600 file:text-white hover:file:from-indigo-700 hover:file:to-purple-700 bg-white/5 border border-white/10 rounded-xl px-4 py-10 text-sm cursor-pointer text-center"
-                required
-              />
-              {files.owner_photo && (
-                <div className="mt-3 p-2 bg-white/5 rounded-lg">
-                  <img src={URL.createObjectURL(files.owner_photo)} alt="Preview" className="w-full max-w-[150px] h-32 object-cover rounded-lg border border-white/20" />
-                  <p className="text-xs text-green-400 mt-1">✅ {files.owner_photo.name}</p>
-                </div>
-              )}
-            </div>
 
-            <div>
-              <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-2">
-                2. NID Front Side
-              </label>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => handleFileChange(e, 'nid_front')}
-                className="w-full file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-gradient-to-r file:from-indigo-600 file:to-purple-600 file:text-white hover:file:from-indigo-700 hover:file:to-purple-700 bg-white/5 border border-white/10 rounded-xl px-4 py-10 text-sm cursor-pointer text-center"
-                required
-              />
-              {files.nid_front && (
-                <div className="mt-3 p-2 bg-white/5 rounded-lg">
-                  <img src={URL.createObjectURL(files.nid_front)} alt="Preview" className="w-full max-w-[150px] h-32 object-cover rounded-lg border border-white/20" />
-                  <p className="text-xs text-green-400 mt-1">✅ {files.nid_front.name}</p>
-                </div>
-              )}
-            </div>
-
-            <div>
-              <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-2">
-                3. NID Back Side
-              </label>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => handleFileChange(e, 'nid_back')}
-                className="w-full file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-gradient-to-r file:from-indigo-600 file:to-purple-600 file:text-white hover:file:from-indigo-700 hover:file:to-purple-700 bg-white/5 border border-white/10 rounded-xl px-4 py-10 text-sm cursor-pointer text-center"
-                required
-              />
-              {files.nid_back && (
-                <div className="mt-3 p-2 bg-white/5 rounded-lg">
-                  <img src={URL.createObjectURL(files.nid_back)} alt="Preview" className="w-full max-w-[150px] h-32 object-cover rounded-lg border border-white/20" />
-                  <p className="text-xs text-green-400 mt-1">✅ {files.nid_back.name}</p>
-                </div>
-              )}
-            </div>
-          </div>
 
           <button
             type="submit"

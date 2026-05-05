@@ -397,7 +397,7 @@ const ManageCourses = () => {
             >
               <FiEdit size={14} /> Edit
             </button>
-            <Link to={`/coaching-admin/courses/${course.course_id}/assign-teachers`} className="flex-1 flex items-center justify-center gap-2 py-2 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-xl text-sm hover:bg-emerald-500/20 transition-all min-w-[140px]">
+<Link to={`/coachingadmin/courses/${course.course_id}/assign-teachers`} className="flex-1 flex items-center justify-center gap-2 py-2 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-xl text-sm hover:bg-emerald-500/20 transition-all min-w-[140px]">
               Assign Teachers
             </Link>
             <button

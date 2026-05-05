@@ -46,12 +46,7 @@ const Register = () => {
       
       localStorage.setItem("verify_email", formData.email);
       
-      // Check if unverified existing user - show new OTP
-      if (res.data.message.includes("New OTP") || res.data.message.includes("not verified")) {
-        alert(`New OTP is: ${res.data.data?.otp || 'Check your email'} - Your email was not verified.`);
-      } else {
-        alert(`Your OTP is: ${res.data.data.otp}`);
-      }
+      alert("Registration successful! Please check your email for the OTP code.");
       
       navigate("/verify-otp");
     } catch (err) {

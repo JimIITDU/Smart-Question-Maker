@@ -62,6 +62,10 @@ app.use("/api/admin", adminRoutes);
 // Course enrollment routes (mounted at /api/courses/enroll)
 app.use("/api/courses/enroll", courseEnrollmentRoutes);
 
+// Study materials (NEW)
+const studyMaterialRoutes = require("./routes/studyMaterialRoutes");
+app.use("/api/study-materials", studyMaterialRoutes);
+
 // Legacy enrollments route (kept for backward compatibility)
 app.use("/api/enrollments", courseEnrollmentRoutes);
 

@@ -27,6 +27,7 @@ import ManageCenters from "./pages/SuperAdmin/ManageCenters.jsx";
 import CenterDetails from "./pages/SuperAdmin/CenterDetails.jsx";
 import ManageSubscriptionPlans from "./pages/SuperAdmin/ManageSubscriptionPlans.jsx";
 import ManageUsers from "./pages/SuperAdmin/ManageUsers.jsx";
+import ViewApplications from "./pages/SuperAdmin/ViewApplications.jsx";
 
 // CoachingAdmin pages (role_id = 2)
 import CoachingAdminDashboard from "./pages/CoachingAdmin/CoachingAdminDashboard.jsx";
@@ -123,6 +124,7 @@ function App() {
               <Route path="/superadmin" element={<SuperAdminDashboard />} />
               <Route path="/superadmin/manage-centers" element={<ManageCenters />} />
               <Route path="/superadmin/manage-centers/:id" element={<CenterDetails />} />
+              <Route path="/superadmin/view-applications" element={<ViewApplications />} />
               <Route path="/superadmin/manage-subscription-plans" element={<ManageSubscriptionPlans />} />
               <Route path="/superadmin/users" element={<ManageUsers />} />
             </Route>
@@ -141,7 +143,7 @@ function App() {
               <Route path="/coachingadmin/fee-management" element={<FeeManagement />} />
               <Route path="/coachingadmin/subscription-management" element={<SubscriptionManagement />} />
               <Route path="/coachingadmin/teacher-applications" element={<TeacherApplications />} />
-              <Route path="/coachingadmin/assign-teachers" element={<AssignTeachers />} />
+<Route path="/coachingadmin/courses/:courseId/assign-teachers" element={<AssignTeachers />} />
               <Route path="/coaching-admin/application-status" element={<ApplicationStatus />} />
             </Route>
 
@@ -158,6 +160,8 @@ function App() {
               <Route path="/teacher/live-quiz" element={<LiveQuiz />} />
               <Route path="/teacher/analytics" element={<Analytics />} />
               <Route path="/teacher/upload-material" element={<UploadMaterial />} />
+              <Route path="/teacher/courses" element={<TeacherManageCourses />} />
+              <Route path="/teacher/courses/create" element={<TeacherCreateCourse />} />
               <Route path="/teacher/apply-to-center" element={<ApplyToCenter />} />
               <Route path="/teacher/courses" element={<TeacherManageCourses />} />
               <Route path="/teacher/courses/create" element={<TeacherCreateCourse />} />

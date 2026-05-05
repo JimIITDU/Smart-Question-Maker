@@ -106,6 +106,9 @@ router.post('/:id/enroll-code', adminAuth, async (req, res) => {
 // DELETE /api/courses/admin/:id - Delete course (Coaching Admin)
 router.delete('/admin/:id', adminAuth, require('../controllers/courseController').deleteCourse);
 
+// Course assignments (NEW)
+router.get('/:courseId/assignments', adminAuth, require('../controllers/teacherAssignmentController').getCourseAssignments);
+
 module.exports = router;
 
 

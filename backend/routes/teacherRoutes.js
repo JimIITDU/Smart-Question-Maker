@@ -86,4 +86,12 @@ router.get(
   teacherController.getAvailableTeachers,
 );
 
+// Use consistent auth for new routes
+const adminAuth = [authMiddleware, roleMiddleware(2)];
+const teacherAssignmentController = require('../controllers/teacherAssignmentController');
+
+// Teacher assignments
+router.post('/assignments', adminAuth, teacherAssignmentController.assignTeacherToCourse);
+router.put('/assignments/:id/remove', adminAuth, teacherAssignmentController.removeAssignment);
+
 module.exports = router;
