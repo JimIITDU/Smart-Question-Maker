@@ -22,7 +22,23 @@ const centerController = {
       } = req.body;
 
       const user_id = req.user.user_id;
-      const coaching_admin_id = user_id;
+const coaching_admin_id = user_id;
+
+  console.log('=== CENTER APPLICATION DEBUG ===');
+  console.log('User ID:', user_id);
+  console.log('Extracted fields:', {
+    center_name,
+    center_type,
+    address_full: address_full?.substring(0,50) + (address_full?.length > 50 ? '...' : ''),
+    center_phone,
+    center_email,
+    owner_name,
+    fieldsCount: Object.keys(req.body).length
+  });
+  console.log('Full req.body keys:', Object.keys(req.body));
+  console.log('==============================');
+
+      // No file uploads
 
       // Check if user already has pending/active application
       const existingApp = await centerModel.checkExistingApplication(user_id);
@@ -33,9 +49,9 @@ const centerController = {
         });
       }
 
-      // Skip photos for now (add later)
       const centerId = await centerModel.createApplication({
         user_id,
+        coaching_admin_id,
         center_name,
         center_type,
         established_year,
@@ -49,8 +65,19 @@ const centerController = {
         description,
         owner_name,
         owner_nid,
-        owner_phone,
+        owner_phone
       });
+
+      // Send confirmation email to admin
+      try {
+        const { sendCenterApplicationEmail } = require('../services/emailService');
+        await sendCenterApplicationEmail(center_email, center_name, user_id);
+        console.log(`✅ Confirmation email sent to ${center_email}`);
+      } catch (emailErr) {
+        console.warn('Email send failed (non-blocking):', emailErr.message);
+      }
+
+      console.log(`✅ New center application #${centerId} submitted by user ${user_id} (${center_name})`);
 
       res.status(201).json({
         success: true,
@@ -58,10 +85,18 @@ const centerController = {
         data: { coaching_center_id: centerId },
       });
     } catch (error) {
-      console.error('Apply center error:', error);
+const uid = req.user?.user_id || 'unknown';
+console.error(`Apply center FULL ERROR [user: ${uid}]:`, {
+  message: error.message,
+  stack: error.stack,
+  code: error.code,
+  sqlState: error.code, // Postgres
+  constraint: error.constraint,
+  detail: error.detail
+});
       res.status(500).json({
         success: false,
-        message: error.message.includes('photo') ? error.message : "Server error",
+        message: error.message || "Failed to submit application",
         error: process.env.NODE_ENV === 'development' ? error.message : undefined,
       });
     }
@@ -81,13 +116,19 @@ const centerController = {
         success: true,
         data: app,
       });
-    } catch (error) {
-      res.status(500).json({
-        success: false,
-        message: "Server error",
-        error: error.message,
-      });
-    }
+} catch (error) {
+  const uid = req.user?.user_id || 'unknown';
+  console.error(`getMyApplication FULL ERROR [user: ${uid}]:`, {
+    message: error.message,
+    stack: error.stack,
+    code: error.code
+  });
+  res.status(500).json({
+    success: false,
+    message: "Server error",
+    error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+  });
+}
   },
 
   // Get all centers (super admin only)

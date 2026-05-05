@@ -18,11 +18,7 @@ router.post(
   "/apply",
   authMiddleware,
   roleMiddleware(2),
-  centerUpload.fields([
-    { name: 'owner_photo', maxCount: 1 },
-    { name: 'nid_front', maxCount: 1 },
-    { name: 'nid_back', maxCount: 1 }
-  ]),
+  centerUpload.none(),
   centerController.applyForCenter,
 );
 

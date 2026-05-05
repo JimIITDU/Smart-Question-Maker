@@ -18,16 +18,19 @@ const centerModel = {
       owner_name,
       owner_nid,
       owner_phone,
+      coaching_admin_id
     } = data;
-    const coaching_admin_id = user_id; // Simplify: same as user_id
-    
-    const result = await db.query(
-      `INSERT INTO coaching_center
-       (user_id, center_name, center_type, established_year, address_division, address_district, address_upazila, address_full, center_phone, center_email, website, description, owner_name, owner_nid, owner_phone, status, submitted_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, 'pending', NOW())
-       RETURNING coaching_center_id`,
-      [user_id, center_name, center_type, established_year, address_division, address_district, address_upazila, address_full, center_phone, center_email, website, description, owner_name, owner_nid, owner_phone],
-    );
+
+    // Combine address parts
+    const full_location = `${address_full || ''}, ${address_upazila || ''}, ${address_district || ''}, ${address_division || ''}`.replace(/^(, |,|,)$/, '').trim();
+
+    const result = await db.query(`INSERT INTO coaching_center (user_id, center_name, location, contact_number, email, status) VALUES ($1, $2, $3, $4, $5, 'pending') RETURNING coaching_center_id`, [
+        user_id,
+        center_name,
+        full_location,
+        center_phone,
+        center_email
+      ]);
     return result.rows[0].coaching_center_id;
   },
 
@@ -45,7 +48,7 @@ const centerModel = {
        FROM coaching_center cc
        LEFT JOIN subscription_plans sp ON cc.current_plan_id = sp.plan_id
        WHERE cc.user_id = $1 AND cc.status IN ('pending', 'rejected', 'active')
-       ORDER BY cc.submitted_at DESC
+ORDER BY cc.created_at DESC
        LIMIT 1`,
       [user_id],
     );
@@ -57,7 +60,7 @@ const centerModel = {
       `SELECT cc.*, sp.name as plan_name, sp.price as plan_price, sp.features as plan_features
        FROM coaching_center cc
        LEFT JOIN subscription_plans sp ON cc.current_plan_id = sp.plan_id
-       ORDER BY cc.created_at DESC`,
+ORDER BY cc.created_at DESC`,
     );
     return result.rows;
   },
@@ -123,7 +126,7 @@ const centerModel = {
            subscription_end = NOW() + INTERVAL '30 days',
            access_type = CASE WHEN (SELECT price FROM subscription_plans WHERE plan_id = $1) = 0 THEN 'free'::access_type_enum ELSE 'paid'::access_type_enum END
        WHERE coaching_center_id = $2
-       RETURNING *`
+       RETURNING *`,
       [planId, centerId],
     );
     return result.rows[0];
@@ -164,3 +167,4 @@ const centerModel = {
 };
 
 module.exports = centerModel;
+

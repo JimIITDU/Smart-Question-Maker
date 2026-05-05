@@ -115,12 +115,20 @@ const Sidebar = ({ collapsed, mobileOpen, onClose }) => {
     ],
   };
 
+const noCenter = user.role_id === 2 && center === null;
   const hasActiveCenter = user.role_id === 2 ? center && center.status === 'active' : true;
+  
   const menuItems = useMemo(() => {
     let items = roleMenus[user.role_id] || roleMenus[3];
     
-    if (user.role_id === 2 && !hasActiveCenter) {
-      // Disable management/finance items for coaching admin without center
+    if (noCenter) {
+      // Show ONLY Dashboard and ApplyForCenter for no center
+      items = [
+        { path: "/coachingadmin", label: "Dashboard", icon: FiHome },
+        { path: "/coachingadmin/apply-for-center", label: "Apply for Center", icon: FiUsers },
+      ];
+    } else if (user.role_id === 2 && !hasActiveCenter) {
+      // Disable management/finance items for coaching admin without active center (pending/inactive)
       items = items.map(item => ({
         ...item,
         disabled: item.path && !item.path.startsWith('/coachingadmin') && 
@@ -129,7 +137,7 @@ const Sidebar = ({ collapsed, mobileOpen, onClose }) => {
     }
     
     return items;
-  }, [user.role_id, hasActiveCenter]);
+  }, [user.role_id, hasActiveCenter, center, noCenter]);
 
   const handleLogout = () => {
     logoutUser();
