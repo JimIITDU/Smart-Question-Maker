@@ -202,7 +202,7 @@ console.error(`Apply center FULL ERROR [user: ${uid}]:`, {
         });
       }
 
-      await centerModel.updateCenterStatus(req.params.id, "inactive");
+      await centerModel.updateCenterStatus(req.params.id, "rejected");
 
       res.status(200).json({
         success: true,
@@ -228,7 +228,7 @@ console.error(`Apply center FULL ERROR [user: ${uid}]:`, {
         });
       }
 
-      await centerModel.updateCenterStatus(req.params.id, "inactive");
+      await centerModel.updateCenterStatus(req.params.id, "rejected");
 
       res.status(200).json({
         success: true,

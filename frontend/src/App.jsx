@@ -59,6 +59,7 @@ import UploadMaterial from "./pages/Teacher/UploadMaterial.jsx";
 import ApplyToCenter from "./pages/Teacher/ApplyToCenter.jsx";
 import TeacherManageCourses from "./pages/Teacher/ManageCourses.jsx";
 import TeacherCreateCourse from "./pages/Teacher/CreateCourse.jsx";
+import CoachingAdminCenterDetails from "./pages/CoachingAdmin/CenterDetails.jsx";
 
 // Student pages (role_id = 5)
 import StudentDashboard from "./pages/Student/StudentDashboard.jsx";
@@ -147,7 +148,7 @@ function App() {
 <Route path="/coachingadmin/courses/:courseId/assign-teachers" element={<AssignTeachers />} />
               <Route path="/coaching-admin/application-status" element={<ApplicationStatus />} />
               <Route path="/coachingadmin/application-history" element={<ApplicationHistory />} />
-              <Route path="/coachingadmin/center-details" element={<CenterDetails />} />
+              <Route path="/coachingadmin/center-details" element={<CoachingAdminCenterDetails />} />
             </Route>
 
             {/* -------------------- TEACHER (role_id: 3) -------------------- */}

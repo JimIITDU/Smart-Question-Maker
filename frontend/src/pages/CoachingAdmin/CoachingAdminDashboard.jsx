@@ -132,18 +132,16 @@ const CoachingAdminDashboard = () => {
       ];
     }
 
-    // If center exists but is pending/rejected, do NOT show Apply tile; show view-details instead
+    // If center exists but is pending/rejected, remove the Apply tile and show Apply for Centre again
+    // (so user can re-apply / submit a new application)
     if (center.status === "pending" || center.status === "rejected") {
       return [
         {
-          label: center.status === "pending" ? "Pending Details" : "Rejection Details",
-          path: "/coachingadmin/center-details",
-          icon: FiFileText,
-          color: center.status === "pending" ? "from-amber-500 to-orange-500" : "from-red-500 to-rose-500",
-          desc:
-            center.status === "pending"
-              ? "View your pending application"
-              : "View rejection reason",
+          label: "Apply for Centre",
+          path: "/coachingadmin/apply-for-center",
+          icon: FiHome,
+          color: "from-blue-500 to-cyan-500",
+          desc: "Submit your coaching center application",
         },
         {
           label: "Application History",

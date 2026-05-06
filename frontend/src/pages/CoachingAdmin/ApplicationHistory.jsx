@@ -36,13 +36,14 @@ const ApplicationHistory = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Application History</h1>
-        <Link
+        {/* <Link
           to="/coachingadmin/apply-for-center"
           className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
         >
           New Application
-        </Link>
+        </Link> */}
       </div>
+
 
       {applications.length === 0 ? (
         <div className="text-center py-12">
@@ -57,25 +58,48 @@ const ApplicationHistory = () => {
       ) : (
         <div className="grid gap-4">
           {applications.map((app) => (
-            <div key={app.id} className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
-              <div className="flex items-start justify-between">
-                <div>
+            <div key={app.coaching_center_id ?? app.id} className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
+              <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0">
                   <h3 className="font-semibold text-gray-900">{app.center_name}</h3>
                   <p className="text-gray-600">{app.location}</p>
                   <p className="text-sm text-gray-500 mt-1">
-                    Applied on {new Date(app.applied_at).toLocaleDateString()}
+                    Applied on {new Date(app.created_at ?? app.applied_at ?? Date.now()).toLocaleDateString()}
                   </p>
                 </div>
-                <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                  app.status === 'approved' ? 'bg-green-100 text-green-800' :
-                  app.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                  app.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                  'bg-gray-100 text-gray-800'
-                }`}>
-                  {app.status}
-                </span>
+
+                <div className="flex flex-col items-end gap-2 shrink-0">
+                  <span
+                    className={`px-3 py-1 rounded-full text-sm font-medium ${
+                      app.status === "active" || app.status === "approved"
+                        ? "bg-green-100 text-green-800"
+                        : app.status === "pending"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : app.status === "rejected"
+                            ? "bg-red-100 text-red-800"
+                            : "bg-gray-100 text-gray-800"
+                    }`}
+                  >
+                    {app.status}
+                  </span>
+
+                  { (app.coaching_center_id || app.id) ? (
+                    <Link
+                      to="/coachingadmin/center-details"
+                      className="px-4 py-2 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200 transition-colors text-sm font-semibold"
+                      state={{ coaching_center_id: app.coaching_center_id || app.id }}
+                    >
+                      View Details
+                    </Link>
+                  ) : (
+                    <span className="px-4 py-2 bg-gray-200 text-gray-400 rounded-lg text-sm font-semibold cursor-not-allowed">
+                      No Details
+                    </span>
+                  )}
+                </div>
               </div>
-              {app.status === 'rejected' && app.rejection_reason && (
+
+              {app.status === "rejected" && app.rejection_reason && (
                 <p className="mt-3 text-sm text-red-600 bg-red-50 p-3 rounded">
                   Reason: {app.rejection_reason}
                 </p>

@@ -136,6 +136,7 @@ const ViewApplications = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {applications.map((app) => (
+
               <div
                 key={app.coaching_center_id}
                 className="bg-white/5 border border-white/5 hover:border-white/10 hover:bg-white/10 rounded-2xl p-6 transition-all group"
@@ -163,22 +164,10 @@ const ViewApplications = () => {
                 {/* Action Buttons */}
                 <div className="flex flex-wrap gap-2">
                   <button
-                    onClick={() => navigate(`/superadmin/manage-centers/${app.coaching_center_id}`)}
+                    onClick={() => app?.coaching_center_id ? navigate(`/superadmin/manage-centers/${app.coaching_center_id}`) : toast.error('Missing center id')}
                     className="flex items-center gap-1 px-4 py-2 bg-white/10 text-gray-300 border border-white/20 rounded-xl text-sm hover:bg-white/20 transition-all flex-1 justify-center"
                   >
                     <FiEye size={14} /> View Details
-                  </button>
-                  <button
-                    onClick={() => handleApprove(app.coaching_center_id)}
-                    className="flex items-center gap-1 px-4 py-2 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 rounded-xl text-sm hover:bg-emerald-500/30 transition-all"
-                  >
-                    <FiCheck size={14} /> Approve
-                  </button>
-                  <button
-                    onClick={() => handleRejectOpen(app.coaching_center_id)}
-                    className="flex items-center gap-1 px-4 py-2 bg-red-500/20 text-red-300 border border-red-500/30 rounded-xl text-sm hover:bg-red-500/30 transition-all"
-                  >
-                    <FiX size={14} /> Reject
                   </button>
                 </div>
               </div>

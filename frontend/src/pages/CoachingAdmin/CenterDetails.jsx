@@ -1,30 +1,54 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { getDashboardStats } from '../../services/api.js';
-import { FiEdit, FiFileText, FiUsers, FiCheckCircle, FiXCircle, FiArrowLeft } from 'react-icons/fi';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { getCenterById } from '../../services/api.js';
+import { FiFileText, FiArrowLeft, FiMapPin, FiPhone, FiMail, FiCalendar } from 'react-icons/fi';
+
 
 const CoachingAdminCenterDetails = () => {
   const [center, setCenter] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchCenter = async () => {
       try {
-        const res = await getDashboardStats();
-        setCenter(res.data.data.center);
+        let centerId = location.state?.coaching_center_id;
+        if (!centerId) {
+          // Try to get from query param as fallback
+          const params = new URLSearchParams(window.location.search);
+          centerId = params.get('coaching_center_id');
+        }
+        if (!centerId) {
+          setError('No application selected. Please go back and select an application from your history.');
+          setLoading(false);
+          return;
+        }
+        console.log('Fetching center details for ID:', centerId);
+        const res = await getCenterById(centerId);
+        console.log('API response:', res?.data);
+        if (!res?.data?.data) {
+          setError('No application found for the selected ID.');
+          setCenter(null);
+        } else {
+          setCenter(res.data.data);
+        }
       } catch (err) {
-        setError('Failed to load center details');
+        console.error('Load center error:', err);
+        setError(err?.response?.data?.message || 'Failed to load application details');
       } finally {
         setLoading(false);
       }
     };
     fetchCenter();
-  }, []);
+  }, [location]);
+
 
   if (loading) return <div className="flex items-center justify-center py-20"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500"></div></div>;
   if (error) return <div className="text-red-400 text-center py-20">{error}</div>;
-  if (!center) return <div className="text-gray-400 text-center py-20">No center found</div>;
+  if (!center) return <div className="text-gray-400 text-center py-20">No application found</div>;
+
 
   const isRejected = center.status === 'rejected';
   const isPending = center.status === 'pending';
@@ -33,9 +57,9 @@ const CoachingAdminCenterDetails = () => {
   return (
     <main className="max-w-6xl mx-auto px-6 py-8">
       <div className="mb-8">
-        <Link to="/coachingadmin" className="inline-flex items-center gap-2 text-gray-400 hover:text-white mb-6">
+        <Link to="/coachingadmin/application-history" className="inline-flex items-center gap-2 text-gray-400 hover:text-white mb-6">
           <FiArrowLeft />
-          <span>Back to Dashboard</span>
+          <span>Back to Application History</span>
         </Link>
         <h1 className="text-3xl font-bold text-white mb-2">Center Details</h1>
         <p className="text-gray-400">Your coaching center information</p>

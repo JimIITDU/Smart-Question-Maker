@@ -121,7 +121,7 @@ const ApplyForCenter = () => {
     );
   }
 
-  if (hasApplication) {
+  if (hasApplication && status === 'pending') {
     return (
       <div className="min-h-screen bg-[#030712] flex items-center justify-center p-8">
         <div className="text-center max-w-md bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border border-emerald-500/20 rounded-3xl p-12 backdrop-blur-xl">
