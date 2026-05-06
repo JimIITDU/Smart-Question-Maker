@@ -96,9 +96,9 @@ const Sidebar = ({ collapsed, mobileOpen, onClose }) => {
     2: [ // Coaching Admin
       { type: "group", label: "Dashboard" },
       { path: "/coachingadmin", label: "Dashboard", icon: FiHome },
-      { path: "/coachingadmin/apply-for-center", label: "Apply for Center", icon: FiUsers },
+      // { path: "/coachingadmin/apply-for-center", label: "Apply for Center", icon: FiUsers },
       { path: "/coachingadmin/application-history", label: "Application History", icon: FiCalendar },
-      { path: "/coachingadmin/application-history", label: "Application History", icon: FiCalendar },
+      // { path: "/coachingadmin/application-history", label: "Application History", icon: FiCalendar },
       { path: "/notifications", label: "Notifications", icon: FiBell },
       { path: "/profile", label: "Profile", icon: FiUser },
       { type: "group", label: "Management" },
