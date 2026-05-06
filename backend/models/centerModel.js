@@ -177,6 +177,54 @@ ORDER BY cc.created_at DESC`,
     );
     return result.rows;
   },
+
+  // Get only pending and rejected applications for a user (coaching admin)
+  getApplicationHistoryFiltered: async (user_id) => {
+    const result = await db.query(
+      `SELECT cc.*, sp.name as plan_name 
+       FROM coaching_center cc
+       LEFT JOIN subscription_plans sp ON cc.current_plan_id = sp.plan_id
+       WHERE cc.user_id = $1 AND cc.status IN ('pending', 'rejected')
+       ORDER BY cc.created_at DESC`,
+      [user_id]
+    );
+    return result.rows;
+  },
+
+  // Debug: Get all coaching center rows for a user, regardless of status
+  getAllApplicationsRaw: async (user_id) => {
+    const result = await db.query(
+      `SELECT * FROM coaching_center WHERE user_id = $1 ORDER BY created_at DESC`,
+      [user_id]
+    );
+    return result.rows;
+  },
+
+  // Get all applications for a user, with editability flag for pending
+  getApplicationHistoryWithEditFlag: async (user_id) => {
+    const result = await db.query(
+      `SELECT cc.*, sp.name as plan_name, (cc.status = 'pending') AS can_edit
+       FROM coaching_center cc
+       LEFT JOIN subscription_plans sp ON cc.current_plan_id = sp.plan_id
+       WHERE cc.user_id = $1
+       ORDER BY cc.created_at DESC`,
+      [user_id]
+    );
+    return result.rows;
+  },
+
+  // Get only pending and rejected applications for a user (coaching admin)
+getPendingAndRejectedApplications: async (user_id) => {
+    const result = await db.query(
+      `SELECT cc.*, sp.name as plan_name, (cc.status = 'pending') AS can_edit
+       FROM coaching_center cc
+       LEFT JOIN subscription_plans sp ON cc.current_plan_id = sp.plan_id
+       WHERE cc.user_id = $1
+       ORDER BY cc.created_at DESC`,
+      [user_id]
+    );
+    return result.rows;
+  },
 };
 
 module.exports = centerModel;

@@ -68,14 +68,8 @@ const coaching_admin_id = user_id;
         owner_phone
       });
 
-      // Send confirmation email to admin
-      try {
-        const { sendCenterApplicationEmail } = require('../services/emailService');
-        await sendCenterApplicationEmail(center_email, center_name, user_id);
-        console.log(`✅ Confirmation email sent to ${center_email}`);
-      } catch (emailErr) {
-        console.warn('Email send failed (non-blocking):', emailErr.message);
-      }
+      // Email disabled as per user request
+      console.log(`Email skipped for center_email: ${center_email}`);
 
       console.log(`✅ New center application #${centerId} submitted by user ${user_id} (${center_name})`);
 
@@ -460,20 +454,21 @@ console.error(`Apply center FULL ERROR [user: ${uid}]:`, {
     }
   },
 
-  // Get application history (coaching admin)
+  // Get application history with editability info (coaching admin)
   getApplicationHistory: async (req, res) => {
     try {
-      const history = await centerModel.getApplicationHistory(req.user.user_id);
+      const userId = req.user.user_id;
+      const history = await centerModel.getPendingAndRejectedApplications(userId);
       res.status(200).json({
         success: true,
         count: history.length,
         data: history,
       });
     } catch (error) {
-      console.error('getApplicationHistory error:', error);
       res.status(500).json({
         success: false,
-        message: "Server error",
+        message: 'Failed to fetch application history',
+        error: process.env.NODE_ENV === 'development' ? error.message : undefined,
       });
     }
   },
@@ -529,6 +524,25 @@ console.error(`Apply center FULL ERROR [user: ${uid}]:`, {
         success: false,
         message: "Server error",
         error: error.message,
+      });
+    }
+  },
+
+  // Debug endpoint: Get all coaching center applications for a user (regardless of status)
+  getAllApplicationsRaw: async (req, res) => {
+    try {
+      const userId = req.user.user_id;
+      const allApps = await centerModel.getAllApplicationsRaw(userId);
+      res.status(200).json({
+        success: true,
+        count: allApps.length,
+        data: allApps,
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: 'Failed to fetch all applications',
+        error: process.env.NODE_ENV === 'development' ? error.message : undefined,
       });
     }
   },

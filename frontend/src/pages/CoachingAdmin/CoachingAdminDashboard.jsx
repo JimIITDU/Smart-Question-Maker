@@ -16,6 +16,7 @@ import {
   FiTrendingUp,
   FiXCircle,
   FiCalendar,
+  FiFileText,
 } from "react-icons/fi";
 
 // Simple in-memory cache for dashboard data
@@ -97,8 +98,8 @@ const CoachingAdminDashboard = () => {
 
   // Memoized menu items to prevent unnecessary re-renders
   const menuItems = useMemo(() => {
-    // If no center or pending or rejected, show limited menu
-    if (!center || center.status === "pending" || center.status === "rejected") {
+// If no center or pending or rejected, show limited menu
+    if (!center) {
       return [
         {
           label: "Apply for Center",
@@ -106,6 +107,43 @@ const CoachingAdminDashboard = () => {
           icon: FiHome,
           color: "from-blue-500 to-cyan-500",
           desc: "Register your coaching center",
+        },
+        {
+          label: "Application History",
+          path: "/coachingadmin/application-history",
+          icon: FiCalendar,
+          color: "from-indigo-500 to-purple-500",
+          desc: "View past applications",
+        },
+        {
+          label: "Notifications",
+          path: "/notifications",
+          icon: FiBell,
+          color: "from-yellow-500 to-amber-500",
+          desc: `${stats.notifications} unread`,
+        },
+        {
+          label: "Profile",
+          path: "/profile",
+          icon: FiUser,
+          color: "from-gray-500 to-gray-600",
+          desc: "Manage your profile",
+        },
+      ];
+    }
+
+    // If center exists but is pending/rejected, do NOT show Apply tile; show view-details instead
+    if (center.status === "pending" || center.status === "rejected") {
+      return [
+        {
+          label: center.status === "pending" ? "Pending Details" : "Rejection Details",
+          path: "/coachingadmin/center-details",
+          icon: FiFileText,
+          color: center.status === "pending" ? "from-amber-500 to-orange-500" : "from-red-500 to-rose-500",
+          desc:
+            center.status === "pending"
+              ? "View your pending application"
+              : "View rejection reason",
         },
         {
           label: "Application History",

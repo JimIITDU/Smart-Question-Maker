@@ -10,7 +10,10 @@ const ApplicationHistory = () => {
       try {
         const { getApplicationHistory } = await import('../../services/api');
         const response = await getApplicationHistory();
-        setApplications(Array.isArray(response.data) ? response.data : []);
+// API returns { success, count, data }
+        const payload = response.data?.data;
+        setApplications(Array.isArray(payload) ? payload : []);
+        console.log('ApplicationHistory response:', response.data);
       } catch (error) {
         console.error('Failed to fetch applications:', error);
       } finally {

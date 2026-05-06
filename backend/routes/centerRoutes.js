@@ -130,4 +130,12 @@ router.put(
   centerController.updateCenter,
 );
 
+// Debug: Get all coaching center applications for the current user (regardless of status)
+router.get(
+  '/all-my-applications-raw',
+  authMiddleware,
+  roleMiddleware(2),
+  centerController.getAllApplicationsRaw
+);
+
 module.exports = router;
