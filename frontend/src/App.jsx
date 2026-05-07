@@ -77,6 +77,8 @@ import CourseDetail from "./pages/Student/CourseDetail.jsx";
 // CoachingAdmin pages (role_id = 2)
 import TeacherApplications from "./pages/CoachingAdmin/TeacherApplications.jsx";
 import AssignTeachers from "./pages/CoachingAdmin/AssignTeachers.jsx";
+import CoachingAnalytics from "./pages/CoachingAdmin/CoachingAnalytics.jsx";
+import CenterSettings from "./pages/CoachingAdmin/CenterSettings.jsx";
 
 // Parent pages (role_id = 6)
 import ParentDashboard from "./pages/Parent/ParentDashboard.jsx";
@@ -145,10 +147,15 @@ function App() {
               <Route path="/coachingadmin/fee-management" element={<FeeManagement />} />
               <Route path="/coachingadmin/subscription-management" element={<SubscriptionManagement />} />
               <Route path="/coachingadmin/teacher-applications" element={<TeacherApplications />} />
-<Route path="/coachingadmin/courses/:courseId/assign-teachers" element={<AssignTeachers />} />
+              <Route
+                path="/coachingadmin/courses/:courseId/assign-teachers"
+                element={<AssignTeachers />}
+              />
               <Route path="/coaching-admin/application-status" element={<ApplicationStatus />} />
               <Route path="/coachingadmin/application-history" element={<ApplicationHistory />} />
               <Route path="/coachingadmin/center-details" element={<CoachingAdminCenterDetails />} />
+              <Route path="/coaching-admin/analytics" element={<CoachingAnalytics />} />
+              <Route path="/coaching-admin/settings" element={<CenterSettings />} />
             </Route>
 
             {/* -------------------- TEACHER (role_id: 3) -------------------- */}

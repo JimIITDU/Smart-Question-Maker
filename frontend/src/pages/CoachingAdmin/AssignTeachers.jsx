@@ -1,95 +1,110 @@
-import React, { useState, useEffect } from "react";
-import { Link, useParams } from "react-router-dom";
-import { 
-  getCourseAssignments, 
-  getAvailableTeachers, 
-  assignTeacherToCourse, 
-  removeAssignment,
-  getAdminCourses 
-} from "../../services/api";
+import React, { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
-import { FiArrowLeft, FiPlus, FiUserCheck, FiUserX, FiSearch, FiTrash2 } from "react-icons/fi";
+import {
+  getApprovedTeachersForAdmin,
+  getAdminCourses,
+  assignTeacherToCourse,
+  getCourseAssignments,
+  removeAssignment,
+  getAvailableTeachersForAssignment,
+} from "../../services/api";
+import { Link, useParams } from "react-router-dom";
+import { FiArrowLeft, FiPlus, FiTrash2 } from "react-icons/fi";
 
 const AssignTeachers = () => {
+  // Expected existing structure: route may pass courseId, but we keep UI generic.
   const { courseId } = useParams();
-  const [course, setCourse] = useState(null);
-  const [assignedTeachers, setAssignedTeachers] = useState([]);
-  const [availableTeachers, setAvailableTeachers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [assigning, setAssigning] = useState({});
 
-  // Fetch course and teachers
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const [courseRes, assignmentsRes, availableRes] = await Promise.all([
-          getAdminCourses(), // Find course by ID if needed
-          getCourseAssignments(courseId),
-          getAvailableTeachers()
-        ]);
-        
-        // Find specific course
-        const targetCourse = courseRes.data.data?.find(c => c.course_id == courseId);
-        setCourse(targetCourse);
-        
-        setAssignedTeachers(assignmentsRes.data.data || []);
-        setAvailableTeachers(availableRes.data.data || []);
-      } catch (err) {
-        toast.error("Failed to load data");
-      } finally {
-        setLoading(false);
+  const [loading, setLoading] = useState(true);
+  const [teachers, setTeachers] = useState([]);
+  const [courses, setCourses] = useState([]);
+
+  const [assigning, setAssigning] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedTeacher, setSelectedTeacher] = useState(null);
+  const [selectedCourse, setSelectedCourse] = useState(courseId || null);
+  const [selectedSubjectId, setSelectedSubjectId] = useState(null);
+
+  const [assignments, setAssignments] = useState([]);
+
+  const load = async () => {
+    try {
+      setLoading(true);
+      const [tRes, cRes] = await Promise.all([
+        getApprovedTeachersForAdmin(),
+        getAdminCourses(),
+      ]);
+      setTeachers(tRes.data?.data || []);
+      setCourses(cRes.data?.data || cRes.data?.data || []);
+
+      if (courseId) {
+        const aRes = await getCourseAssignments(courseId);
+        setAssignments(aRes.data?.data || []);
+      } else {
+        setAssignments([]);
       }
-    };
-    if (courseId) fetchData();
+    } catch (e) {
+      toast.error(e?.response?.data?.message || "Failed to load assign teachers data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [courseId]);
 
-  const handleAssign = async (teacherId, subjectId = null) => {
+  const activeCourse = useMemo(() => {
+    return courses.find((c) => String(c.course_id) === String(selectedCourse)) || null;
+  }, [courses, selectedCourse]);
+
+  const availableSubjects = useMemo(() => {
+    return activeCourse?.subjects || [];
+  }, [activeCourse]);
+
+  const openAssignModal = (teacher) => {
+    setSelectedTeacher(teacher);
+    setSelectedCourse(courseId || (courses[0]?.course_id ? String(courses[0].course_id) : null));
+    setSelectedSubjectId(null);
+    setModalOpen(true);
+  };
+
+  const handleAssign = async () => {
+    if (!selectedTeacher || !selectedCourse) return;
     try {
-      setAssigning(prev => ({ ...prev, [teacherId]: true }));
-      await assignTeacherToCourse({ 
-        teacher_id: teacherId, 
-        course_id: courseId, 
-        subject_id: subjectId 
+      setAssigning(true);
+      await assignTeacherToCourse({
+        teacher_id: selectedTeacher.user_id || selectedTeacher.teacher_id,
+        course_id: selectedCourse,
+        subject_id: selectedSubjectId || null,
       });
-      toast.success("Teacher assigned successfully!");
-      
-      // Refresh lists
-      const [assignmentsRes, availableRes] = await Promise.all([
-        getCourseAssignments(courseId),
-        getAvailableTeachers()
-      ]);
-      setAssignedTeachers(assignmentsRes.data.data || []);
-      setAvailableTeachers(availableRes.data.data || []);
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to assign");
+      toast.success("Teacher assigned");
+      setModalOpen(false);
+      const aRes = await getCourseAssignments(selectedCourse);
+      setAssignments(aRes.data?.data || []);
+    } catch (e) {
+      toast.error(e?.response?.data?.message || "Failed to assign teacher");
     } finally {
-      setAssigning(prev => ({ ...prev, [teacherId]: false }));
+      setAssigning(false);
     }
   };
 
   const handleRemove = async (assignmentId) => {
-    if (!window.confirm("Remove this teacher assignment?")) return;
+    if (!window.confirm("Remove this assignment?")) return;
     try {
       await removeAssignment(assignmentId);
-      toast.success("Teacher removed!");
-      
-      const assignmentsRes = await getCourseAssignments(courseId);
-      setAssignedTeachers(assignmentsRes.data.data || []);
-    } catch (err) {
-      toast.error("Failed to remove");
+      toast.success("Assignment removed");
+      const aRes = await getCourseAssignments(selectedCourse);
+      setAssignments(aRes.data?.data || []);
+    } catch (e) {
+      toast.error(e?.response?.data?.message || "Failed to remove assignment");
     }
   };
 
-  const filteredAvailable = availableTeachers.filter(t => 
-    t.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    t.subject_specialization?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#030712] flex items-center justify-center">
+      <div className="min-h-screen bg-[#030712] text-white flex items-center justify-center">
         <div className="w-12 h-12 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin" />
       </div>
     );
@@ -98,142 +113,190 @@ const AssignTeachers = () => {
   return (
     <div className="min-h-screen bg-[#030712] text-white p-8">
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
-          <Link 
-            to={`/coachingadmin/manage-courses`} 
-            className="flex items-center gap-2 text-purple-400 hover:text-purple-300 text-lg font-medium"
-          >
+        <div className="flex items-center gap-4 mb-6">
+          <Link to="/coachingadmin/manage-courses" className="flex items-center gap-2 text-purple-400 hover:text-purple-300 text-lg font-medium">
             <FiArrowLeft />
             Back to Courses
           </Link>
-          {course && (
-            <div className="bg-gradient-to-r from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 rounded-xl px-6 py-3">
-              <h1 className="text-2xl font-bold">{course.course_title}</h1>
-              <p className="text-indigo-200">{course.enrollment_count || 0} students enrolled</p>
-            </div>
+          <div className="flex-1" />
+          {!courseId && courses[0]?.course_id && (
+            <div className="text-sm text-gray-400">Assign on: {courses[0].course_title || courses[0].course_name}</div>
           )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Assigned Teachers */}
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-8">
-            <div className="flex items-center gap-3 mb-6">
-              <FiUserCheck className="w-6 h-6 text-emerald-400" />
-              <h2 className="text-2xl font-bold">Assigned Teachers ({assignedTeachers.length})</h2>
-            </div>
-            
-            {assignedTeachers.length === 0 ? (
-              <div className="text-center py-12 text-gray-400 border-2 border-dashed border-gray-600 rounded-xl">
-                No teachers assigned yet
-              </div>
+          {/* Left: Approved Teachers */}
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+            <div className="text-xl font-semibold mb-4">Approved Teachers ({teachers.length})</div>
+            {teachers.length === 0 ? (
+              <div className="text-gray-400 text-sm">No approved teachers.</div>
             ) : (
-              <div className="space-y-4 max-h-96 overflow-y-auto">
-                {assignedTeachers.map(teacher => (
-                  <div key={teacher.assignment_id} className="flex items-center gap-4 p-4 bg-white/5 rounded-xl">
-                    <img 
-                      src={teacher.teacher_profile_image || "/default-avatar.png"} 
-                      alt={teacher.teacher_name}
-                      className="w-12 h-12 rounded-full border-2 border-white/20"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-white truncate">{teacher.teacher_name}</h3>
-                      <p className="text-sm text-gray-400 truncate">{teacher.email}</p>
-                      {teacher.subject_name && (
-                        <span className="inline-block bg-emerald-500/20 text-emerald-300 px-3 py-1 rounded-full text-xs mt-1">
-                          {teacher.subject_name}
-                        </span>
-                      )}
-                    </div>
-                    <button
-                      onClick={() => handleRemove(teacher.assignment_id)}
-                      className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-all"
-                      title="Remove assignment"
-                    >
-                      <FiTrash2 />
-                    </button>
-                  </div>
+              <div className="space-y-3 max-h-[420px] overflow-y-auto pr-2">
+                {teachers.map((t) => (
+                  <button
+                    key={t.user_id || t.teacher_id}
+                    onClick={() => openAssignModal(t)}
+                    className="w-full text-left bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/10 hover:border-white/20 transition-all"
+                  >
+                    <div className="font-semibold">{t.name || t.teacher_name}</div>
+                    <div className="text-sm text-gray-400 mt-1">{t.email || t.teacher_email}</div>
+                    {t.subject_specialization && (
+                      <div className="text-xs text-indigo-200 mt-2">{t.subject_specialization}</div>
+                    )}
+                  </button>
                 ))}
               </div>
             )}
           </div>
 
-          {/* Available Teachers */}
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-8">
-            <div className="flex items-center gap-3 mb-6">
-              <FiUserCheck className="w-6 h-6 text-indigo-400" />
-              <h2 className="text-2xl font-bold">Available Teachers ({filteredAvailable.length})</h2>
+          {/* Right: Courses */}
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+            <div className="text-xl font-semibold mb-4">Courses</div>
+            <div className="space-y-3 max-h-[420px] overflow-y-auto pr-2">
+              {courses.length === 0 ? (
+                <div className="text-gray-400 text-sm">No courses.</div>
+              ) : (
+                courses.map((c) => (
+                  <button
+                    key={c.course_id}
+                    onClick={() => setSelectedCourse(String(c.course_id))}
+                    className={`w-full text-left border rounded-xl p-4 transition-all ${
+                      String(selectedCourse) === String(c.course_id)
+                        ? "border-purple-400 bg-purple-500/10"
+                        : "border-white/10 bg-white/5 hover:bg-white/10"
+                    }`}
+                  >
+                    <div className="font-semibold">{c.course_title || c.title}</div>
+                    <div className="text-sm text-gray-400 mt-1">{c.status || "active"}</div>
+                  </button>
+                ))
+              )}
             </div>
 
-            {/* Search */}
-            <div className="mb-6">
-              <div className="relative">
-                <FiSearch className="absolute left-3 top-3 text-gray-500 w-5 h-5" />
-                <input
-                  type="text"
-                  placeholder="Search teachers by name or subjects..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:border-indigo-400 focus:outline-none"
-                />
-              </div>
-            </div>
-
-            {filteredAvailable.length === 0 ? (
-              <div className="text-center py-12 text-gray-400 border-2 border-dashed border-gray-600 rounded-xl">
-                {searchTerm ? "No matching teachers" : "No available teachers"}
-                <br />
-                {!searchTerm && (
-                  <Link to="/coachingadmin/manage-teachers" className="text-indigo-400 hover:text-indigo-300 mt-2 inline-block">
-                    Review applications →
-                  </Link>
-                )}
-              </div>
-            ) : (
-              <div className="space-y-3 max-h-96 overflow-y-auto">
-                {filteredAvailable.map(teacher => (
-                  <div key={teacher.user_id} className="p-4 border border-white/10 rounded-xl hover:border-white/20 hover:bg-white/10 transition-all">
-                    <div className="flex items-center gap-4">
-                      <img 
-                        src={teacher.profile_image || "/default-avatar.png"} 
-                        alt={teacher.name}
-                        className="w-12 h-12 rounded-full border-2 border-white/20"
-                      />
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-white truncate">{teacher.name}</h3>
-                        <p className="text-sm text-gray-400 truncate">{teacher.email}</p>
-                        <div className="flex flex-wrap gap-2 mt-2">
-                          {teacher.subject_specialization?.split(',').map((sub, i) => (
-                            <span key={i} className="bg-indigo-500/20 text-indigo-300 px-2 py-1 rounded-full text-xs">
-                              {sub.trim()}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => handleAssign(teacher.user_id)}
-                        disabled={assigning[teacher.user_id]}
-                        className="px-6 py-2 bg-emerald-500/90 text-white font-semibold rounded-xl hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2 shadow-lg hover:shadow-emerald-500/25"
-                      >
-                        {assigning[teacher.user_id] ? (
-                          <>
-                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                            Assigning...
-                          </>
-                        ) : (
-                          <>
-                            <FiPlus className="w-4 h-4" />
-                            Assign
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                ))}
+            {selectedCourse && (
+              <div className="mt-6 text-sm text-gray-300">
+                Click a teacher to assign to this course.
               </div>
             )}
           </div>
         </div>
+
+        {/* Assignments table */}
+        <div className="mt-8 bg-white/5 border border-white/10 rounded-2xl p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <div className="text-xl font-semibold">Existing Assignments</div>
+              <div className="text-sm text-gray-400 mt-1">For selected course.</div>
+            </div>
+            {selectedCourse ? (
+              <div className="text-sm text-gray-400">Course ID: {selectedCourse}</div>
+            ) : (
+              <div className="text-sm text-gray-400">Select a course to view assignments.</div>
+            )}
+          </div>
+
+          {!selectedCourse ? (
+            <div className="text-gray-400">No course selected.</div>
+          ) : assignments.length === 0 ? (
+            <div className="text-gray-400">No assignments yet.</div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-sm">
+                <thead>
+                  <tr className="text-gray-400">
+                    <th className="text-left py-3 px-3">Teacher</th>
+                    <th className="text-left py-3 px-3">Subject</th>
+                    <th className="text-left py-3 px-3">Assigned At</th>
+                    <th className="text-left py-3 px-3">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {assignments.map((a) => (
+                    <tr key={a.assignment_id || a.assignmentId} className="border-t border-white/10 hover:bg-white/5">
+                      <td className="py-3 px-3">{a.teacher_name || a.name}</td>
+                      <td className="py-3 px-3">{a.subject_name || a.subject || "-"}</td>
+                      <td className="py-3 px-3">
+                        {a.assigned_at ? new Date(a.assigned_at).toLocaleDateString() : "-"}
+                      </td>
+                      <td className="py-3 px-3">
+                        <button
+                          onClick={() => handleRemove(a.assignment_id)}
+                          className="text-red-300 hover:text-red-200"
+                          title="Remove assignment"
+                        >
+                          <FiTrash2 />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        {/* Modal */}
+        {modalOpen && (
+          <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+            <div className="bg-[#0b1220] text-white w-full max-w-lg rounded-2xl border border-white/10">
+              <div className="p-5 border-b border-white/10">
+                <div className="text-lg font-semibold">Assign Teacher</div>
+              </div>
+              <div className="p-5 space-y-4">
+                <div>
+                  <div className="text-sm text-gray-400">Teacher</div>
+                  <div className="font-semibold mt-1">{selectedTeacher?.name || selectedTeacher?.teacher_name}</div>
+                </div>
+
+                <label className="block">
+                  <span className="text-sm text-gray-400">Course</span>
+                  <select
+                    value={selectedCourse || ""}
+                    onChange={(e) => setSelectedCourse(e.target.value)}
+                    className="mt-1 w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white"
+                  >
+                    {courses.map((c) => (
+                      <option key={c.course_id} value={String(c.course_id)}>
+                        {c.course_title || c.title}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label className="block">
+                  <span className="text-sm text-gray-400">Subject</span>
+                  <select
+                    value={selectedSubjectId || ""}
+                    onChange={(e) => setSelectedSubjectId(e.target.value ? Number(e.target.value) : null)}
+                    className="mt-1 w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white"
+                  >
+                    <option value="">(No subject)</option>
+                    {availableSubjects.map((s) => (
+                      <option key={s.subject_id} value={String(s.subject_id)}>
+                        {s.subject_name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+              <div className="p-5 border-t border-white/10 flex justify-end gap-3">
+                <button
+                  onClick={() => setModalOpen(false)}
+                  className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleAssign}
+                  disabled={assigning}
+                  className="px-4 py-2 rounded-xl bg-emerald-500/90 hover:bg-emerald-600 disabled:opacity-50"
+                >
+                  {assigning ? "Assigning..." : "Assign"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,7 +1,15 @@
-import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 import { useAuth } from "../context/AuthContext.jsx";
-import { updateProfile, changePassword } from "../services/api";
+import {
+  updateProfile,
+  changePassword,
+  getMyCenter,
+} from "../services/api";
+
+
+
 
 // --- Icons ---
 const UserIcon = () => (
@@ -94,14 +102,37 @@ const Profile = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // prevents calling state setters after unmount
+  const isMountedRef = React.useRef(true);
+
+
+  const [centerName, setCenterName] = useState("");
+  const [childName, setChildName] = useState("");
+
+
+
+  const profileRoleId = user?.role_id;
+
   const [profileData, setProfileData] = useState({
+    // common
     name: user?.name || "",
     phone: user?.phone || "",
     gender: user?.gender || "",
     date_of_birth: user?.date_of_birth || "",
     address: user?.address || "",
     bio: user?.bio || "",
+
+    // teacher (role 3)
+    subjects_specialization: user?.subjects_specialization || "",
+    qualifications: user?.qualifications || "",
+    experience_years: user?.experience_years ?? "",
+
+    // student (role 5)
+    class_level: user?.class_level || "",
+    institution_name: user?.institution_name || "",
+    parent_contact_number: user?.parent_contact_number || "",
   });
+
 
   const [passwordData, setPasswordData] = useState({
     current_password: "",
@@ -125,6 +156,7 @@ const Profile = () => {
 
   // Helper: Validate profile fields
   const validateProfile = () => {
+
     if (
       !profileData.name.trim() ||
       !profileData.phone.trim() ||
@@ -144,14 +176,23 @@ const Profile = () => {
     e.preventDefault();
     setError("");
     setSuccess("");
+
     if (!validateProfile()) return;
+
     setLoading(true);
     try {
       await updateProfile(profileData);
       setSuccess("Profile updated successfully!");
     } catch (err) {
+      const msg = err.response?.data?.message;
+      if (err.response?.status === 401) {
+        setError(msg || "Session expired. Please login again.");
+        localStorage.removeItem("token");
+        navigate("/login");
+        return;
+      }
       setError(
-        err.response?.data?.message ||
+        msg ||
           "Failed to update profile. Please ensure all details are filled properly.",
       );
     } finally {
@@ -159,27 +200,63 @@ const Profile = () => {
     }
   };
 
+  // Read-only role-specific info
+  useEffect(() => {
+    let cancelled = false;
+
+    const load = async () => {
+      try {
+        if (profileRoleId === 2) {
+          const res = await getMyCenter();
+          if (!cancelled) setCenterName(res.data?.data?.center_name || "");
+        }
+
+        if (profileRoleId === 6) {
+          // Linked child endpoint not yet available in this codebase.
+          // (Spec endpoint: GET /api/parent/child-overview)
+        }
+
+
+      } catch (e) {
+        // Keep profile usable even if read-only fetch fails
+        if (!cancelled) {
+          setCenterName("");
+          setChildName("");
+        }
+      }
+    };
+
+    load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [profileRoleId]);
+
+
   const handlePasswordSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setSuccess("");
-    if (
-      !passwordData.current_password ||
-      !passwordData.new_password ||
-      !passwordData.confirm_password
-    ) {
+
+    const { current_password, new_password, confirm_password } =
+      passwordData;
+
+    if (!current_password || !new_password || !confirm_password) {
       setError("Please fill in all password fields.");
       return;
     }
-    if (passwordData.new_password !== passwordData.confirm_password) {
+
+    if (new_password !== confirm_password) {
       setError("New passwords do not match!");
       return;
     }
+
     setLoading(true);
     try {
       await changePassword({
-        current_password: passwordData.current_password,
-        new_password: passwordData.new_password,
+        current_password,
+        new_password,
       });
       setSuccess("Password changed successfully!");
       setPasswordData({
@@ -225,11 +302,18 @@ const Profile = () => {
               <span className="px-3 py-1 rounded-lg bg-indigo-500/10 text-indigo-400 text-xs font-bold uppercase tracking-wider border border-indigo-500/20">
                 Role:{" "}
                 {user?.role_id === 1
-                  ? "Admin"
-                  : user?.role_id === 5
-                    ? "Student"
-                    : "Staff"}
+                  ? "Super Admin"
+                  : user?.role_id === 2
+                    ? "Coaching Admin"
+                    : user?.role_id === 3
+                      ? "Teacher"
+                      : user?.role_id === 5
+                        ? "Student"
+                        : user?.role_id === 6
+                          ? "Parent"
+                          : "Staff"}
               </span>
+
               <span className="px-3 py-1 rounded-lg bg-white/5 text-gray-400 text-xs font-bold uppercase tracking-wider border border-white/10">
                 Member since 2024
               </span>
@@ -306,6 +390,7 @@ const Profile = () => {
           {/* Profile Tab */}
           {activeTab === "profile" && (
             <form onSubmit={handleProfileSubmit} className="space-y-6">
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">
@@ -397,7 +482,143 @@ const Profile = () => {
                 </div>
               </div>
 
+              {/* Role-specific fields */}
+              {profileRoleId === 3 && (
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">
+                        Subjects (comma separated)
+                      </label>
+                      <input
+                        type="text"
+                        name="subjects_specialization"
+                        value={profileData.subjects_specialization}
+                        onChange={handleProfileChange}
+                        className="w-full bg-[#0B0C15] border border-white/10 text-white text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all"
+                        placeholder="e.g. Math, Physics, Chemistry"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">
+                        Qualifications
+                      </label>
+                      <input
+                        type="text"
+                        name="qualifications"
+                        value={profileData.qualifications}
+                        onChange={handleProfileChange}
+                        className="w-full bg-[#0B0C15] border border-white/10 text-white text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all"
+                        placeholder="e.g. BSc, MSc, PhD"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">
+                      Years of Experience
+                    </label>
+                    <input
+                      type="number"
+                      name="experience_years"
+                      value={profileData.experience_years}
+                      onChange={handleProfileChange}
+                      min={0}
+                      className="w-full bg-[#0B0C15] border border-white/10 text-white text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all"
+                      placeholder="e.g. 5"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {profileRoleId === 5 && (
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">
+                        Class Level
+                      </label>
+                      <select
+                        name="class_level"
+                        value={profileData.class_level}
+                        onChange={handleProfileChange}
+                        className="w-full bg-[#0B0C15] border border-white/10 text-white text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 appearance-none cursor-pointer"
+                      >
+                        <option value="" className="bg-[#0B0C15]">
+                          Select class
+                        </option>
+                        {[
+                          ...Array.from({ length: 10 }, (_, i) => `Class ${i + 1}`),
+                          "Masters",
+                        ].map((c) => (
+                          <option key={c} value={c} className="bg-[#0B0C15]">
+                            {c}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">
+                        Institution Name
+                      </label>
+                      <input
+                        type="text"
+                        name="institution_name"
+                        value={profileData.institution_name}
+                        onChange={handleProfileChange}
+                        className="w-full bg-[#0B0C15] border border-white/10 text-white text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all"
+                        placeholder="e.g. ABC School"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">
+                      Parent Contact Number
+                    </label>
+                    <input
+                      type="text"
+                      name="parent_contact_number"
+                      value={profileData.parent_contact_number}
+                      onChange={handleProfileChange}
+                      className="w-full bg-[#0B0C15] border border-white/10 text-white text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all"
+                      placeholder="e.g. 01XXXXXXXXX"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {profileRoleId === 2 && (
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">
+                    Center Name
+                  </label>
+                  <input
+                    type="text"
+                    value={centerName}
+                    readOnly
+                    className="w-full bg-[#0B0C15] border border-white/10 text-white/70 text-sm rounded-xl px-4 py-3"
+                  />
+                </div>
+              )}
+
+              {profileRoleId === 6 && (
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">
+                    Linked Child Name
+                  </label>
+                  <input
+                    type="text"
+                    value={childName}
+                    readOnly
+                    className="w-full bg-[#0B0C15] border border-white/10 text-white/70 text-sm rounded-xl px-4 py-3"
+                  />
+                </div>
+              )}
+
+
               <div className="space-y-2">
+
                 <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">
                   Address
                 </label>
@@ -431,6 +652,8 @@ const Profile = () => {
                 {loading ? "Saving..." : "Save Changes"}
                 <div className="absolute inset-0 bg-gradient-to-r from-indigo-400 to-cyan-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
               </button>
+
+
             </form>
           )}
 

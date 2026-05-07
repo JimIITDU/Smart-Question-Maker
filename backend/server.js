@@ -48,10 +48,40 @@ const subscriptionPlanRoutes = require("./routes/subscriptionPlanRoutes");
 const teacherRoutes = require("./routes/teacherRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const courseEnrollmentRoutes = require("./routes/courseEnrollmentRoutes");
+const usersRoutes = require("./routes/usersRoutes");
 
 app.use("/api/auth", authRoutes);
 app.use("/api/center", centerRoutes);
+
+// Debug: log all /api/users requests
+app.use("/api/users", (req, res, next) => {
+  console.log("[REQ users]", req.method, req.originalUrl);
+
+  // Extra debug for profile patch to see what the frontend actually sends
+  if (
+    req.method === "PATCH" &&
+    typeof req.originalUrl === "string" &&
+    req.originalUrl.includes("/profile")
+  ) {
+    console.log("[REQ users] PATCH /profile body:", req.body);
+    console.log(
+      "[REQ users] Authorization header present:",
+      Boolean(req.headers.authorization),
+    );
+  }
+
+  next();
+});
+
+app.use("/api/users", usersRoutes);
+
+// ensure profile endpoint exists even if some clients request /api/users/profile directly
+// (usersRoutes already defines PATCH /profile and PATCH /change-password)
+app.use("/api/users/profile", usersRoutes);
+
 app.use("/api/academic", academicRoutes);
+
+
 app.use("/api/questions", questionRoutes);
 app.use("/api/exams", examRoutes);
 app.use("/api/notifications", notificationRoutes);

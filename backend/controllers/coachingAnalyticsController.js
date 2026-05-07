@@ -7,9 +7,144 @@ const courseEnrollmentModel = require('../models/courseEnrollmentModel');
 
 const coachingAnalyticsController = {
   /**
+   * Coaching Admin analytics page data (single payload)
+   */
+  getAnalytics: async (req, res) => {
+    try {
+      const center = await centerModel.getCenterByUserId(req.user.user_id);
+      if (!center) {
+        return res.status(404).json({ success: false, message: 'Coaching center not found' });
+      }
+
+      const coaching_center_id = center.coaching_center_id;
+
+        const [statsRows, examPerfRows, studentsPerBatchRows, recentExamResultsRows] =
+        await Promise.all([
+          // Stats for top cards
+          db.query(
+            `
+              SELECT
+                (SELECT COUNT(*) FROM course_enrollments ce WHERE ce.coaching_center_id = $1 AND ce.status='active')::int AS total_students,
+                (SELECT COUNT(DISTINCT ta.teacher_id) FROM teacher_course_assignments ta WHERE ta.coaching_center_id = $1)::int AS total_teachers,
+                (SELECT COUNT(*) FROM course c WHERE c.coaching_center_id = $1)::int AS active_courses,
+                (SELECT COUNT(*) FROM quiz_exam q WHERE q.coaching_center_id = $1 AND q.status IN ('completed','ongoing'))::int AS exams_conducted
+            `,
+            [coaching_center_id]
+          ),
+
+          // Exam performance chart - average score per exam (percentage)
+          db.query(
+            `
+              SELECT
+                q.created_at as exam_date,
+                q.exam_id,
+                AVG(
+                  COALESCE(rs.marks_obtained::float / GREATEST(qb.max_marks,1) * 100,0)
+                ) as avg_percentage,
+                AVG(rs.marks_obtained)::float as avg_score
+              FROM quiz_exam q
+              JOIN result_summary rs ON rs.exam_id = q.exam_id
+              JOIN question_bank qb ON qb.question_id = rs.question_id
+              WHERE q.coaching_center_id = $1
+              GROUP BY q.exam_id, q.created_at
+              ORDER BY q.created_at DESC
+              LIMIT 10
+            `,
+            [coaching_center_id]
+          ),
+
+          // Students per batch chart
+          db.query(
+            `
+              SELECT
+                b.batch_name,
+                COUNT(DISTINCT ce.student_id)::int as student_count
+              FROM batch b
+              JOIN quiz_exam q ON q.batch_id = b.batch_id
+              JOIN result_summary rs ON rs.exam_id = q.exam_id
+              JOIN course_enrollments ce ON ce.student_id = rs.student_id AND ce.coaching_center_id = $1
+              WHERE b.coaching_center_id = $1
+              GROUP BY b.batch_id, b.batch_name
+              ORDER BY student_count DESC
+              LIMIT 10
+            `,
+            [coaching_center_id]
+          ),
+
+          // Recent exam results table
+          db.query(
+            `
+              SELECT
+                q.exam_id,
+                q.title as exam_name,
+                c.course_title,
+                q.created_at as date,
+                COUNT(DISTINCT rs.student_id)::int as students_tested,
+                AVG(rs.marks_obtained::float / GREATEST(qb.max_marks,1) * 100) as avg_percentage,
+                (COUNT(CASE WHEN rs.marks_obtained::float / GREATEST(qb.max_marks,1) * 100 >= 50 THEN 1 END)::float
+                  / NULLIF(COUNT(DISTINCT rs.student_id),0) * 100) as pass_rate
+              FROM quiz_exam q
+              JOIN course c ON c.course_id = q.course_id
+              JOIN result_summary rs ON rs.exam_id = q.exam_id
+              JOIN question_bank qb ON qb.question_id = rs.question_id
+              WHERE q.coaching_center_id = $1
+              GROUP BY q.exam_id, c.course_title
+              ORDER BY q.created_at DESC
+              LIMIT 10
+            `,
+            [coaching_center_id]
+          )
+        ]);
+
+      const stats = statsRows.rows?.[0] || {};
+
+      const exam_performance = (examPerfRows.rows || []).map(r => ({
+        exam_date: r.exam_date,
+        avg_percentage: Number(r.avg_percentage || 0),
+        avg_score: Number(r.avg_score || 0),
+        exam_id: r.exam_id,
+      }));
+
+      const students_per_batch = (studentsPerBatchRows.rows || []).map(r => ({
+        batch_name: r.batch_name,
+        student_count: Number(r.student_count || 0)
+      }));
+
+      const recent_exam_results = (recentExamResultsRows.rows || []).map(r => ({
+        exam_id: r.exam_id,
+        exam_name: r.exam_name,
+        course_title: r.course_title,
+        date: r.date,
+        students_tested: r.students_tested,
+        avg_percentage: Number(r.avg_percentage || 0),
+        pass_rate: Number(r.pass_rate || 0)
+      }));
+
+      return res.json({
+        success: true,
+        data: {
+          stats: {
+            total_students: stats.total_students || 0,
+            total_teachers: stats.total_teachers || 0,
+            active_courses: stats.active_courses || 0,
+            exams_conducted: stats.exams_conducted || 0,
+          },
+          exam_performance,
+          students_per_batch,
+          recent_exam_results,
+        },
+      });
+    } catch (error) {
+      console.error('getAnalytics error:', error);
+      return res.status(500).json({ success: false, message: 'Server error' });
+    }
+  },
+
+  /**
    * Get comprehensive dashboard stats for coaching center
    * Optimized with parallel queries
    */
+  // Backward-compatible / old exports
   getDashboardStats: async (req, res) => {
     try {
       const center = await centerModel.getCenterByUserId(req.user.user_id);

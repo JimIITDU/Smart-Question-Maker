@@ -333,23 +333,11 @@ const authController = {
     }
   },
 
-  // Update profile
+  // Update profile (legacy: /api/auth/profile)
   updateProfile: async (req, res) => {
     try {
-      const { name, phone, gender, date_of_birth, address, bio } = req.body;
-
-      await userModel.updateProfile(req.user.user_id, {
-        name,
-        phone,
-        gender,
-        date_of_birth,
-        address,
-        bio,
-      });
-
-      res
-        .status(200)
-        .json({ success: true, message: "Profile updated successfully" });
+      // Delegate to the unified endpoint logic
+      return authController.updateUserProfile(req, res);
     } catch (error) {
       res
         .status(500)
@@ -361,17 +349,116 @@ const authController = {
     }
   },
 
-  // Change password
+  // Change password (legacy: /api/auth/change-password)
   changePassword: async (req, res) => {
+    try {
+      // Delegate to the unified endpoint logic
+      return authController.changeUserPassword(req, res);
+    } catch (error) {
+      res
+        .status(500)
+        .json({
+          success: false,
+          message: "Server error",
+          error: error.message,
+        });
+    }
+  },
+
+  // ==============================
+  // Unified endpoints (spec)
+  // ==============================
+
+  // PATCH /api/users/profile
+  updateUserProfile: async (req, res) => {
+    try {
+      // TEMP: log payload to identify 500 cause
+      // console.log("[updateUserProfile] user_id:", req.user?.user_id);
+      // console.log("[updateUserProfile] body:", req.body);
+
+      // Debug: log incoming payload (sanitize token/user only)
+      // console.log("[updateUserProfile] body:", req.body);
+      // console.log("[updateUserProfile] req.user:", req.user);
+      const {
+        name,
+        phone,
+        gender,
+        date_of_birth,
+        address,
+        bio,
+        // role 3 teacher
+        subjects_specialization,
+        qualifications,
+        experience_years,
+        // role 5 student
+        class_level,
+        institution_name,
+        parent_contact_number,
+      } = req.body;
+
+      const user = await userModel.findById(req.user.user_id);
+      if (!user) {
+        return res.status(404).json({ success: false, message: "User not found" });
+      }
+
+      const role_id = user.role_id;
+
+      // Common fields always
+      const profileData = {
+        name,
+        phone,
+        gender,
+        date_of_birth,
+        address,
+        bio,
+      };
+
+      if (role_id === 3) {
+        profileData.subjects_specialization = subjects_specialization;
+        profileData.qualifications = qualifications;
+        profileData.experience_years = experience_years;
+      }
+
+      if (role_id === 5) {
+        profileData.class_level = class_level;
+        profileData.institution_name = institution_name;
+        profileData.parent_contact_number = parent_contact_number;
+      }
+
+      await userModel.updateProfile(req.user.user_id, profileData);
+
+      // Debug: confirm update completed
+      // console.log("[updateUserProfile] updated ok for user_id", req.user.user_id);
+
+      return res
+        .status(200)
+        .json({ success: true, message: "Profile updated successfully" });
+    } catch (error) {
+      return res
+        .status(500)
+        .json({
+          success: false,
+          message: "Server error",
+          error: error.message,
+        });
+    }
+  },
+
+  // PATCH /api/users/change-password
+  changeUserPassword: async (req, res) => {
     try {
       const { current_password, new_password } = req.body;
 
       const user = await userModel.findById(req.user.user_id);
+      if (!user) {
+        return res.status(404).json({ success: false, message: "User not found" });
+      }
 
       const isMatch = await bcrypt.compare(
         current_password,
         user.password_hash,
       );
+
       if (!isMatch) {
         return res
           .status(400)
@@ -383,11 +470,11 @@ const authController = {
 
       await userModel.updatePassword(req.user.user_id, password_hash);
 
-      res
+      return res
         .status(200)
         .json({ success: true, message: "Password changed successfully" });
     } catch (error) {
-      res
+      return res
         .status(500)
         .json({
           success: false,
@@ -397,5 +484,6 @@ const authController = {
     }
   },
 };
+
 
 module.exports = authController;

@@ -92,7 +92,7 @@ export const getUsersStats = () => API.get('/admin/users/stats');
 export const updateUserStatus = (id, status) => API.patch(`/admin/users/${id}/status`, { status });
 export const resetUserPassword = (id) => API.post(`/admin/users/${id}/reset-password`);
 
-// Subscription Plans
+/* Subscription Plans */
 export const getSubscriptionPlans = () => API.get("/subscription-plans/active");
 export const getAllSubscriptionPlans = () => API.get("/subscription-plans/all");
 export const getSubscriptionPlanById = (id) =>
@@ -105,6 +105,7 @@ export const deleteSubscriptionPlan = (id) =>
   API.delete(`/subscription-plans/${id}`);
 export const toggleSubscriptionPlanStatus = (id, data) =>
   API.put(`/subscription-plans/${id}/toggle`, data);
+
 
 // Academic
 // REMOVED conflicting Academic exports - using admin courses now
@@ -152,9 +153,10 @@ export const exportExamPDF = (id, numSets = 2) =>
     responseType: "blob",
   });
 
-export const updateProfile = (data) => API.put("/auth/profile", data);
+// Profile & password (spec endpoints)
+export const updateProfile = (data) => API.patch("/users/profile", data);
+export const changePassword = (data) => API.patch("/users/change-password", data);
 
-export const changePassword = (data) => API.put("/auth/change-password", data);
 
 // Notifications
 export const getNotifications = () => API.get("/notifications");
@@ -221,6 +223,16 @@ export const getCourseAssignments = (courseId) =>
 export const removeAssignment = (id) =>
   API.put(`/teachers/assignments/${id}/remove`);
 export const getAvailableTeachers = () => API.get("/teachers/available");
+export const getAvailableTeachersForAssignment = () =>
+  API.get("/teachers/available");
+export const getApprovedTeachersForAdmin = () => API.get("/teachers/available");
+export const removeTeacherFromCenter = (teacherUserId) =>
+  API.put(`/teachers/assignments/${teacherUserId}/remove`);
+export const getAdminCourses = () => API.get("/courses/admin");
+export const getMyCenterSettings = () => API.get("/centers/my-center");
+export const patchMyCenterSettings = (data) =>
+  API.patch("/centers/my-center", data);
+export const getCoachingAnalytics = () => API.get("/coaching-admin/analytics");
 
 // Course Enrollments & Payments (NEW API at /api/courses)
 export const browseCourses = (filters) =>
@@ -238,7 +250,7 @@ export const getCourseExams = (courseId) =>
   API.get(`/courses/${courseId}/exams`);
 
 // Admin courses (role_id = 2) - with aliases for ManageCourses.jsx
-export const getAdminCourses = () => API.get("/courses/admin");
+// NOTE: keep existing getAdminCourses declaration below
 export const getAllCourses = getAdminCourses;
 export const createCourseAdmin = (data) =>
   API.post("/courses/admin/create", data);

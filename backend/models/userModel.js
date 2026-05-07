@@ -59,15 +59,79 @@ const userModel = {
   },
 
   updateProfile: async (user_id, profileData) => {
-    const { name, phone, gender, date_of_birth, address, bio } = profileData;
-    await db.query(
-      `UPDATE users
-       SET name=$1, phone=$2, gender=$3,
-           date_of_birth=$4, address=$5, bio=$6
-       WHERE user_id = $7`,
-      [name, phone, gender, date_of_birth, address, bio, user_id],
-    );
+    const {
+      name,
+      phone,
+      gender,
+      date_of_birth,
+      address,
+      bio,
+      // role specific
+      subjects_specialization,
+      qualifications,
+      experience_years,
+      class_level,
+      institution_name,
+      parent_contact_number,
+    } = profileData;
+
+    // Update common fields + role specific fields (SET with possible nulls)
+    // Wrap in try/catch so we can see the real postgres error in backend terminal.
+    try {
+      await db.query(
+        `UPDATE users
+         SET name=$1,
+             phone=$2,
+             gender=$3,
+             date_of_birth=$4,
+             address=$5,
+             bio=$6,
+             subjects_specialization=$7,
+             qualifications=$8,
+             experience_years=$9,
+             class_level=$10,
+             institution_name=$11,
+             parent_contact_number=$12
+         WHERE user_id=$13`,
+        [
+          name,
+          phone,
+          gender,
+          date_of_birth,
+          address,
+          bio,
+          subjects_specialization ?? null,
+          qualifications ?? null,
+          experience_years ?? null,
+          class_level ?? null,
+          institution_name ?? null,
+          parent_contact_number ?? null,
+          user_id,
+        ],
+      );
+    } catch (err) {
+      console.error("[userModel.updateProfile] UPDATE users failed", {
+        user_id,
+        profileData: {
+          name,
+          phone,
+          gender,
+          date_of_birth,
+          address,
+          bio,
+          subjects_specialization,
+          qualifications,
+          experience_years,
+          class_level,
+          institution_name,
+          parent_contact_number,
+        },
+        error: err,
+      });
+      throw err;
+    }
   },
 };
+
 
 module.exports = userModel;
